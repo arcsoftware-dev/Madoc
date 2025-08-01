@@ -1,20 +1,27 @@
 package dev.arcsoftware.madoc.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum DraftRank {
-    F_A1,
-    F_A2,
-    F_A3,
-    F_B1,
-    F_B2,
-    F_B3,
-    F_C1,
-    F_C2,
-    F_C3,
-    D_A1,
-    D_A2,
-    D_B1,
-    D_B2,
-    D_C1,
-    D_C2,
-    G;
+    F_A1(1),
+    F_A2(2),
+    F_A3(3),
+    F_B1(4),
+    F_B2(5),
+    F_B3(6),
+    F_C1(7),
+    F_C2(8),
+    F_C3(9),
+    D_A1(10),
+    D_A2(11),
+    D_B1(12),
+    D_B2(13),
+    D_C1(14),
+    D_C2(15),
+    GOALIE(16);
+
+    private final int rank;
 }

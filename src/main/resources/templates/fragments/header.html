@@ -1,0 +1,20 @@
+<div th:fragment="header">
+    <header class="main-header">
+        <h2 class="logo">Madoc Mens</h2>
+        <a th:href="@{/}" class="logo-link">
+            <img th:src="@{/assets/mmhl.svg}" alt="MMHL Logo" width="256"/>
+        </a>
+        <h2 class="logo">Hockey League</h2>
+    </header>
+    <header class="nav-header">
+        <nav>
+            <ul class="nav-links">
+                <li><a th:href="@{/teams}">Teams</a></li>
+                <li><a th:href="@{/schedule}">Schedule</a></li>
+                <li><a th:href="@{/standings}">Standings</a></li>
+                <li><a th:href="@{/stats/SKATERS}">Stats</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+</div>

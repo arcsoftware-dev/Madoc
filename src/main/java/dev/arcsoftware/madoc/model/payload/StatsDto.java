@@ -1,25 +1,24 @@
-package dev.arcsoftware.madoc.model;
+package dev.arcsoftware.madoc.model.payload;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
-public class PlayerStats {
-    private Integer playerStatsId;
-
-    private Player player;
-
-    //Shared Stats
+@Getter
+@Builder
+public class StatsDto {
+    //Shared fields
+    private String playerName;
+    private String teamName;
     private int gamesPlayed;
     private int goals;
     private int assists;
     private int points;
     private int penaltyMinutes;
 
-    //Goalie Stats
+    //Goalie specific fields
     private int wins;
     private int losses;
     private int ties;
     private int shutouts;
     private int goalsAgainst;
-    private double goalsAgainstAverage;
 }

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>MMHL</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+</head>
+<body>
+    <div th:replace="~{fragments/header.html :: header}"></div>
+    <main class="content">
+        <section class="hero">
+            <h1>Welcome to the MADOC Hockey League!</h1>
+            <p>Get the latest news, scores, and updates about your favorite teams.</p>
+        </section>
+        <section class="feed">
+            <div class="news-cards feed-item feed-item-news">
+                <h2 class="card-title">Latest News</h2>
+                <div class="news-card" th:each="article : ${newsArticles}">
+                    <h3 th:text="${article.title}">Article Title</h3>
+                    <p class="news-date" th:text="${#temporals.format(article.date, 'MMMM dd yyyy')}"></p>
+                    <p class="news-summary" th:text="${article.summary}"></p>
+                    <a th:href="@{/news/{id}(id=${article.id})}" class="read-more">Read more</a>
+                </div>
+            </div>
+            <div class="upcoming-cards feed-item feed-item-schedule">
+                <h2 class="card-title">Upcoming Games</h2>
+                <div class="upcoming-card" th:each="upcomingGame : ${upcomingMatches}">
+                    <div class="game-time" th:text="${#temporals.format(upcomingGame.startTime, 'MMMM dd yyyy hh:mm a')}"></div>
+                    <div class="teams">
+                        <div class="team">
+                            <a th:href="@{/teams/{team}(team=${upcomingGame.homeTeam})}">
+                                <img th:src="@{'/assets/teamLogos/' + ${upcomingGame.homeTeam} + '.svg'}" alt="Home Logo" class="team-logo"/>
+                            </a>
+                            <span class="team-name" th:text="${upcomingGame.homeTeam}"></span>
+                        </div>
+                        <span class="vs">vs</span>
+                        <div class="team">
+                            <a th:href="@{/teams/{team}(team=${upcomingGame.awayTeam})}">
+                                <img th:src="@{'/assets/teamLogos/' + ${upcomingGame.awayTeam} + '.svg'}" alt="Away Logo" class="team-logo"/>
+                            </a>
+                            <span class="team-name" th:text="${upcomingGame.awayTeam}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

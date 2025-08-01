@@ -1,11 +1,12 @@
-package dev.arcsoftware.madoc.model;
+package dev.arcsoftware.madoc.model.payload;
 
 import lombok.Data;
 
 @Data
-public class TeamStats {
-    private Team team;
+public class TeamStatsDto {
+    private String teamName;
 
+    private int gamesPlayed;
     private int wins;
     private int losses;
     private int ties;

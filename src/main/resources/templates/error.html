@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>404 Not Found</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+</head>
+<body>
+    <div th:replace="~{fragments/header.html :: header}"></div>
+    <main class="content">
+        <section class="hero">
+            <h1>An error has occurred...</h1>
+            <p>There seems to be a problem with the page you requested
+                (<span th:text="${path}"></span>).
+            </p>
+            <p th:text="${'The status code is ' + status
+       + ', which means that the page was ' + error + '.'}"></p>
+        </section>
+    </main>
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

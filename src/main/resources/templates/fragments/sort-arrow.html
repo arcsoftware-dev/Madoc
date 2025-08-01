@@ -1,0 +1,5 @@
+<div th:fragment="sortArrow(sortField, sortOrder, requestSortField)">
+    <a th:href="@{/stats(sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'})}"
+       th:classappend="|${sortOrder == 'ASC' ? 'sorted-asc' : 'sorted-desc'} ${requestSortField == sortField ? 'active-sort' : ''}|">
+    </a>
+</div>
