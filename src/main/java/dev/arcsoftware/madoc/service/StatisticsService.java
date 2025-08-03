@@ -23,10 +23,10 @@ public class StatisticsService {
     public List<StatsDto> getStats(StatsRequest request) {
         List<StatsDto> stats;
         if(PlayerType.GOALIES.equals(request.playerType())) {
-            stats = statsRepository.getGoalieStats();
+            stats = statsRepository.getGoalieStats(request.seasonType());
         }
         else {
-            stats = statsRepository.getSkaterStats();
+            stats = statsRepository.getSkaterStats(request.seasonType());
         }
         sortStats(request, stats);
 

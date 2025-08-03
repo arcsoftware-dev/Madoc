@@ -4,6 +4,8 @@
     --accent: #CC1919;
     --text: #f3f4f6;
     --nav-hover: #CC1919;
+    --card-bg: #B0B0B0;
+    --card-border: #e0e0e0;
 }
 
 body {
@@ -176,7 +178,6 @@ a {
     flex-wrap: wrap;
     gap: 1.5rem;
     padding: 1em;
-    width: 50%
 }
 .feed-item-news {
     width: 66%;
@@ -186,8 +187,8 @@ a {
 }
 
 .news-card {
-    background: #B0B0B0;
-    border: 1px solid #e0e0e0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     padding: 1.5rem;
@@ -230,12 +231,11 @@ a {
     gap: 1.5rem;
 }
 .upcoming-card {
-    background: #B0B0B0;
-    border: 1px solid #e0e0e0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     padding: 1.5rem;
-    width: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;

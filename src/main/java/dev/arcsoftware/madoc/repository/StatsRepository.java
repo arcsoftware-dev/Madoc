@@ -1,9 +1,11 @@
 package dev.arcsoftware.madoc.repository;
 
+import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -12,7 +14,10 @@ public class StatsRepository {
     private static List<StatsDto> staticSkaterStats;
     private static List<StatsDto> staticGoalieStats;
 
-    public List<StatsDto> getSkaterStats() {
+    public List<StatsDto> getSkaterStats(SeasonType seasonType) {
+        if(SeasonType.PLAYOFFS.equals(seasonType)) {
+            return Collections.emptyList();
+        }
         if(staticSkaterStats != null) {
             return staticSkaterStats;
         }
@@ -70,7 +75,10 @@ public class StatsRepository {
         return staticSkaterStats;
     }
 
-    public List<StatsDto> getGoalieStats() {
+    public List<StatsDto> getGoalieStats(SeasonType seasonType) {
+        if(SeasonType.PLAYOFFS.equals(seasonType)) {
+            return Collections.emptyList();
+        }
         if(staticGoalieStats != null) {
             return staticGoalieStats;
         }

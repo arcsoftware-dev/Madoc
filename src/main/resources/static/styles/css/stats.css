@@ -31,3 +31,13 @@
 .stats-toggle a.active {
     background: var(--accent);
 }
+
+.stats-toggle-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1em;
+}
+.season-toggle {
+    margin-left: auto;
+}

@@ -9,11 +9,19 @@
 <body>
     <div th:replace="~{fragments/header.html :: header}"></div>
     <main class="content">
-        <div class="stats-toggle">
-            <a th:href="@{/stats/{playerType}(playerType='SKATERS')}"
-               th:classappend="${request.playerType().name() == 'SKATERS'} ? 'active' : ''">Skaters</a>
-            <a th:href="@{/stats/{playerType}(playerType='GOALIES')}"
-               th:classappend="${request.playerType().name() == 'GOALIES'} ? 'active' : ''">Goalies</a>
+        <div class="stats-toggle-bar">
+            <div class="stats-toggle">
+                <a th:href="@{/stats/{playerType}(playerType='SKATERS', season-type=${request.seasonType().name()})}"
+                   th:classappend="${request.playerType().name() == 'SKATERS'} ? 'active' : ''">Skaters</a>
+                <a th:href="@{/stats/{playerType}(playerType='GOALIES', season-type=${request.seasonType().name()})}"
+                   th:classappend="${request.playerType().name() == 'GOALIES'} ? 'active' : ''">Goalies</a>
+            </div>
+            <div class="stats-toggle season-toggle">
+                <a th:href="@{/stats/{playerType}(playerType=${request.playerType().name()}, season-type='REGULAR_SEASON')}"
+                   th:classappend="${request.seasonType().name() == 'REGULAR_SEASON'} ? 'active' : ''">Regular Season</a>
+                <a th:href="@{/stats/{playerType}(playerType=${request.playerType().name()}, season-type='PLAYOFFS')}"
+                   th:classappend="${request.seasonType().name() == 'PLAYOFFS'} ? 'active' : ''">Playoffs</a>
+            </div>
         </div>
         <div th:if="${request.playerType().name() == 'SKATERS'}">
             <h1 class="title">Skater Statistics</h1>
