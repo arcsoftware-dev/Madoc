@@ -30,26 +30,29 @@
                 <tr>
                     <th>Player</th>
                     <th>Team</th>
-                    <th>GP</th>
+                    <th th:with="sortField='GAMES_PLAYED'">
+                        GP
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
+                    </th>
                     <th th:with="sortField='GOALS'">
                         G
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='ASSISTS'">
                         A
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='POINTS'">
                         P
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='POINTS_PER_GAME'">
                         PPG
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='PENALTY_MINUTES'">
                         PM
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                 </tr>
                 </thead>
@@ -74,30 +77,33 @@
                 <tr>
                     <th>Player</th>
                     <th>Team</th>
-                    <th>GP</th>
+                    <th th:with="sortField='GAMES_PLAYED'">
+                        GP
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
+                    </th>
                     <th th:with="sortField='WINS'">
                         W
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='LOSSES'">
                         L
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='TIES'">
                         T
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='SHUTOUTS'">
                         SO
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='GOALS_AGAINST'">
                         GA
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='GOALS_AGAINST_AVERAGE'">
                         GAA
-                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()})}"></div>
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                 </tr>
                 </thead>

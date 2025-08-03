@@ -36,6 +36,7 @@ public class StatisticsService {
     private void sortStats(StatsRequest request, List<StatsDto> stats) {
         stats.sort((stat1, stat2) -> {
             int comparison = switch (request.sortCategory()) {
+                case GAMES_PLAYED -> Integer.compare(stat2.getGamesPlayed(), stat1.getGamesPlayed());
                 case GOALS -> Integer.compare(stat2.getGoals(), stat1.getGoals());
                 case ASSISTS -> Integer.compare(stat2.getAssists(), stat1.getAssists());
                 case PENALTY_MINUTES -> Integer.compare(stat2.getPenaltyMinutes(), stat1.getPenaltyMinutes());

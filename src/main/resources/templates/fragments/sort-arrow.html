@@ -1,5 +1,5 @@
-<div th:fragment="sortArrow(playerType, sortField, sortOrder, requestSortField)">
-    <a th:href="@{/stats/{playerType}(playerType=${playerType}, sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'})}"
+<div th:fragment="sortArrow(playerType, sortField, sortOrder, requestSortField, seasonType)">
+    <a th:href="@{/stats/{playerType}(playerType=${playerType}, sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'}, season-type=${seasonType})}"
        th:classappend="|${sortOrder == 'ASC' ? 'sorted-asc' : 'sorted-desc'} ${requestSortField == sortField ? 'active-sort' : ''}|">
     </a>
 </div>

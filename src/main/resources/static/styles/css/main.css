@@ -151,7 +151,7 @@ tr:nth-child(even) {
     content: "▼";
 }
 .active-sort {
-    color: var(--accent);
+    color: var(--secondary);
 }
 a {
     color: inherit;

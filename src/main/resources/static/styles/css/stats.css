@@ -12,7 +12,7 @@
     color: var(--text);
 }
 .stats-table th {
-    background-color: var(--primary);
+    background-color: var(--accent);
     font-size: 1.25rem;
 }
 
