@@ -42,7 +42,7 @@ public class StatsController {
             @RequestParam(value = "year", required = false) Integer year,
             @RequestParam(value = "season-type", required = false) SeasonType seasonType,
             @RequestParam(value = "sort-field", required = false) StatsCategory sortField,
-            @RequestParam(value = "sort-order", required = false, defaultValue = "DESC") SortOrder sortOrder,
+            @RequestParam(value = "sort-order", required = false) SortOrder sortOrder,
             Model model
     ) {
         StatsRequest request = normalizeRequest(playerType, year, seasonType, sortField, sortOrder);
@@ -73,7 +73,11 @@ public class StatsController {
                             ? StatsCategory.GOALS_AGAINST_AVERAGE
                             : POINTS)
                         : sortField,
-                sortOrder
+                sortOrder == null
+                        ? (PlayerType.GOALIES.equals(playerType)
+                            ? SortOrder.ASC
+                            : SortOrder.DESC)
+                        : sortOrder
         );
     }
 }
