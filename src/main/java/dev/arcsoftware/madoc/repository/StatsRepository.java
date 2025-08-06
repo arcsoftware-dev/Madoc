@@ -2,76 +2,100 @@ package dev.arcsoftware.madoc.repository;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
+import jakarta.annotation.PostConstruct;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 @Repository
 public class StatsRepository {
     private static List<StatsDto> staticSkaterStats;
+    private static List<StatsDto> staticSkaterPlayoffStats;
     private static List<StatsDto> staticGoalieStats;
+
+    @PostConstruct
+    public void loadData(){
+        staticSkaterStats = new ArrayList<>();
+        ClassPathResource statsResource = new ClassPathResource("stats/2024_SEASON.csv");
+        try(BufferedReader seasonStats = new BufferedReader(new BufferedReader(new InputStreamReader(statsResource.getInputStream())))) {
+            seasonStats.lines()
+                    .skip(1) // Skip header line
+                    .forEach(line -> {
+                        //# ,Player,Team,G,A,PTS,PIM
+                        String[] split = line.split(",");
+                        StatsDto statsDto = StatsDto.builder()
+                                .playerName(split[1] + " (#" + split[0] + ")")
+                                .teamName(split[2])
+                                .gamesPlayed(20) // Assuming 20 games for simplicity
+                                .goals(Integer.parseInt(split[3]))
+                                .assists(Integer.parseInt(split[4]))
+                                .points(Integer.parseInt(split[5]))
+                                .penaltyMinutes(Integer.parseInt(split[6]))
+                                .build();
+                        staticSkaterStats.add(statsDto);
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        staticSkaterPlayoffStats = new ArrayList<>();
+        ClassPathResource playoffStatsResource = new ClassPathResource("stats/2024_PLAYOFFS.csv");
+        try(BufferedReader playoffStats = new BufferedReader(new BufferedReader(new InputStreamReader(playoffStatsResource.getInputStream())))) {
+            playoffStats.lines()
+                    .skip(1) // Skip header line
+                    .forEach(line -> {
+                        //# ,Player,Team,G,A,PTS,PIM
+                        String[] split = line.split(",");
+                        StatsDto statsDto = StatsDto.builder()
+                                .playerName(split[1] + " (#" + split[0] + ")")
+                                .teamName(split[2])
+                                .gamesPlayed(5) // Assuming 5 games for simplicity
+                                .goals(Integer.parseInt(split[3]))
+                                .assists(Integer.parseInt(split[4]))
+                                .points(Integer.parseInt(split[5]))
+                                .penaltyMinutes(Integer.parseInt(split[6]))
+                                .build();
+                        staticSkaterPlayoffStats.add(statsDto);
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        staticGoalieStats = new ArrayList<>();
+        ClassPathResource goalieStatsResource = new ClassPathResource("stats/2024_SEASON_GOALIES.csv");
+        try(BufferedReader goalieStats = new BufferedReader(new BufferedReader(new InputStreamReader(goalieStatsResource.getInputStream())))) {
+            goalieStats.lines()
+                    .skip(1) // Skip header line
+                    .forEach(line -> {
+                        //PLAYER,Team,GP,W,L,T,SO,ENG,PIM,GA,GAA
+                        String[] split = line.split(",");
+                        StatsDto statsDto = StatsDto.builder()
+                                .playerName(split[0])
+                                .teamName(split[1])
+                                .gamesPlayed(Integer.parseInt(split[2]))
+                                .wins(Integer.parseInt(split[3]))
+                                .losses(Integer.parseInt(split[4]))
+                                .ties(Integer.parseInt(split[5]))
+                                .shutouts(Integer.parseInt(split[6]))
+                                .penaltyMinutes(Integer.parseInt(split[8]))
+                                .goalsAgainst(Integer.parseInt(split[9]))
+                                .build();
+                        staticGoalieStats.add(statsDto);
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public List<StatsDto> getSkaterStats(SeasonType seasonType) {
         if(SeasonType.PLAYOFFS.equals(seasonType)) {
-            return Collections.emptyList();
+            return staticSkaterPlayoffStats;
         }
-        if(staticSkaterStats != null) {
-            return staticSkaterStats;
-        }
-        else {
-            staticSkaterStats = new ArrayList<>();
-        }
-        List<String> teamNames = List.of(
-                "Leafs",
-                "Avalanche",
-                "Vegas",
-                "Red Wings",
-                "Blackhawks",
-                "Whalers"
-        );
-
-        List<String> names = List.of(
-                "Sidney Crosby", "Connor McDavid", "Auston Matthews", "Nathan MacKinnon", "Leon Draisaitl",
-                "David Pastrnak", "Nikita Kucherov", "Alex Ovechkin", "Patrick Kane", "Jonathan Toews",
-                "Steven Stamkos", "Jack Eichel", "Mitch Marner", "Brayden Point", "Artemi Panarin",
-                "Mika Zibanejad", "Sebastian Aho", "Aleksander Barkov", "Mathew Barzal", "Mark Scheifele",
-                "Blake Wheeler", "Patrice Bergeron", "Brad Marchand", "John Tavares", "William Nylander",
-                "Gabriel Landeskog", "Mikko Rantanen", "Cale Makar", "Quinn Hughes", "Elias Pettersson",
-                "Bo Horvat", "Brock Boeser", "Ryan O'Reilly", "Vladimir Tarasenko", "Roman Josi",
-                "Dougie Hamilton", "Seth Jones", "Zach Werenski", "Johnny Gaudreau", "Matthew Tkachuk",
-                "Sean Monahan", "Elias Lindholm", "Rasmus Dahlin", "Jack Hughes", "Nico Hischier",
-                "Jesper Bratt", "Kyle Palmieri", "Anders Lee", "Brock Nelson", "Ryan Pulock",
-                "Noah Dobson", "Anze Kopitar", "Drew Doughty", "Dustin Brown", "Tyler Toffoli",
-                "Jeff Carter", "Tomas Hertl", "Logan Couture", "Brent Burns", "Erik Karlsson",
-                "Joe Pavelski", "Jamie Benn", "Tyler Seguin", "Miro Heiskanen", "John Klingberg",
-                "Filip Forsberg", "Ryan Johansen", "Matt Duchene", "Victor Hedman", "Brady Tkachuk",
-                "Thomas Chabot", "Josh Norris", "Tim Stützle", "Pierre-Luc Dubois", "Cam Atkinson",
-                "Travis Konecny", "Sean Couturier", "Claude Giroux", "Dylan Larkin", "Tyler Bertuzzi",
-                "Filip Zadina", "Patrik Laine", "J.T. Miller", "Boone Jenner", "Sam Reinhart",
-                "Roope Hintz", "Jason Robertson", "Alex DeBrincat", "Jonathan Huberdeau", "Sam Bennett"
-        );
-
-        Random random = new Random();
-
-        for(int i = 0; i < (6*15); i++) {
-            int goals = random.nextInt(50);
-            int assists = random.nextInt(50);
-            int penaltyMinutes = random.nextInt(100);
-            StatsDto stat = StatsDto.builder()
-                    .playerName(names.get(i % names.size()))
-                    .teamName(teamNames.get(i % teamNames.size()))
-                    .gamesPlayed(random.nextInt(82) + 1)
-                    .goals(goals)
-                    .assists(assists)
-                    .points(goals+assists)
-                    .penaltyMinutes(penaltyMinutes)
-                    .build();
-            staticSkaterStats.add(stat);
-        }
-
         return staticSkaterStats;
     }
 
@@ -79,49 +103,6 @@ public class StatsRepository {
         if(SeasonType.PLAYOFFS.equals(seasonType)) {
             return Collections.emptyList();
         }
-        if(staticGoalieStats != null) {
-            return staticGoalieStats;
-        }
-        else {
-            staticGoalieStats = new ArrayList<>();
-        }
-        List<String> teamNames = List.of(
-                "Leafs",
-                "Avalanche",
-                "Vegas",
-                "Red Wings",
-                "Blackhawks",
-                "Whalers"
-        );
-
-        List<String> names = List.of(
-                "Marc-André Fleury",
-                "Carey Price",
-                "Connor Hellebuyck",
-                "Andrei Vasilevskiy",
-                "Robin Lehner",
-                "Jordan Binnington"
-        );
-
-        Random random = new Random();
-
-        for(int i = 0; i < (6); i++) {
-            int goalsAgainst = random.nextInt(50) + 1;
-            int penaltyMinutes = random.nextInt(100);
-            StatsDto stat = StatsDto.builder()
-                    .playerName(names.get(i % names.size()))
-                    .teamName(teamNames.get(i % teamNames.size()))
-                    .gamesPlayed(random.nextInt(82) + 1)
-                    .penaltyMinutes(penaltyMinutes)
-                    .goalsAgainst(goalsAgainst)
-                    .wins(random.nextInt(50))
-                    .losses(random.nextInt(50))
-                    .ties(random.nextInt(10))
-                    .shutouts(random.nextInt(10))
-                    .build();
-            staticGoalieStats.add(stat);
-        }
-
         return staticGoalieStats;
     }
 }

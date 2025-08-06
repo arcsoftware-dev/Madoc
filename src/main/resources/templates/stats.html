@@ -52,7 +52,7 @@
                         <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                     <th th:with="sortField='PENALTY_MINUTES'">
-                        PM
+                        PIM
                         <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
                 </tr>
@@ -98,6 +98,10 @@
                         SO
                         <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
                     </th>
+                    <th th:with="sortField='PENALTY_MINUTES'">
+                        PIM
+                        <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
+                    </th>
                     <th th:with="sortField='GOALS_AGAINST'">
                         GA
                         <div th:replace="~{fragments/sort-arrow :: sortArrow(playerType=${request.playerType().name()}, sortField=${sortField}, sortOrder=${request.sortOrder().toString()}, requestSortField=${request.sortCategory().toString()}, seasonType=${request.seasonType().name()})}"></div>
@@ -117,8 +121,9 @@
                     <td th:text="${stat.losses}">0</td>
                     <td th:text="${stat.ties}">0</td>
                     <td th:text="${stat.shutouts}">0</td>
+                    <td th:text="${stat.penaltyMinutes}">0</td>
                     <td th:text="${stat.goalsAgainst}">0</td>
-                    <td th:text="${stat.gamesPlayed > 0} ? ${#numbers.formatDecimal(stat.goalsAgainst * 1.0 / stat.gamesPlayed, 1, 2)} : '0.00'">0.00</td>
+                    <td th:text="${stat.gamesPlayed > 0} ? ${#numbers.formatDecimal(stat.goalsAgainst * 1.0 / stat.gamesPlayed, 1, 3)} : 'N/A'">0.00</td>
                 </tr>
                 </tbody>
             </table>
