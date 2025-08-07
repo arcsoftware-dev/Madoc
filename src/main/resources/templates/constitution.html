@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>MMHL</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/responsive.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/constitution.css}"/>
+</head>
+<body>
+    <div th:replace="~{fragments/header.html :: header}"></div>
+    <main class="content">
+        <section class="hero">
+            <h1>Constitution & Rules</h1>
+        </section>
+        <section>
+            <div th:each="rule : ${rules}">
+                <h3 class="rule-title" th:text="${rule.title}">Rule Title</h3>
+                <p class="rule-description" th:text="${rule.description}">Description</p>
+            </div>
+        </section>
+    </main>
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

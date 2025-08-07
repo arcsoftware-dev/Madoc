@@ -3,6 +3,7 @@ package dev.arcsoftware.madoc.repository;
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Repository
 public class StatsRepository {
     private static List<StatsDto> staticSkaterStats;
@@ -20,7 +22,7 @@ public class StatsRepository {
     @PostConstruct
     public void loadData(){
         staticSkaterStats = new ArrayList<>();
-        ClassPathResource statsResource = new ClassPathResource("stats/2024_SEASON.csv");
+        ClassPathResource statsResource = new ClassPathResource("data/stats/2024_SEASON.csv");
         try(BufferedReader seasonStats = new BufferedReader(new BufferedReader(new InputStreamReader(statsResource.getInputStream())))) {
             seasonStats.lines()
                     .skip(1) // Skip header line
@@ -43,7 +45,7 @@ public class StatsRepository {
         }
 
         staticSkaterPlayoffStats = new ArrayList<>();
-        ClassPathResource playoffStatsResource = new ClassPathResource("stats/2024_PLAYOFFS.csv");
+        ClassPathResource playoffStatsResource = new ClassPathResource("data/stats/2024_PLAYOFFS.csv");
         try(BufferedReader playoffStats = new BufferedReader(new BufferedReader(new InputStreamReader(playoffStatsResource.getInputStream())))) {
             playoffStats.lines()
                     .skip(1) // Skip header line
@@ -66,7 +68,7 @@ public class StatsRepository {
         }
 
         staticGoalieStats = new ArrayList<>();
-        ClassPathResource goalieStatsResource = new ClassPathResource("stats/2024_SEASON_GOALIES.csv");
+        ClassPathResource goalieStatsResource = new ClassPathResource("data/stats/2024_SEASON_GOALIES.csv");
         try(BufferedReader goalieStats = new BufferedReader(new BufferedReader(new InputStreamReader(goalieStatsResource.getInputStream())))) {
             goalieStats.lines()
                     .skip(1) // Skip header line
@@ -93,6 +95,7 @@ public class StatsRepository {
 
 
     public List<StatsDto> getSkaterStats(SeasonType seasonType) {
+        log.info("Getting stats for season type: {}", seasonType);
         if(SeasonType.PLAYOFFS.equals(seasonType)) {
             return staticSkaterPlayoffStats;
         }
@@ -100,6 +103,7 @@ public class StatsRepository {
     }
 
     public List<StatsDto> getGoalieStats(SeasonType seasonType) {
+        log.info("Getting goalie stats for season type: {}", seasonType);
         if(SeasonType.PLAYOFFS.equals(seasonType)) {
             return Collections.emptyList();
         }

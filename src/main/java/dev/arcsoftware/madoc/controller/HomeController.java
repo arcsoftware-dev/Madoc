@@ -1,7 +1,9 @@
 package dev.arcsoftware.madoc.controller;
 
 import dev.arcsoftware.madoc.model.payload.NewsArticleDto;
+import dev.arcsoftware.madoc.model.payload.RuleDto;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
+import dev.arcsoftware.madoc.service.ConstitutionService;
 import dev.arcsoftware.madoc.service.NewsService;
 import dev.arcsoftware.madoc.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +20,13 @@ public class HomeController {
 
     private final NewsService newsService;
     private final ScheduleService scheduleService;
+    private final ConstitutionService constitutionService;
 
     @Autowired
-    public HomeController(NewsService newsService, ScheduleService scheduleService) {
+    public HomeController(NewsService newsService, ScheduleService scheduleService, ConstitutionService constitutionService) {
         this.newsService = newsService;
         this.scheduleService = scheduleService;
+        this.constitutionService = constitutionService;
     }
 
     @GetMapping("/")
@@ -34,5 +38,12 @@ public class HomeController {
         model.addAttribute("upcomingMatches", upcomingMatches);
 
         return "index";
+    }
+
+    @GetMapping("/constitution")
+    public String constitution(Model model) {
+        List<RuleDto> rules = constitutionService.getRules();
+        model.addAttribute("rules", rules);
+        return "constitution";
     }
 }
