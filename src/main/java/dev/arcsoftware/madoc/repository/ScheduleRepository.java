@@ -8,8 +8,8 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,7 +51,7 @@ public class ScheduleRepository {
         ClassPathResource scheduleCsv = new ClassPathResource(scheduleFileName);
 
         final String[] HEADERS = {"Datetime","Home Team","Away Team"};
-        try(Reader reader = new FileReader(scheduleCsv.getFile())) {
+        try(Reader reader = new InputStreamReader(scheduleCsv.getInputStream())) {
             CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
                     .setHeader(HEADERS)
                     .setSkipHeaderRecord(true)

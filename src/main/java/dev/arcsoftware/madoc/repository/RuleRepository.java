@@ -8,8 +8,8 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class RuleRepository {
 
         ClassPathResource rulesCsv = new ClassPathResource("data/rules.csv");
         final String[] HEADERS = {"title", "description"};
-        try(Reader reader = new FileReader(rulesCsv.getFile())) {
+        try(Reader reader = new InputStreamReader(rulesCsv.getInputStream())) {
             CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
                     .setHeader(HEADERS)
                     .setSkipHeaderRecord(true)
