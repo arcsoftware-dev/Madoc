@@ -36,4 +36,7 @@
         justify-content: center;
         align-items: center;
     }
+    .schedule-card {
+        flex-direction: column;
+    }
 }

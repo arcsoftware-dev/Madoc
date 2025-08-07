@@ -7,10 +7,11 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum SeasonType {
-    REGULAR_SEASON("R"),
-    PLAYOFFS("P");
+    REGULAR_SEASON("R", "Regular Season"),
+    PLAYOFFS("P", "Playoffs");
 
     private final String code;
+    private final String label;
 
     @JsonCreator
     public static SeasonType fromCode(String code){

@@ -246,6 +246,29 @@ a {
     color: var(--accent);
     margin-bottom: 1em;
 }
+.game-date {
+    font-weight: bold;
+    font-size: 1.3em;
+    color: var(--accent);
+    margin-bottom: 1em;
+}
+.schedule-card {
+    width: 100%;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    align-items: center;
+}
+.spaced-card {
+    margin-bottom: 1em;
+}
+.schedule-game-time {
+    font-weight: bold;
+    font-size: 1em;
+    color: var(--accent);
+    text-align: center;
+}
 .teams {
     display: flex;
     align-items: center;
