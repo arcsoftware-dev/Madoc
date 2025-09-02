@@ -39,4 +39,13 @@
     .schedule-card {
         flex-direction: column;
     }
+    .team {
+        flex: 1 1 auto;
+        max-width: 100%;
+    }
+    .large-logo {
+        width: 250px;
+        max-width: 100%;
+        height: auto;
+    }
 }

@@ -21,7 +21,7 @@ public enum DraftRank {
     D_B2(13),
     D_C1(14),
     D_C2(15),
-    GOALIE(16);
+    G(16);
 
     private final int rank;
 }

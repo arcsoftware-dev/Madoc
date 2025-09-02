@@ -6,12 +6,14 @@ import dev.arcsoftware.madoc.enums.StatsCategory;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
 import dev.arcsoftware.madoc.model.request.StatsRequest;
 import dev.arcsoftware.madoc.repository.StatsRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.function.Function;
 
+@Slf4j
 @Service
 public class StatisticsService {
 
@@ -37,6 +39,15 @@ public class StatisticsService {
         return stats;
     }
 
+    public List<StatsDto> getStatsByTeam(String teamName, StatsRequest request) {
+        log.info("Fetching stats for team: {} with request: {}", teamName, request);
+        List<StatsDto> teamStats = getStats(request).stream()
+                .filter(stat -> stat.getTeamName().equalsIgnoreCase(teamName))
+                .toList();
+        addRankings(teamStats, request.sortCategory());
+        return teamStats;
+    }
+
     private void addRankings(List<StatsDto> stats, StatsCategory sortCategory) {
         Function<StatsDto, Number> extractor = valueExtractor(sortCategory);
         int rank = 1;
@@ -44,6 +55,7 @@ public class StatisticsService {
         Number previousValue = extractor.apply(stats.getFirst());
 
         for (StatsDto stat : stats) {
+            stat.setRank(0); // Reset rank before calculation
             Number currentValue = extractor.apply(stat);
 
             if(previousValue.equals(currentValue)) {

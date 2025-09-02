@@ -73,7 +73,7 @@ public class StandingsRepository {
 
 
     public List<TeamStatsDto> getTeamStandings(SeasonType seasonType) {
-        log.info("Getting stats for season type: {}", seasonType);
+        log.info("Getting standings for season type: {}", seasonType);
         if(SeasonType.PLAYOFFS.equals(seasonType)) {
             return staticPlayoffStats;
         }

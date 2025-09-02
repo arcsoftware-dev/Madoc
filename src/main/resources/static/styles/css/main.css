@@ -293,3 +293,20 @@ a {
     font-weight: bold;
     color: var(--secondary);
 }
+.standard-text {
+    color: var(--text);
+    font-weight: bold;
+}
+
+.large-logo {
+    width: 500px;
+    max-width: 100%;
+    height: auto;
+}
+
+.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}

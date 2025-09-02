@@ -1,0 +1,15 @@
+.teams {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.team {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 auto;
+    box-sizing: border-box;
+    padding: 2rem;
+    background: var(--secondary);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}

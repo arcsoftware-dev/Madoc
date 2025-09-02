@@ -26,6 +26,14 @@ public class StandingsService {
         return stats;
     }
 
+    public TeamStatsDto getTeamStats(String teamName, StandingsRequest request) {
+        return getStandings(request)
+                .stream()
+                .filter(teamStatsDto -> teamStatsDto.getTeamName().equalsIgnoreCase(teamName))
+                .findFirst()
+                .orElse(null);
+    }
+
     private void sortStats(StandingsRequest request, List<TeamStatsDto> stats) {
         stats.sort((stat1, stat2) -> {
             int comparison = switch (request.sortCategory()) {
