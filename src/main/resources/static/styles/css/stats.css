@@ -41,3 +41,9 @@
 .season-toggle {
     margin-left: auto;
 }
+.shrink {
+    width: 1%;
+    white-space: nowrap;
+    text-align: center;
+    padding: 0em;
+}

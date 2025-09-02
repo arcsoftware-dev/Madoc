@@ -2,6 +2,7 @@ package dev.arcsoftware.madoc.model.payload;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Builder
@@ -21,4 +22,7 @@ public class StatsDto {
     private int ties;
     private int shutouts;
     private int goalsAgainst;
+
+    @Setter
+    int rank; // For convenience in displaying rankings
 }

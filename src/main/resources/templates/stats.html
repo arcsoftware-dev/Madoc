@@ -29,6 +29,7 @@
             <table class="stats-table">
                 <thead>
                 <tr>
+                    <th class="shrink" ></th>
                     <th>Player</th>
                     <th>Team</th>
                     <th th:with="sortField='GAMES_PLAYED'">
@@ -59,6 +60,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="stat : ${playerStats}">
+                    <td class="shrink" th:text="${stat.rank}"></td>
                     <td th:text="${stat.playerName}">Player Name</td>
                     <td th:text="${stat.teamName}">Team Name</td>
                     <td th:text="${stat.gamesPlayed}">0</td>
@@ -76,6 +78,7 @@
             <table class="stats-table">
                 <thead>
                 <tr>
+                    <th class="shrink"></th>
                     <th>Player</th>
                     <th>Team</th>
                     <th th:with="sortField='GAMES_PLAYED'">
@@ -114,6 +117,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="stat : ${playerStats}">
+                    <td class="shrink" th:text="${stat.rank}">0</td>
                     <td th:text="${stat.playerName}">Player Name</td>
                     <td th:text="${stat.teamName}">Team Name</td>
                     <td th:text="${stat.gamesPlayed}">0</td>

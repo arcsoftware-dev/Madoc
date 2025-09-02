@@ -2,6 +2,7 @@ package dev.arcsoftware.madoc.service;
 
 import dev.arcsoftware.madoc.enums.PlayerType;
 import dev.arcsoftware.madoc.enums.SortOrder;
+import dev.arcsoftware.madoc.enums.StatsCategory;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
 import dev.arcsoftware.madoc.model.request.StatsRequest;
 import dev.arcsoftware.madoc.repository.StatsRepository;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class StatisticsService {
@@ -30,8 +32,50 @@ public class StatisticsService {
         }
         sortStats(request, stats);
 
+        addRankings(stats, request.sortCategory());
+
         return stats;
     }
+
+    private void addRankings(List<StatsDto> stats, StatsCategory sortCategory) {
+        Function<StatsDto, Number> extractor = valueExtractor(sortCategory);
+        int rank = 1;
+        int increment = 0;
+        Number previousValue = extractor.apply(stats.getFirst());
+
+        for (StatsDto stat : stats) {
+            Number currentValue = extractor.apply(stat);
+
+            if(previousValue.equals(currentValue)) {
+                increment++;
+            }
+            else{
+                rank += increment;
+                increment = 1;
+                previousValue = currentValue;
+            }
+            stat.setRank(rank);
+
+        }
+    }
+
+    private Function<StatsDto, Number> valueExtractor(StatsCategory sortCategory) {
+        return (stat) -> switch (sortCategory) {
+            case GAMES_PLAYED -> stat.getGamesPlayed();
+            case GOALS -> stat.getGoals();
+            case ASSISTS -> stat.getAssists();
+            case PENALTY_MINUTES -> stat.getPenaltyMinutes();
+            case WINS -> stat.getWins();
+            case LOSSES -> stat.getLosses();
+            case TIES -> stat.getTies();
+            case SHUTOUTS -> stat.getShutouts();
+            case GOALS_AGAINST -> stat.getGoalsAgainst();
+            case POINTS -> stat.getPoints();
+            case POINTS_PER_GAME -> (double)stat.getPoints()/stat.getGamesPlayed();
+            case GOALS_AGAINST_AVERAGE -> (double)stat.getGoalsAgainst()/stat.getGamesPlayed();
+            default -> Integer.MAX_VALUE;
+        };
+    };
 
     private void sortStats(StatsRequest request, List<StatsDto> stats) {
         stats.sort((stat1, stat2) -> {
