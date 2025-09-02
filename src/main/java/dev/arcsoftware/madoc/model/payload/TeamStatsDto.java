@@ -1,8 +1,10 @@
 package dev.arcsoftware.madoc.model.payload;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
+@Builder
+@Getter
 public class TeamStatsDto {
     private String teamName;
 

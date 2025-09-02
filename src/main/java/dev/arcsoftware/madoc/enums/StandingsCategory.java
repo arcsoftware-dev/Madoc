@@ -7,13 +7,15 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum StandingsCategory {
+    GAMES_PLAYED("GP"),
     WINS("W"),
     LOSSES("L"),
     TIES("T"),
     POINTS("P"),
     GOALS_FOR("GF"),
     GOALS_AGAINST("GA"),
-    PENALTY_MINUTES("PM");
+    PENALTY_MINUTES("PIM"),
+    POINT_PERCENTAGE("PPCT");
 
     private final String code;
 
