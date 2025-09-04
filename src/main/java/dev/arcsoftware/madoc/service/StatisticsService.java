@@ -9,8 +9,10 @@ import dev.arcsoftware.madoc.repository.StatsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Slf4j
@@ -52,6 +54,11 @@ public class StatisticsService {
         Function<StatsDto, Number> extractor = valueExtractor(sortCategory);
         int rank = 1;
         int increment = 0;
+
+        if(CollectionUtils.isEmpty(stats)) {
+            log.warn("No stats available to rank.");
+            return;
+        }
         Number previousValue = extractor.apply(stats.getFirst());
 
         for (StatsDto stat : stats) {
