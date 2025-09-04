@@ -1,9 +1,9 @@
 package dev.arcsoftware.madoc.controller;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
+import dev.arcsoftware.madoc.model.entity.RuleEntity;
 import dev.arcsoftware.madoc.model.payload.GroupedScheduleDto;
-import dev.arcsoftware.madoc.model.payload.NewsArticleDto;
-import dev.arcsoftware.madoc.model.payload.RuleDto;
+import dev.arcsoftware.madoc.model.entity.NewsArticleEntity;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
 import dev.arcsoftware.madoc.service.ConstitutionService;
 import dev.arcsoftware.madoc.service.NewsService;
@@ -43,8 +43,8 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
         log.info("Fetching news articles");
-        List<NewsArticleDto> newsArticleDtos = newsService.getNewsArticles();
-        model.addAttribute("newsArticles", newsArticleDtos);
+        List<NewsArticleEntity> newsArticleEntities = newsService.getNewsArticles();
+        model.addAttribute("newsArticles", newsArticleEntities);
 
         log.info("Fetching upcoming matches");
         List<ScheduleItemDto> upcomingMatches = scheduleService.getUpcomingMatches();
@@ -56,7 +56,7 @@ public class HomeController {
     @GetMapping("/constitution")
     public String constitution(Model model) {
         log.info("Fetching constitution rules");
-        List<RuleDto> rules = constitutionService.getRules();
+        List<RuleEntity> rules = constitutionService.getRules();
         model.addAttribute("rules", rules);
         return "constitution";
     }

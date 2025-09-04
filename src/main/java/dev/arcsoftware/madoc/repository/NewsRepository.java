@@ -1,7 +1,6 @@
 package dev.arcsoftware.madoc.repository;
 
-import dev.arcsoftware.madoc.model.payload.NewsArticleDto;
-import dev.arcsoftware.madoc.repository.sql.NewsSql;
+import dev.arcsoftware.madoc.model.entity.NewsArticleEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -20,10 +19,18 @@ public class NewsRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public List<NewsArticleDto> findAll() {
+    public List<NewsArticleEntity> getAllNews() {
         log.info("Fetching all news articles from the database");
         return jdbcClient.sql(NewsSql.GET_ALL_NEWS)
-            .query(NewsArticleDto.class)
+            .query(NewsArticleEntity.class)
             .list();
+    }
+
+    public static class NewsSql {
+        public static final String GET_ALL_NEWS = """
+        SELECT id, title, summary, content, author, created_at
+            FROM madoc.news
+            ORDER BY created_at DESC
+        """;
     }
 }

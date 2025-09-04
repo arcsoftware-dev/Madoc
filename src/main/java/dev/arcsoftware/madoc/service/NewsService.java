@@ -1,6 +1,6 @@
 package dev.arcsoftware.madoc.service;
 
-import dev.arcsoftware.madoc.model.payload.NewsArticleDto;
+import dev.arcsoftware.madoc.model.entity.NewsArticleEntity;
 import dev.arcsoftware.madoc.repository.NewsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +24,9 @@ public class NewsService {
     }
 
     @Cacheable(cacheManager = CACHE_MANAGER, value = NEWS_CACHE)
-    public List<NewsArticleDto> getNewsArticles() {
+    public List<NewsArticleEntity> getNewsArticles() {
         log.info("cache-miss for news: calling repository");
-        return newsRepository.findAll();
+        return newsRepository.getAllNews();
     }
 
 }

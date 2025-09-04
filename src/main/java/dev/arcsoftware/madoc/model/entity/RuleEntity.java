@@ -1,4 +1,4 @@
-package dev.arcsoftware.madoc.model.payload;
+package dev.arcsoftware.madoc.model.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Data
-public class RuleDto {
+public class RuleEntity {
     private long id;
     private String title;
     private String description;

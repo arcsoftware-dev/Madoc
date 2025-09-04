@@ -15,9 +15,11 @@ import java.util.List;
 public class CacheConfig {
 
     public static final String CACHE_MANAGER = "cacheManager";
+
     public static final String RULES_CACHE = "rules";
     public static final String NEWS_CACHE = "news";
-
+    public static final String SEASON_METADATA_YEAR_CACHE = "season-metadata-year";
+    public static final String SEASON_METADATA_TYPE_CACHE = "season-metadata-season-type";
 
     @Bean
     public CacheManager cacheManager() {
@@ -25,7 +27,9 @@ public class CacheConfig {
         cacheManager.setCacheNames(
                 List.of(
                         RULES_CACHE,
-                        NEWS_CACHE
+                        NEWS_CACHE,
+                        SEASON_METADATA_YEAR_CACHE,
+                        SEASON_METADATA_TYPE_CACHE
                 )
         );
         return cacheManager;

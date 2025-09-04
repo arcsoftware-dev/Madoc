@@ -1,6 +1,6 @@
 package dev.arcsoftware.madoc.service;
 
-import dev.arcsoftware.madoc.model.payload.RuleDto;
+import dev.arcsoftware.madoc.model.entity.RuleEntity;
 import dev.arcsoftware.madoc.repository.RuleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class ConstitutionService {
 
 
     @Cacheable(cacheManager = CACHE_MANAGER, value = RULES_CACHE)
-    public List<RuleDto> getRules() {
+    public List<RuleEntity> getRules() {
         log.info("cache miss for rules: calling repository");
         return ruleRepository.getAllRules();
     }

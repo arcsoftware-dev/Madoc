@@ -1,35 +1,36 @@
 package dev.arcsoftware.madoc.service;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
-import dev.arcsoftware.madoc.model.entity.SeasonMetadataEntity;
 import dev.arcsoftware.madoc.repository.SeasonMetadataRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import static dev.arcsoftware.madoc.config.CacheConfig.*;
+
+@Slf4j
 @Service
 public class SeasonMetadataService {
 
     private final SeasonMetadataRepository seasonMetadataRepository;
-    private SeasonMetadataEntity currentSeasonMetadataEntity;
 
     @Autowired
     public SeasonMetadataService(SeasonMetadataRepository seasonMetadataRepository) {
         this.seasonMetadataRepository = seasonMetadataRepository;
     }
 
+    @Cacheable(cacheManager = CACHE_MANAGER, value = SEASON_METADATA_TYPE_CACHE)
     public SeasonType getCurrentSeasonType(){
-        initMetadata();
-        return this.currentSeasonMetadataEntity.seasonType();
+        log.info("cache-miss for season metadata season type: calling repository");
+        return seasonMetadataRepository.getCurrentSeasonType()
+                .orElseThrow(() -> new IllegalStateException("No current season type found in database"));
     }
 
+    @Cacheable(cacheManager = CACHE_MANAGER, value = SEASON_METADATA_YEAR_CACHE)
     public Integer getCurrentSeasonYear(){
-        initMetadata();
-        return this.currentSeasonMetadataEntity.seasonYear();
-    }
-
-    private void initMetadata() {
-        if (currentSeasonMetadataEntity == null) {
-            currentSeasonMetadataEntity = seasonMetadataRepository.getCurrentSeasonMetadata();
-        }
+        log.info("cache-miss for season metadata year: calling repository");
+        return seasonMetadataRepository.getCurrentYear()
+                .orElseThrow(() -> new IllegalStateException("No current season year found in database"));
     }
 }
