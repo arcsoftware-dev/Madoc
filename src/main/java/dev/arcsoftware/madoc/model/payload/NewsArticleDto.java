@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 public class NewsArticleDto {
-    private Long id;
+    private long id;
     private String title;
     private String summary;
     private String content;
     private String author;
-    private LocalDateTime date;
+    private LocalDateTime createdAt;
 }

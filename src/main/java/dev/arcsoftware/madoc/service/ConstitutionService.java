@@ -4,9 +4,13 @@ import dev.arcsoftware.madoc.model.payload.RuleDto;
 import dev.arcsoftware.madoc.repository.RuleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static dev.arcsoftware.madoc.config.CacheConfig.CACHE_MANAGER;
+import static dev.arcsoftware.madoc.config.CacheConfig.RULES_CACHE;
 
 @Slf4j
 @Service
@@ -20,7 +24,9 @@ public class ConstitutionService {
     }
 
 
+    @Cacheable(cacheManager = CACHE_MANAGER, value = RULES_CACHE)
     public List<RuleDto> getRules() {
+        log.info("cache miss for rules: calling repository");
         return ruleRepository.getAllRules();
     }
 }

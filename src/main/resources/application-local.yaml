@@ -2,31 +2,3 @@ server:
   port: 8101
   servlet:
     context-path: /madoc
-
-logging:
-  level:
-    org.springframework: INFO
-    dev.arcsoftware.madoc: INFO
-    root: INFO
-  pattern:
-    console: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
-    file: "%d %p %c{1} [%t] %m%n"
-  file.name: madoc.log
-
-postgres:
-  datasource:
-    jdbcUrl: ${JDBC_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    schema: ${DB_SCHEMA}
-
-spring:
-  servlet:
-    multipart:
-      max-file-size: 128KB
-      max-request-size: 128KB
-  #      enabled: true
-  jpa:
-    hibernate:
-      ddl-auto: update
-#    database-platform: org.hibernate.dialect.H2Dialect

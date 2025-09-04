@@ -9,6 +9,7 @@ import dev.arcsoftware.madoc.service.ConstitutionService;
 import dev.arcsoftware.madoc.service.NewsService;
 import dev.arcsoftware.madoc.service.ScheduleService;
 import dev.arcsoftware.madoc.service.SeasonMetadataService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/")
 public class HomeController {
@@ -40,9 +42,11 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
+        log.info("Fetching news articles");
         List<NewsArticleDto> newsArticleDtos = newsService.getNewsArticles();
         model.addAttribute("newsArticles", newsArticleDtos);
 
+        log.info("Fetching upcoming matches");
         List<ScheduleItemDto> upcomingMatches = scheduleService.getUpcomingMatches();
         model.addAttribute("upcomingMatches", upcomingMatches);
 
@@ -51,6 +55,7 @@ public class HomeController {
 
     @GetMapping("/constitution")
     public String constitution(Model model) {
+        log.info("Fetching constitution rules");
         List<RuleDto> rules = constitutionService.getRules();
         model.addAttribute("rules", rules);
         return "constitution";

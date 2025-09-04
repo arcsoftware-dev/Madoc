@@ -18,7 +18,7 @@
                 <h2 class="card-title">Latest News</h2>
                 <div class="news-card" th:each="article : ${newsArticles}">
                     <h3 th:text="${article.title}">Article Title</h3>
-                    <p class="news-date" th:text="${#temporals.format(article.date, 'MMMM dd yyyy')}"></p>
+                    <p class="news-date" th:text="${#temporals.format(article.createdAt, 'MMMM dd yyyy')}"></p>
                     <p class="news-summary" th:text="${article.summary}"></p>
 <!--                    <a th:href="@{/news/{id}(id=${article.id})}" class="read-more">Read more</a>-->
                     <a class="read-more">Read more</a>
