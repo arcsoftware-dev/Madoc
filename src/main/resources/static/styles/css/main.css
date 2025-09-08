@@ -181,9 +181,11 @@ a {
 }
 .feed-item-news {
     width: 66%;
+    order: 1
 }
 .feed-item-schedule {
     width: 33%;
+    order: 2
 }
 
 .news-card {
