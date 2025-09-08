@@ -12,6 +12,15 @@
         <section class="hero">
             <h1 th:text="${year + ' ' + seasonType.getLabel() + ' Schedule'}"></h1>
         </section>
+        <section class="centered downloadable">
+            <form th:action="@{/schedule/printable}" method="get" class="team-filter-form">
+                <select name="team-filter" id="team-filter" required>
+                    <option value="ALL" selected>All Teams</option>
+                    <option th:each="team : ${teams}" th:value="${team}" th:text="${team}"></option>
+                </select>
+                <button type="submit">Download Printable Schedule</button>
+            </form>
+        </section>
         <section>
             <div class="upcoming-card spaced-card" th:each="gameDay : ${groupedSchedule}">
                 <h2 class="game-date" th:text="${#temporals.format(gameDay.date, 'MMMM dd yyyy')}"></h2>

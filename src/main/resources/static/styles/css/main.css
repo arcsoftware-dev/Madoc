@@ -312,3 +312,26 @@ a {
     align-items: center;
     flex-direction: column;
 }
+
+.team-filter-form select,
+.team-filter-form button {
+    background-color: var(--card-bg);
+    color: var(--secondary);
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5em 1em;
+    margin-right: 0.5em;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.team-filter-form select:focus,
+.team-filter-form button:focus {
+    outline: 2px solid var(--secondary);
+}
+
+.downloadable {
+    margin-bottom: 2rem;
+}

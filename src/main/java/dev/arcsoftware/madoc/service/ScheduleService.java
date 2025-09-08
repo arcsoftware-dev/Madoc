@@ -36,12 +36,6 @@ public class ScheduleService {
     }
 
     public List<GroupedScheduleDto> getGroupedSchedule(SeasonType seasonType, Integer year) {
-        if (seasonType == null) {
-            seasonType = seasonMetadataService.getCurrentSeasonType();
-        }
-        if (year == null) {
-            year = seasonMetadataService.getCurrentSeasonYear();
-        }
         List<ScheduleItemDto> scheduleItemDtos = scheduleRepository.getSchedule(seasonType, year);
         return scheduleItemDtos.stream()
                 .collect(Collectors.groupingBy(item -> item.getStartTime().toLocalDate()))
@@ -49,5 +43,29 @@ public class ScheduleService {
                 .map(entry -> new GroupedScheduleDto(entry.getKey(), entry.getValue()))
                 .sorted(java.util.Comparator.comparing(GroupedScheduleDto::getDate))
                 .toList();
+    }
+
+    public byte[] generatePrintableScheduleCsv(Integer year, SeasonType seasonType, String teamFilter) {
+        List<GroupedScheduleDto> groupedScheduleDtos = getGroupedSchedule(seasonType, year);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Date,Time,Home,Away").append("\n");
+        for(GroupedScheduleDto groupedScheduleDto : groupedScheduleDtos) {
+            for(ScheduleItemDto item : groupedScheduleDto.getGames()) {
+                if(teamFilter == null
+                        || teamFilter.equalsIgnoreCase(item.getHomeTeam())
+                        || teamFilter.equalsIgnoreCase(item.getAwayTeam())
+                ) {
+                    // Only include games with the specified team
+                    builder.append(item.getStartTime().toLocalDate()).append(",");
+                    builder.append(item.getStartTime().toLocalTime()).append(",");
+                    builder.append(item.getHomeTeam()).append(",");
+                    builder.append(item.getAwayTeam()).append("\n");
+                }
+            }
+        }
+
+        return builder.toString().getBytes();
+
     }
 }
