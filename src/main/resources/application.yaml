@@ -35,3 +35,6 @@ spring:
 #    database-platform: org.hibernate.dialect.H2Dialect
   thymeleaf:
     cache: false
+
+admin:
+  token: ${ADMIN_TOKEN}

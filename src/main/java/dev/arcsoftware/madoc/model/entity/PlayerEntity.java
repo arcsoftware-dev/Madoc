@@ -1,21 +1,17 @@
 package dev.arcsoftware.madoc.model.entity;
 
-import dev.arcsoftware.madoc.enums.DraftRank;
-import dev.arcsoftware.madoc.enums.Position;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
 public class PlayerEntity {
-
-    private Integer playerId;
-
-    private Integer memberId;
-
-    private Position position;
-
-    private Integer jerseyNumber;
-
-    private DraftRank draftRank;
-
-    private boolean isRookie;
-
-    private Integer year;
+    private Integer id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phoneNumber;
+    private LocalDateTime createdAt;
 }

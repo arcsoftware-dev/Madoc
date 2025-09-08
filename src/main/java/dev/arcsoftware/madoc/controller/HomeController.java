@@ -1,7 +1,7 @@
 package dev.arcsoftware.madoc.controller;
 
-import dev.arcsoftware.madoc.model.entity.RuleEntity;
 import dev.arcsoftware.madoc.model.entity.NewsArticleEntity;
+import dev.arcsoftware.madoc.model.entity.RuleEntity;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
 import dev.arcsoftware.madoc.service.ConstitutionService;
 import dev.arcsoftware.madoc.service.NewsService;

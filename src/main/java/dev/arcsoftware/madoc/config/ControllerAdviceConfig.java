@@ -2,6 +2,7 @@ package dev.arcsoftware.madoc.config;
 
 import dev.arcsoftware.madoc.exception.ApiError;
 import dev.arcsoftware.madoc.exception.ResultNotFoundException;
+import dev.arcsoftware.madoc.exception.UnauthorizedException;
 import dev.arcsoftware.madoc.model.ErrorSeverity;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,13 @@ public class ControllerAdviceConfig {
         model.addAttribute("error", "Not Found");
         model.addAttribute("status", HttpStatus.NOT_FOUND.value());
         return "error";
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ApiError> handleUnauthorizedException(UnauthorizedException ex) {
+        log.error("", ex);
+        return createResponse(HttpStatus.UNAUTHORIZED, ErrorSeverity.CRITICAL, ex.getMessage());
     }
 
     private ResponseEntity<ApiError> createResponse(HttpStatus status, ErrorSeverity severity, String message) {

@@ -4,9 +4,7 @@ import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.payload.GroupedScheduleDto;
 import dev.arcsoftware.madoc.service.ScheduleService;
 import dev.arcsoftware.madoc.service.SeasonMetadataService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -17,11 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 @Slf4j
