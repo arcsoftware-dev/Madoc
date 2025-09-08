@@ -9,6 +9,7 @@ import dev.arcsoftware.madoc.model.request.StandingsRequest;
 import dev.arcsoftware.madoc.model.request.StatsRequest;
 import dev.arcsoftware.madoc.model.timesheet.RosterDto;
 import dev.arcsoftware.madoc.repository.RosterRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class TeamsService {
 

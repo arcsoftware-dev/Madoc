@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS "madoc"."roster_assignments" (
     "season_year" integer,
     "draft_position" varchar(6),
     "position" varchar(10),
+    "jersey_number" integer,
     "is_rookie" boolean DEFAULT false
 );

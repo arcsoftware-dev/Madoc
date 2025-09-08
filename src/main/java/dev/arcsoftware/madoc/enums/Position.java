@@ -26,4 +26,14 @@ public enum Position {
         }
         throw new IllegalArgumentException("Unknown position code: " + code);
     }
+
+    public static Position fromDraftRank(DraftRank rank) {
+        if(rank.getRank() == 16) {
+            return GOALIE;
+        } else if(rank.getRank() >= 10) {
+            return DEFENCE;
+        } else {
+            return FORWARD;
+        }
+    }
 }

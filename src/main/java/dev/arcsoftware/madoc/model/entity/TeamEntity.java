@@ -1,19 +1,14 @@
 package dev.arcsoftware.madoc.model.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.io.File;
-import java.util.List;
-
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class TeamEntity {
-    private Integer teamId;
-    private File logoResource;
+    private Integer id;
     private String teamName;
-    private List<PlayerEntity> roster;
-
-    private List<GameEntity> regularSeasonSchedule;
-    private List<GameEntity> playoffSchedule;
-
-    private Integer year;
+    private int year;
 }
