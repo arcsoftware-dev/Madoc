@@ -2,3 +2,6 @@ server:
   port: 8101
   servlet:
     context-path: /madoc
+spring:
+  thymeleaf:
+    cache: false
