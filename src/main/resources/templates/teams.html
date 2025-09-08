@@ -16,10 +16,10 @@
         </section>
         <div class="teams">
             <div class="team feed-item centered" th:each="team : ${teams}">
-                <a th:href="@{/teams/{teamName}(teamName=${team.teamName.replace(' ', '')})}">
+                <a class="team-feed-item" th:href="@{/teams/{teamName}(teamName=${team.teamName.replace(' ', '')})}">
                     <img th:src="@{'/assets/teamLogos/' + ${team.teamName.replace(' ', '')} + '.svg'}" alt="Team Logo" class="large-logo"/>
                 </a>
-                <div>
+                <div class="team-feed-item">
                     <h2 class="team-name standard-text centered" th:text="${team.teamName}"></h2>
                     <table class="stats-table">
                         <thead>
