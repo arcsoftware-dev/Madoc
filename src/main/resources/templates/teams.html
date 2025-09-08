@@ -16,7 +16,7 @@
         </section>
         <div class="teams">
             <div class="team feed-item centered" th:each="team : ${teams}">
-                <a th:href="@{/teams/{teamName}(teamName=${team.teamName})}">
+                <a th:href="@{/teams/{teamName}(teamName=${team.teamName.replace(' ', '')})}">
                     <img th:src="@{'/assets/teamLogos/' + ${team.teamName.replace(' ', '')} + '.svg'}" alt="Team Logo" class="large-logo"/>
                 </a>
                 <div>
@@ -34,7 +34,7 @@
                         <tr th:each="player : ${team.roster}">
                             <td class="shrink" th:text="${player.jerseyNumber}">0</td>
                             <td th:text="${player.fullName}"></td>
-                            <td th:text="${player.position}"></td>
+                            <td th:text="${player.position.getLabel()}"></td>
                             <td>
                                 <span th:if="${player.rookie}" th:text="${player.draftRank + ' *R'}"></span>
                                 <span th:if="${!player.rookie}" th:text="${player.draftRank}"></span>

@@ -1,6 +1,7 @@
 package dev.arcsoftware.madoc.service;
 
 import dev.arcsoftware.madoc.enums.*;
+import dev.arcsoftware.madoc.exception.ResultNotFoundException;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
 import dev.arcsoftware.madoc.model.payload.TeamDataDto;
 import dev.arcsoftware.madoc.model.payload.TeamStatsDto;
@@ -36,16 +37,23 @@ public class TeamsService {
     }
 
     public TeamDataDto getTeamData(String teamName, int year, SeasonType seasonType) {
-        return getTeams(year, seasonType)
+        TeamDataDto teamDataDto = getTeams(year, seasonType)
                 .stream()
-                .filter(team -> teamName.equalsIgnoreCase(team.getTeamName()))
+                .filter(team -> teamName.equalsIgnoreCase(team.getTeamName().replaceAll(" ", "")))
                 .findFirst()
                 .orElse(null);
+
+        if(teamDataDto == null) {
+            throw new ResultNotFoundException("Team not found: " + teamName);
+        }
+        else {
+            return teamDataDto;
+        }
     }
 
     public List<TeamDataDto> getTeams(int year, SeasonType seasonType) {
         List<TeamDataDto> teams = new ArrayList<>();
-        List<RosterDto> rosterItems = rosterRepository.getRosters();
+        List<RosterDto> rosterItems = rosterRepository.getRostersByYear(year);
 
         Map<String, List<RosterDto>> rosters = rosterItems.stream()
                 .collect(Collectors.groupingBy(RosterDto::getTeamName));

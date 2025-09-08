@@ -10,17 +10,18 @@ import org.springframework.stereotype.Repository;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 @Repository
 public class StandingsRepository {
-    private static List<TeamStatsDto> staticSeasonStats;
-    private static List<TeamStatsDto> staticPlayoffStats;
+    private static List<TeamStatsDto> staticSeasonStats2024;
+    private static List<TeamStatsDto> staticPlayoffStats2024;
 
     @PostConstruct
     public void loadData(){
-        staticSeasonStats = new ArrayList<>();
+        staticSeasonStats2024 = new ArrayList<>();
         ClassPathResource statsResource = new ClassPathResource("data/standings/2024_SEASON.csv");
         try(BufferedReader seasonStats = new BufferedReader(new BufferedReader(new InputStreamReader(statsResource.getInputStream())))) {
             seasonStats.lines()
@@ -39,13 +40,13 @@ public class StandingsRepository {
                                 .goalsAgainst(Integer.parseInt(split[7]))
                                 .penaltyMinutes(Integer.parseInt(split[8]))
                                 .build();
-                        staticSeasonStats.add(statsDto);
+                        staticSeasonStats2024.add(statsDto);
                     });
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        staticPlayoffStats = new ArrayList<>();
+        staticPlayoffStats2024 = new ArrayList<>();
         ClassPathResource playoffStatsResource = new ClassPathResource("data/standings/2024_PLAYOFFS.csv");
         try(BufferedReader playoffStats = new BufferedReader(new BufferedReader(new InputStreamReader(playoffStatsResource.getInputStream())))) {
             playoffStats.lines()
@@ -64,7 +65,7 @@ public class StandingsRepository {
                                 .goalsAgainst(Integer.parseInt(split[7]))
                                 .penaltyMinutes(Integer.parseInt(split[8]))
                                 .build();
-                        staticPlayoffStats.add(statsDto);
+                        staticPlayoffStats2024.add(statsDto);
                     });
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,11 +73,14 @@ public class StandingsRepository {
     }
 
 
-    public List<TeamStatsDto> getTeamStandings(SeasonType seasonType) {
-        log.info("Getting standings for season type: {}", seasonType);
-        if(SeasonType.PLAYOFFS.equals(seasonType)) {
-            return staticPlayoffStats;
+    public List<TeamStatsDto> getTeamStandings(int year, SeasonType seasonType) {
+        log.info("Getting standings for year {}, season type: {}", year, seasonType);
+        if(year == 2024){
+            if(SeasonType.PLAYOFFS.equals(seasonType)) {
+                return staticPlayoffStats2024;
+            }
+            return staticSeasonStats2024;
         }
-        return staticSeasonStats;
+        return Collections.emptyList();
     }
 }

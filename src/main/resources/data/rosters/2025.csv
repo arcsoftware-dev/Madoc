@@ -1,0 +1,90 @@
+#,Player,Team,Draft Rank,isRookie
+0,Josh Felix,Avalanche,F_A1,FALSE
+0,Steve Neil,Avalanche,F_A2,FALSE
+0,Jordan Cronkwright,Avalanche,F_A3,FALSE
+0,Troy Smith,Avalanche,F_B1,FALSE
+0,Brandon Boudreau,Avalanche,F_B2,FALSE
+0,Josh Neil,Avalanche,F_B3,FALSE
+0,William Felix,Avalanche,F_C1,FALSE
+0,Mark Blanchard,Avalanche,F_C2,FALSE
+0,Brian Felix,Avalanche,F_C3,FALSE
+0,Shawn Pritchett,Avalanche,D_A1,FALSE
+0,Justin Colyer,Avalanche,D_A2,FALSE
+0,Kevin Hughes,Avalanche,D_B1,FALSE
+0,Craig Maccan,Avalanche,D_B2,FALSE
+0,Duncam Meisel,Avalanche,D_C1,TRUE
+0,Tyler Tombs,Avalanche,G,FALSE
+0,Tyler Collins,Blackhawks,F_A1,FALSE
+0,Brendon Landry,Blackhawks,F_A2,FALSE
+0,Anthony Davis,Blackhawks,F_A3,FALSE
+0,Keegan Murphy,Blackhawks,F_B1,FALSE
+0,Dan Young,Blackhawks,F_B2,FALSE
+0,Brian Matkowsky,Blackhawks,F_B3,FALSE
+0,Bruce Froude,Blackhawks,F_C1,FALSE
+0,Andrew Mackay,Blackhawks,F_C2,FALSE
+0,Mike O'Dwyer,Blackhawks,F_C3,FALSE
+0,Mark Baltazar,Blackhawks,D_A1,FALSE
+0,Paul Collins,Blackhawks,D_A2,FALSE
+0,Josh Anderson,Blackhawks,D_B1,FALSE
+0,Norm Gottwalk,Blackhawks,D_B2,FALSE
+0,Al Thompson,Blackhawks,G,FALSE
+0,Jarret Woo Sam,Canucks,F_A1,FALSE
+0,Trevor Breitkreuz,Canucks,F_A2,FALSE
+0,Anthony Izzi,Canucks,F_A3,FALSE
+0,Jackson Lee,Canucks,F_B1,FALSE
+0,Conner Parkes,Canucks,F_B2,FALSE
+0,Jason Robertson,Canucks,F_B3,FALSE
+0,Colin Parkes,Canucks,F_C1,FALSE
+0,Matt Anderson,Canucks,F_C2,FALSE
+0,Sean Gedney,Canucks,F_C3,FALSE
+0,Kevin Thompson,Canucks,D_A1,FALSE
+0,Mike Salij,Canucks,D_A2,FALSE
+0,Johnathan Yarkony,Canucks,D_B1,FALSE
+0,Liam Wynne,Canucks,D_B2,TRUE
+0,Shane Nisble,Canucks,D_C1,FALSE
+0,Bo Lee,Canucks,G,FALSE
+0,Zack Sammut,Leafs,F_A1,FALSE
+0,Zach Stec,Leafs,F_A2,FALSE
+0,Aiden Murphy,Leafs,F_A3,FALSE
+0,Mike Barker,Leafs,F_B1,FALSE
+0,Danny Ryan,Leafs,F_B2,FALSE
+0,Mark Gedney,Leafs,F_B3,FALSE
+0,Alex Cornes,Leafs,F_C1,FALSE
+0,Chris Lee,Leafs,F_C2,FALSE
+0,Gene Stec,Leafs,F_C3,FALSE
+0,Justin Williams,Leafs,D_A1,FALSE
+0,Chad Springer,Leafs,D_A2,FALSE
+0,Michael Sorenson,Leafs,D_B1,FALSE
+0,Jared Kotva,Leafs,D_B2,TRUE
+0,Terry Brake,Leafs,D_C1,FALSE
+0,Chris Gedney,Leafs,G,FALSE
+0,Matthew Brassard,Red Wings,F_A1,FALSE
+0,Tristan Nisble,Red Wings,F_A2,FALSE
+0,Kyle Kokot,Red Wings,F_A3,FALSE
+0,Tyler Walker,Red Wings,F_B1,FALSE
+0,Alex Klimsiak,Red Wings,F_B2,FALSE
+0,Jarvis Mason,Red Wings,F_B3,FALSE
+0,Adam Gray,Red Wings,F_C1,FALSE
+0,Peter Froude,Red Wings,F_C2,FALSE
+0,Trevor Gibbons,Red Wings,F_C3,FALSE
+0,Chris Sutton,Red Wings,D_A1,FALSE
+0,Kyle McGregor,Red Wings,D_A2,FALSE
+0,Devin Shannon,Red Wings,D_B1,FALSE
+0,Dave Mancuso,Red Wings,D_B2,FALSE
+0,Christian Klimsiak,Red Wings,D_C1,FALSE
+0,Jason Wise,Red Wings,G,FALSE
+0,Victor Pecora,Golden Knights,F_A1,FALSE
+0,Jacob Arsenault,Golden Knights,F_A2,FALSE
+0,Ryan Lanno,Golden Knights,F_A3,FALSE
+0,Aaron Calhoun,Golden Knights,F_B1,FALSE
+0,Liam Monahan,Golden Knights,F_B2,FALSE
+0,Jeff Hales,Golden Knights,F_B3,FALSE
+0,Tom Arnott,Golden Knights,F_C1,FALSE
+0,Jake Companion,Golden Knights,F_C2,FALSE
+0,Jonathon Sutton,Golden Knights,F_C3,FALSE
+0,Darren Davis,Golden Knights,D_A1,FALSE
+0,Ray Buchan,Golden Knights,D_A2,FALSE
+0,Dawson Fascia,Golden Knights,D_B1,FALSE
+0,Chris Toal,Golden Knights,D_B2,TRUE
+0,Frank Fascia,Golden Knights,D_C1,FALSE
+0,Mike Weiss,Golden Knights,G,FALSE

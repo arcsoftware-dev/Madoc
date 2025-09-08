@@ -32,7 +32,7 @@ public class StandingsController {
         this.seasonMetadataService = seasonMetadataService;
     }
 
-    @GetMapping(path = "/")
+    @GetMapping(path = "")
     public String getStandings(
             @RequestParam(value = "year", required = false) Integer year,
             @RequestParam(value = "season-type", required = false) SeasonType seasonType,

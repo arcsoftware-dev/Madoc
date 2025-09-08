@@ -4,7 +4,7 @@
     </a>
 </div>
 <div th:fragment="standingsSortArrow(sortField, sortOrder, requestSortField, seasonType)">
-    <a th:href="@{/standings/(sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'}, season-type=${seasonType})}"
+    <a th:href="@{/standings(sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'}, season-type=${seasonType})}"
        th:classappend="|${sortOrder == 'ASC' ? 'sorted-asc' : 'sorted-desc'} ${requestSortField == sortField ? 'active-sort' : ''}|">
     </a>
 </div>

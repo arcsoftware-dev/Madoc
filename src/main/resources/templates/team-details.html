@@ -32,7 +32,7 @@
                         <tr th:each="player : ${teamData.roster}">
                             <td class="shrink" th:text="${player.jerseyNumber}">0</td>
                             <td th:text="${player.fullName}"></td>
-                            <td th:text="${player.position}"></td>
+                            <td th:text="${player.position.getLabel()}"></td>
                             <td>
                                 <span th:if="${player.rookie}" th:text="${player.draftRank + ' *R'}"></span>
                                 <span th:if="${!player.rookie}" th:text="${player.draftRank}"></span>

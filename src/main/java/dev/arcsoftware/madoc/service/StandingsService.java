@@ -20,7 +20,7 @@ public class StandingsService {
     }
 
     public List<TeamStatsDto> getStandings(StandingsRequest request) {
-        List<TeamStatsDto> stats = standingsRepository.getTeamStandings(request.seasonType());
+        List<TeamStatsDto> stats = standingsRepository.getTeamStandings(request.year(), request.seasonType());
         sortStats(request, stats);
 
         return stats;
