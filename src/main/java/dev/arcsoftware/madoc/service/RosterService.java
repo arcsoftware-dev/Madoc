@@ -9,6 +9,7 @@ import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.RosterUploadResult;
 import dev.arcsoftware.madoc.repository.RosterRepository;
 import dev.arcsoftware.madoc.util.FileUploadParser;
+import dev.arcsoftware.madoc.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,12 +48,14 @@ public class RosterService {
 
         Set<String> uniquePlayerNamesFromRosters = rosterUploadRows.stream()
                 .map(RosterUploadRow::getPlayer)
+                .map(Utils::toCamelCase)
                 .collect(Collectors.toSet());
 
         List<PlayerEntity> playerEntities = playersService.getAndCreatePlayersIfNotFound(uniquePlayerNamesFromRosters);
 
         Set<String> uniqueTeamNamesFromRosters = rosterUploadRows.stream()
                 .map(RosterUploadRow::getTeam)
+                .map(Utils::toCamelCase)
                 .collect(Collectors.toSet());
 
         List<TeamEntity> teamEntities = teamsService.getAndCreateTeamsIfNotFound(uploadFileData.getYear(), uniqueTeamNamesFromRosters);

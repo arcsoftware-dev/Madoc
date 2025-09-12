@@ -2,6 +2,7 @@ package dev.arcsoftware.madoc.repository;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.payload.TeamStatsDto;
+import dev.arcsoftware.madoc.util.Utils;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -30,7 +31,7 @@ public class StandingsRepository {
                         //Team, GP, W, L, T, P, GF, GA, PIM
                         String[] split = line.split(",");
                         TeamStatsDto statsDto = TeamStatsDto.builder()
-                                .teamName(split[0])
+                                .teamName(Utils.toCamelCase(split[0]))
                                 .gamesPlayed(Integer.parseInt(split[1]))
                                 .wins(Integer.parseInt(split[2]))
                                 .losses(Integer.parseInt(split[3]))
@@ -55,7 +56,7 @@ public class StandingsRepository {
                         //Team, GP, W, L, T, P, GF, GA, PIM
                         String[] split = line.split(",");
                         TeamStatsDto statsDto = TeamStatsDto.builder()
-                                .teamName(split[0])
+                                .teamName(Utils.toCamelCase(split[0]))
                                 .gamesPlayed(Integer.parseInt(split[1]))
                                 .wins(Integer.parseInt(split[2]))
                                 .losses(Integer.parseInt(split[3]))

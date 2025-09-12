@@ -31,9 +31,9 @@ public class FileUploadParser {
             for(CSVRecord record : records) {
                 RosterUploadRow rosterUploadRow = new RosterUploadRow(
                         Integer.parseInt(record.get("#")),
-                        record.get("Player"),
-                        record.get("Team"),
-                        DraftRank.valueOf(record.get("Draft Rank")),
+                        Utils.toCamelCase(record.get("Player")),
+                        Utils.toCamelCase(record.get("Team")),
+                        DraftRank.valueOf(record.get("Draft Rank").toUpperCase()),
                         record.get("isRookie").equalsIgnoreCase("true")
                 );
                 rows.add(rosterUploadRow);
@@ -59,8 +59,8 @@ public class FileUploadParser {
             for(CSVRecord record : records) {
                 ScheduleUploadRow scheduleUploadRow = new ScheduleUploadRow(
                         LocalDateTime.parse(record.get("Datetime")),
-                        record.get("Home Team"),
-                        record.get("Away Team")
+                        Utils.toCamelCase(record.get("Home Team")),
+                        Utils.toCamelCase(record.get("Away Team"))
                 );
                 rows.add(scheduleUploadRow);
             }

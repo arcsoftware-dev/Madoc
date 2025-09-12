@@ -2,8 +2,12 @@ package dev.arcsoftware.madoc.util;
 
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class Utils {
+
+    private static char[] delimiters = new char[]{' ', '\''};
 
     public String abbreviateTeamName(String teamName) {
         return switch (teamName.toUpperCase()){
@@ -21,6 +25,35 @@ public class Utils {
     public String stripSpaces(String s){
         if(s == null) return "";
         return s.replace(" ", "");
+    }
+
+    public static String toCamelCase(String original){
+        if(original == null || original.isBlank()) return original;
+        char[] chars = original.toCharArray();
+
+        StringBuilder sb = new StringBuilder();
+
+        boolean nextIsUpper = true;
+        for(char c : chars){
+            boolean isDelimiter = false;
+            for(char d : delimiters){
+                if(c==d){
+                    isDelimiter = true;
+                    break;
+                }
+            }
+            if(isDelimiter){
+                sb.append(c);
+                nextIsUpper = true;
+            }
+            else{
+                sb.append(nextIsUpper ? Character.toUpperCase(c) : Character.toLowerCase(c));
+                nextIsUpper = false;
+            }
+
+        }
+
+        return sb.toString().trim();
     }
 
 }
