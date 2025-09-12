@@ -2,8 +2,9 @@ package dev.arcsoftware.madoc.repository;
 
 import dev.arcsoftware.madoc.enums.DraftRank;
 import dev.arcsoftware.madoc.enums.Position;
+import dev.arcsoftware.madoc.model.entity.PlayerEntity;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
-import dev.arcsoftware.madoc.model.entity.RosterFileData;
+import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.timesheet.RosterDto;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -85,27 +86,44 @@ public class RosterRepository {
     public void insertRosterAssignment(RosterAssignment rosterAssignment) {
         int id = jdbcClient
                 .sql(RostersSql.INSERT_ROSTER_ASSIGNMENT)
-                .param("teamId", rosterAssignment.getTeamId())
-                .param("playerId", rosterAssignment.getPlayerId())
-                .param("seasonYear", rosterAssignment.getSeasonYear())
-                .param("draftPosition", rosterAssignment.getDraftPosition().name())
-                .param("position", rosterAssignment.getPosition().name())
-                .param("jerseyNumber", rosterAssignment.getJerseyNumber())
-                .param("isRookie", rosterAssignment.isRookie())
+                .params(rosterAssignment.toParameterMap())
                 .query(Integer.class)
                 .single();
         rosterAssignment.setId(id);
     }
 
-    public void uploadRosterFile(RosterFileData rosterFileData) {
+    public List<PlayerEntity> getAllPlayers(){
+        return jdbcClient
+                .sql(RostersSql.GET_ALL_PLAYERS)
+                .query((rs, num) -> {
+                    PlayerEntity p = new PlayerEntity();
+                    p.setId(rs.getInt("id"));
+                    p.setFirstName(rs.getString("first_name"));
+                    p.setLastName(rs.getString("last_name"));
+                    p.setEmail(rs.getString("email"));
+                    p.setPhoneNumber(rs.getString("phone_number"));
+                    p.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                    return p;
+                })
+                .list();
+    }
+
+    public void insertPlayer(PlayerEntity playerEntity) {
         int id = jdbcClient
-                .sql(RostersSql.INSERT_ROSTER_FILE)
-                .param("year", rosterFileData.getYear())
-                .param("fileName", rosterFileData.getFileName())
-                .param("fileContent", rosterFileData.getFileContent())
+                .sql(RostersSql.INSERT_PLAYER)
+                .params(playerEntity.toParameterMap())
                 .query(Integer.class)
                 .single();
-        rosterFileData.setId(id);
+        playerEntity.setId(id);
+    }
+
+    public void uploadRosterFile(UploadFileData uploadFileData) {
+        int id = jdbcClient
+                .sql(RostersSql.INSERT_ROSTER_FILE)
+                .params(uploadFileData.toParameterMap())
+                .query(Integer.class)
+                .single();
+        uploadFileData.setId(id);
     }
 
     public static class RostersSql {
@@ -119,14 +137,26 @@ public class RosterRepository {
 
         public static final String INSERT_ROSTER_ASSIGNMENT = """
         INSERT INTO madoc.roster_assignments (team_id, player_id, season_year, draft_position, position, jersey_number, is_rookie)
-        VALUES (:teamId, :playerId, :seasonYear, :draftPosition, :position, :jerseyNumber, :isRookie)
+        VALUES (:team_id, :player_id, :season_year, :draft_position, :position, :jersey_number, :is_rookie)
         RETURNING id;
         """;
 
         public static final String INSERT_ROSTER_FILE = """
         INSERT INTO madoc.roster_uploads (year, file_name, file_content)
-        VALUES (:year, :fileName, :fileContent)
+        VALUES (:year, :file_name, :file_content)
         RETURNING id;
+        """;
+
+        public static final String INSERT_PLAYER = """
+        INSERT INTO madoc.players (first_name, last_name, email, phone_number)
+        VALUES (:first_name, :last_name, :email, :phone_number)
+        RETURNING id;
+        """;
+
+        public static final String GET_ALL_PLAYERS = """
+        SELECT id, first_name, last_name, email, phone_number, created_at
+        FROM madoc.players
+        ORDER BY id ASC;
         """;
     }
 }

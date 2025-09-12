@@ -29,15 +29,15 @@
                         <div class="schedule-game-time" th:text="${#temporals.format(game.startTime, 'hh:mm a')}"></div>
                         <div class="teams">
                             <div class="team">
-                                <a th:href="@{/teams/{team}(team=${game.homeTeam})}">
-                                    <img th:src="@{'/assets/teamLogos/' + ${game.homeTeam} + '.svg'}" alt="Home Logo" class="team-logo"/>
+                                <a th:href="@{/teams/{team}(team=${utils.stripSpaces(game.homeTeam)})}">
+                                    <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.homeTeam)} + '.svg'}" alt="Home Logo" class="team-logo"/>
                                 </a>
                                 <span class="team-name centered" th:text="${game.homeTeam}"></span>
                             </div>
                             <span class="vs">vs</span>
                             <div class="team">
-                                <a th:href="@{/teams/{team}(team=${game.awayTeam})}">
-                                    <img th:src="@{'/assets/teamLogos/' + ${game.awayTeam} + '.svg'}" alt="Away Logo" class="team-logo"/>
+                                <a th:href="@{/teams/{team}(team=${utils.stripSpaces(game.awayTeam)})}">
+                                    <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.awayTeam)} + '.svg'}" alt="Away Logo" class="team-logo"/>
                                 </a>
                                 <span class="team-name centered" th:text="${game.awayTeam}"></span>
                             </div>

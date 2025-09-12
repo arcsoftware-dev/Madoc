@@ -1,11 +1,14 @@
 package dev.arcsoftware.madoc.repository;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
+import dev.arcsoftware.madoc.model.entity.GameEntity;
+import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -15,13 +18,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Repository
 public class ScheduleRepository {
-    private final Map<String, List<ScheduleItemDto>> cachedSchedules = new ConcurrentHashMap<>();
+    private final JdbcClient jdbcClient;
+
+    public ScheduleRepository(JdbcClient jdbcClient) {
+        this.jdbcClient = jdbcClient;
+    }
 
     public List<ScheduleItemDto> getUpcomingMatches(SeasonType seasonType, int year) {
         List<ScheduleItemDto> schedule = getSchedule(seasonType, year);
@@ -34,14 +39,16 @@ public class ScheduleRepository {
     }
 
     public List<ScheduleItemDto> getSchedule(SeasonType seasonType, int year) {
-        String key = seasonType.name() + "_" + year;
-        if (!cachedSchedules.containsKey(key)) {
-            List<ScheduleItemDto> schedule = loadScheduleFromCsv(seasonType, year);
-            cachedSchedules.put(key, schedule);
-            return schedule;
-        } else {
-            return cachedSchedules.get(key);
-        }
+        return jdbcClient
+                .sql(GameSql.GET_SCHEDULE_BY_TYPE_AND_YEAR)
+                .param("year", year)
+                .param("season_type", seasonType.name())
+                .query((rs, num) -> new ScheduleItemDto(
+                        rs.getTimestamp("start_time").toLocalDateTime(),
+                        rs.getString("home_team"),
+                        rs.getString("away_team")
+                ))
+                .list();
     }
 
     private List<ScheduleItemDto> loadScheduleFromCsv(SeasonType seasonType, int year) {
@@ -71,5 +78,47 @@ public class ScheduleRepository {
             return new ArrayList<>(); // Return empty list on error
         }
         return schedule;
+    }
+
+    public void uploadScheduleFile(UploadFileData uploadFileData) {
+        int id = jdbcClient
+                .sql(GameSql.INSERT_SCHEDULE_FILE)
+                .params(uploadFileData.toParameterMap())
+                .query(Integer.class)
+                .single();
+        uploadFileData.setId(id);
+    }
+
+    public void insertGame(GameEntity game) {
+        int id = jdbcClient
+                .sql(GameSql.INSERT_NEW_GAME)
+                .params(game.toParameterMap())
+                .query(Integer.class)
+                .single();
+        game.setId(id);
+    }
+
+    public static class GameSql {
+        public static final String GET_SCHEDULE_BY_TYPE_AND_YEAR = """
+        SELECT g.game_time as start_time, ht.team_name as home_team, at.team_name as away_team
+            FROM "madoc".games g
+            JOIN "madoc".teams as ht ON g.home_team = ht.id AND g.year = ht.year
+            JOIN "madoc".teams as at ON g.away_team = at.id AND g.year = at.year
+        WHERE g.year = :year
+        AND g.season_type = :season_type
+        ORDER BY g.game_time ASC;
+        """;
+
+        public static final String INSERT_NEW_GAME = """
+        INSERT INTO madoc.games (home_team, away_team, year, season_type, venue, game_time)
+        VALUES (:home_team, :away_team, :year, :season_type, :venue, :game_time)
+        RETURNING id;
+        """;
+
+        public static final String INSERT_SCHEDULE_FILE = """
+        INSERT INTO madoc.schedule_uploads (year, file_name, file_content)
+        VALUES (:year, :file_name, :file_content)
+        RETURNING id;
+        """;
     }
 }

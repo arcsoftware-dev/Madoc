@@ -1,24 +1,98 @@
 package dev.arcsoftware.madoc.service;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
+import dev.arcsoftware.madoc.model.csv.ScheduleUploadRow;
+import dev.arcsoftware.madoc.model.entity.GameEntity;
+import dev.arcsoftware.madoc.model.entity.TeamEntity;
+import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.GroupedScheduleDto;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
+import dev.arcsoftware.madoc.model.payload.ScheduleUploadResult;
 import dev.arcsoftware.madoc.repository.ScheduleRepository;
+import dev.arcsoftware.madoc.util.FileUploadParser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
+
     private final SeasonMetadataService seasonMetadataService;
+    private final TeamsService teamsService;
+    private final FileUploadParser fileUploadParser;
 
     @Autowired
-    public ScheduleService(ScheduleRepository scheduleRepository, SeasonMetadataService seasonMetadataService) {
+    public ScheduleService(ScheduleRepository scheduleRepository,
+                           SeasonMetadataService seasonMetadataService,
+                           TeamsService teamsService,
+                           FileUploadParser fileUploadParser
+    ) {
         this.scheduleRepository = scheduleRepository;
         this.seasonMetadataService = seasonMetadataService;
+        this.teamsService = teamsService;
+        this.fileUploadParser = fileUploadParser;
+    }
+
+    @Transactional
+    public ScheduleUploadResult uploadSchedule(UploadFileData uploadFileData, SeasonType seasonType) {
+        List<ScheduleUploadRow> scheduleUploadRows = fileUploadParser.parseScheduleCsv(uploadFileData.getFileContent());
+        log.info("Parsed rows from CSV {}", scheduleUploadRows);
+
+        Set<String> uniqueTeamNamesFromSchedule = scheduleUploadRows.stream()
+                .flatMap(up -> Stream.of(up.getHomeTeam(), up.getAwayTeam()))
+                .collect(Collectors.toSet());
+
+        List<TeamEntity> teamEntities = teamsService.getAndCreateTeamsIfNotFound(uploadFileData.getYear(), uniqueTeamNamesFromSchedule);
+
+        Map<String, TeamEntity> teamEntitiesMap = teamEntities.stream()
+                .collect(Collectors.toMap(TeamEntity::getTeamName, teamEntity -> teamEntity));
+
+        //Build Game entities
+        List<GameEntity> games = new ArrayList<>();
+        for(ScheduleUploadRow scheduleUploadRow : scheduleUploadRows){
+            GameEntity gameEntity = new GameEntity();
+            gameEntity.setGameTime(scheduleUploadRow.getGameTime());
+            gameEntity.setHomeTeam(teamEntitiesMap.get(scheduleUploadRow.getHomeTeam()));
+            gameEntity.setAwayTeam(teamEntitiesMap.get(scheduleUploadRow.getAwayTeam()));
+            gameEntity.setYear(uploadFileData.getYear());
+            gameEntity.setSeasonType(seasonType);
+            gameEntity.setVenue(scheduleUploadRow.getArena());
+            games.add(gameEntity);
+        }
+
+        //Insert Game entities
+        for(GameEntity createdGame : games){
+            this.scheduleRepository.insertGame(createdGame);
+        }
+
+        //Convert uploaded game entities to scheduleItemDtos
+        List<ScheduleItemDto> scheduleItemDtos = games.stream()
+                .map(game -> new ScheduleItemDto(
+                        game.getGameTime(),
+                        game.getHomeTeam().getTeamName(),
+                        game.getAwayTeam().getTeamName()
+                ))
+                .toList();
+
+        log.info("Uploading schedule file data to the database");
+        this.scheduleRepository.uploadScheduleFile(uploadFileData);
+
+        return new ScheduleUploadResult(
+                scheduleItemDtos,
+                uploadFileData.getId(),
+                uploadFileData.getYear(),
+                uploadFileData.getFileName()
+        );
     }
 
     public List<ScheduleItemDto> getUpcomingMatches() {
@@ -66,6 +140,5 @@ public class ScheduleService {
         }
 
         return builder.toString().getBytes();
-
     }
 }

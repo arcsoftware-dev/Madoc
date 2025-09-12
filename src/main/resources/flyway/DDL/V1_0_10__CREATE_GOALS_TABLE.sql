@@ -9,3 +9,7 @@ CREATE TABLE IF NOT EXISTS "madoc"."goals" (
     "time" varchar(5) NOT NULL,
     "uploaded_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE IF EXISTS "madoc"."assists"
+    ADD CONSTRAINT FK_goal_id
+    FOREIGN KEY (goal_id) REFERENCES "madoc"."goals"("id")

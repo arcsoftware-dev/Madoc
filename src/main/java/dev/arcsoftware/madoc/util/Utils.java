@@ -18,4 +18,9 @@ public class Utils {
         };
     }
 
+    public String stripSpaces(String s){
+        if(s == null) return "";
+        return s.replace(" ", "");
+    }
+
 }

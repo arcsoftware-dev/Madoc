@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS "madoc"."games" (
     "home_team" integer REFERENCES "madoc"."teams"("id") NOT NULL,
     "away_team" integer REFERENCES "madoc"."teams"("id") NOT NULL,
     "year" int NOT NULL,
-    "season_type" varchar(10) NOT NULL,
+    "season_type" varchar(16) NOT NULL,
     "venue" varchar(100),
     "game_time" TIMESTAMP NOT NULL,
     "referee_name_one" varchar(100),
