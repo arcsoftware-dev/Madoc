@@ -10,6 +10,7 @@ import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
 import dev.arcsoftware.madoc.model.payload.ScheduleUploadResult;
 import dev.arcsoftware.madoc.repository.ScheduleRepository;
 import dev.arcsoftware.madoc.util.FileUploadParser;
+import dev.arcsoftware.madoc.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class ScheduleService {
 
         Set<String> uniqueTeamNamesFromSchedule = scheduleUploadRows.stream()
                 .flatMap(up -> Stream.of(up.getHomeTeam(), up.getAwayTeam()))
+                .map(Utils::toCamelCase)
                 .collect(Collectors.toSet());
 
         List<TeamEntity> teamEntities = teamsService.getAndCreateTeamsIfNotFound(uploadFileData.getYear(), uniqueTeamNamesFromSchedule);

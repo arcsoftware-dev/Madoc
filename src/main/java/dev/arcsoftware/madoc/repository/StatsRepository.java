@@ -2,6 +2,7 @@ package dev.arcsoftware.madoc.repository;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
+import dev.arcsoftware.madoc.util.Utils;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -31,8 +32,8 @@ public class StatsRepository {
                         //# ,Player,Team,G,A,PTS,PIM
                         String[] split = line.split(",");
                         StatsDto statsDto = StatsDto.builder()
-                                .playerName(split[1] + " (#" + split[0] + ")")
-                                .teamName(split[2])
+                                .playerName(Utils.toCamelCase(split[1]) + " (#" + split[0] + ")")
+                                .teamName(Utils.toCamelCase(split[2]))
                                 .gamesPlayed(20) // Assuming 20 games for simplicity
                                 .goals(Integer.parseInt(split[3]))
                                 .assists(Integer.parseInt(split[4]))
@@ -54,8 +55,8 @@ public class StatsRepository {
                         //# ,Player,Team,G,A,PTS,PIM
                         String[] split = line.split(",");
                         StatsDto statsDto = StatsDto.builder()
-                                .playerName(split[1] + " (#" + split[0] + ")")
-                                .teamName(split[2])
+                                .playerName(Utils.toCamelCase(split[1]) + " (#" + split[0] + ")")
+                                .teamName(Utils.toCamelCase(split[2]))
                                 .gamesPlayed(5) // Assuming 5 games for simplicity
                                 .goals(Integer.parseInt(split[3]))
                                 .assists(Integer.parseInt(split[4]))
@@ -77,8 +78,8 @@ public class StatsRepository {
                         //PLAYER,Team,GP,W,L,T,SO,ENG,PIM,GA,GAA
                         String[] split = line.split(",");
                         StatsDto statsDto = StatsDto.builder()
-                                .playerName(split[0])
-                                .teamName(split[1])
+                                .playerName(Utils.toCamelCase(split[0]))
+                                .teamName(Utils.toCamelCase(split[1]))
                                 .gamesPlayed(Integer.parseInt(split[2]))
                                 .wins(Integer.parseInt(split[3]))
                                 .losses(Integer.parseInt(split[4]))
