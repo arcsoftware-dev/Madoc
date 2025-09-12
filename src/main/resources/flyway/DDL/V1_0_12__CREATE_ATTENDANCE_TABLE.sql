@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS "madoc"."attendance" (
+    "id" SERIAL PRIMARY KEY,
+    "game_id" integer REFERENCES "madoc"."games"("id") NOT NULL,
+    "player_id" integer REFERENCES "madoc"."players"("id") NOT NULL,
+    "team_id" integer REFERENCES "madoc"."teams"("id") NOT NULL,
+    "attended" boolean NOT NULL
+);
