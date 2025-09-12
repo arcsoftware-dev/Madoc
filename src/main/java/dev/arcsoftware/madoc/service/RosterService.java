@@ -1,56 +1,63 @@
 package dev.arcsoftware.madoc.service;
 
-import dev.arcsoftware.madoc.enums.DraftRank;
 import dev.arcsoftware.madoc.enums.Position;
+import dev.arcsoftware.madoc.model.csv.RosterUploadRow;
 import dev.arcsoftware.madoc.model.entity.PlayerEntity;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
-import dev.arcsoftware.madoc.model.entity.RosterFileData;
 import dev.arcsoftware.madoc.model.entity.TeamEntity;
-import dev.arcsoftware.madoc.model.request.RosterUploadRow;
-import dev.arcsoftware.madoc.repository.PlayerRepository;
+import dev.arcsoftware.madoc.model.entity.UploadFileData;
+import dev.arcsoftware.madoc.model.payload.RosterUploadResult;
 import dev.arcsoftware.madoc.repository.RosterRepository;
-import dev.arcsoftware.madoc.repository.TeamRepository;
+import dev.arcsoftware.madoc.util.FileUploadParser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class RosterService {
 
-    private final PlayerRepository playerRepository;
-    private final TeamRepository teamRepository;
+    private final PlayersService playersService;
+    private final TeamsService teamsService;
     private final RosterRepository rosterRepository;
+    private final FileUploadParser fileUploadParser;
 
     @Autowired
-    public RosterService(PlayerRepository playerRepository, TeamRepository teamRepository, RosterRepository rosterRepository) {
-        this.playerRepository = playerRepository;
-        this.teamRepository = teamRepository;
+    public RosterService(PlayersService playersService,
+                         TeamsService teamsService,
+                         RosterRepository rosterRepository,
+                         FileUploadParser fileUploadParser
+    ) {
+        this.playersService = playersService;
+        this.teamsService = teamsService;
         this.rosterRepository = rosterRepository;
+        this.fileUploadParser = fileUploadParser;
     }
 
     @Transactional
-    public List<RosterAssignment> assignRosters(RosterFileData rosterFileData) {
-        List<PlayerEntity> playerEntities = playerRepository.getPlayers();
-        log.info("Found {} players", playerEntities.size());
-
-        List<TeamEntity> teamEntities = teamRepository.getTeamsByYear(rosterFileData.getYear());
-        log.info("Found {} teams", teamEntities.size());
-
-        List<RosterUploadRow> rosterUploadRows = parseCsv(rosterFileData.getFileContent());
+    public RosterUploadResult assignRosters(UploadFileData uploadFileData) {
+        List<RosterUploadRow> rosterUploadRows = fileUploadParser.parseRosterCsv(uploadFileData.getFileContent());
         log.info("Parsed rows from CSV {}", rosterUploadRows);
 
-        List<RosterAssignment> rosterAssignments = createRosterAssignments(rosterUploadRows, playerEntities, teamEntities, rosterFileData.getYear());
+        Set<String> uniquePlayerNamesFromRosters = rosterUploadRows.stream()
+                .map(RosterUploadRow::getPlayer)
+                .collect(Collectors.toSet());
+
+        List<PlayerEntity> playerEntities = playersService.getAndCreatePlayersIfNotFound(uniquePlayerNamesFromRosters);
+
+        Set<String> uniqueTeamNamesFromRosters = rosterUploadRows.stream()
+                .map(RosterUploadRow::getTeam)
+                .collect(Collectors.toSet());
+
+        List<TeamEntity> teamEntities = teamsService.getAndCreateTeamsIfNotFound(uploadFileData.getYear(), uniqueTeamNamesFromRosters);
+
+        List<RosterAssignment> rosterAssignments = createRosterAssignments(rosterUploadRows, playerEntities, teamEntities, uploadFileData.getYear());
 
         for(RosterAssignment rosterAssignment : rosterAssignments) {
             rosterRepository.insertRosterAssignment(rosterAssignment);
@@ -58,10 +65,16 @@ public class RosterService {
         log.info("Roster assignments inserted into the database");
 
         log.info("Uploading roster file data to the database");
-        this.rosterRepository.uploadRosterFile(rosterFileData);
+        this.rosterRepository.uploadRosterFile(uploadFileData);
 
-        log.info("Successfully Loaded Rosters for Year: {}", rosterFileData.getYear());
-        return rosterAssignments;
+        log.info("Successfully Loaded Rosters for Year: {}", uploadFileData.getYear());
+
+        return new RosterUploadResult(
+                rosterAssignments,
+                uploadFileData.getId(),
+                uploadFileData.getYear(),
+                uploadFileData.getFileName()
+        );
     }
 
     private List<RosterAssignment> createRosterAssignments(
@@ -104,33 +117,5 @@ public class RosterService {
         }
 
         return rosterAssignments;
-    }
-
-    private List<RosterUploadRow> parseCsv(byte[] csvFileBytes) {
-        List<RosterUploadRow> rows = new ArrayList<>();
-
-        final String[] HEADERS = {"#","Player","Team","Draft Rank","isRookie"};
-        try(Reader reader = new InputStreamReader(new ByteArrayInputStream(csvFileBytes))) {
-            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                    .setHeader(HEADERS)
-                    .setSkipHeaderRecord(true)
-                    .get();
-
-            Iterable<CSVRecord> records = csvFormat.parse(reader);
-            for(CSVRecord record : records) {
-                RosterUploadRow rosterUploadRow = new RosterUploadRow(
-                        Integer.parseInt(record.get("#")),
-                        record.get("Player"),
-                        record.get("Team"),
-                        DraftRank.valueOf(record.get("Draft Rank")),
-                        record.get("isRookie").equalsIgnoreCase("true")
-                );
-                rows.add(rosterUploadRow);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return rows;
     }
 }

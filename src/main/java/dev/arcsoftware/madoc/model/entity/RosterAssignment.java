@@ -5,6 +5,9 @@ import dev.arcsoftware.madoc.enums.Position;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 public class RosterAssignment {
@@ -16,4 +19,17 @@ public class RosterAssignment {
     private Position position;
     private Integer jerseyNumber;
     private boolean isRookie;
+
+    public Map<String, Object> toParameterMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
+        map.put("player_id", playerId);
+        map.put("team_id", teamId);
+        map.put("season_year", seasonYear);
+        map.put("draft_position", draftPosition.name());
+        map.put("position", position.name());
+        map.put("jersey_number", jerseyNumber);
+        map.put("is_rookie", isRookie);
+        return map;
+    }
 }

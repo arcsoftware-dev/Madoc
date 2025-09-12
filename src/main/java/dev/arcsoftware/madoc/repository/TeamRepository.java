@@ -25,7 +25,22 @@ public class TeamRepository {
                 .list();
     }
 
+    public void insertTeam(TeamEntity teamEntity) {
+        int id = jdbcClient
+                .sql(TeamsSql.INSERT_TEAM)
+                .params(teamEntity.toParameterMap())
+                .query(Integer.class)
+                .single();
+        teamEntity.setId(id);
+    }
+
     public static class TeamsSql {
+        public static final String INSERT_TEAM = """
+        INSERT INTO madoc.teams (team_name, year)
+        VALUES (:team_name, :year)
+        RETURNING id;
+        """;
+
         public static final String GET_TEAMS_BY_YEAR = """
         SELECT id, team_name, year
             FROM madoc.teams

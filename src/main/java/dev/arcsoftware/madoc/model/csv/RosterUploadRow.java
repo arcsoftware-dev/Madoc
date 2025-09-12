@@ -1,4 +1,4 @@
-package dev.arcsoftware.madoc.model.request;
+package dev.arcsoftware.madoc.model.csv;
 
 import dev.arcsoftware.madoc.enums.DraftRank;
 import lombok.AllArgsConstructor;

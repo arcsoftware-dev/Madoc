@@ -16,7 +16,7 @@
         </section>
         <div class="teams" style="display: flex; flex-direction: row; gap: 2em;">
             <div class="team feed-item centered" style="display: flex; flex-direction: row; gap: 1.5em;">
-                <img th:src="@{'/assets/teamLogos/' + ${teamData.teamName.replace(' ', '')} + '.svg'}" alt="Team Logo" class="large-logo"/>
+                <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(teamData.teamName)} + '.svg'}" alt="Team Logo" class="large-logo"/>
                 <div>
                     <h1 class="title">Roster</h1>
                     <table class="stats-table">

@@ -16,8 +16,8 @@
         </section>
         <div class="teams">
             <div class="team feed-item centered" th:each="team : ${teams}">
-                <a class="team-feed-item" th:href="@{/teams/{teamName}(teamName=${team.teamName.replace(' ', '')})}">
-                    <img th:src="@{'/assets/teamLogos/' + ${team.teamName.replace(' ', '')} + '.svg'}" alt="Team Logo" class="large-logo"/>
+                <a class="team-feed-item" th:href="@{/teams/{teamName}(teamName=${utils.stripSpaces(team.teamName)})}">
+                    <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(team.teamName)} + '.svg'}" alt="Team Logo" class="large-logo"/>
                 </a>
                 <div class="team-feed-item">
                     <h2 class="team-name standard-text centered" th:text="${team.teamName}"></h2>

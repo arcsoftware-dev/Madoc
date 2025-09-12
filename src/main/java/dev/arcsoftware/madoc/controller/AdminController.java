@@ -1,21 +1,27 @@
 package dev.arcsoftware.madoc.controller;
 
+import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.exception.UnauthorizedException;
-import dev.arcsoftware.madoc.model.entity.RosterAssignment;
-import dev.arcsoftware.madoc.model.entity.RosterFileData;
+import dev.arcsoftware.madoc.model.entity.UploadFileData;
+import dev.arcsoftware.madoc.model.payload.AttendanceUploadResult;
+import dev.arcsoftware.madoc.model.payload.GamesheetUploadResult;
 import dev.arcsoftware.madoc.model.payload.RosterUploadResult;
+import dev.arcsoftware.madoc.model.payload.ScheduleUploadResult;
 import dev.arcsoftware.madoc.service.RosterService;
+import dev.arcsoftware.madoc.service.ScheduleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @Controller
@@ -23,16 +29,18 @@ import java.util.List;
 public class AdminController {
 
     private final RosterService rosterService;
+    private final ScheduleService scheduleService;
 
     @Autowired
-    public AdminController(RosterService rosterService) {
+    public AdminController(RosterService rosterService, ScheduleService scheduleService) {
         this.rosterService = rosterService;
+        this.scheduleService = scheduleService;
     }
 
     @Value("${admin.token}")
     private String adminToken;
 
-    @PostMapping(value = "/rosters/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upload/roster", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RosterUploadResult> uploadRosters(
             @RequestParam("X-Admin-Token") String adminToken,
             @RequestParam("file") MultipartFile file,
@@ -44,20 +52,67 @@ public class AdminController {
 
         log.info("Received roster upload request for year: {}", year);
         byte[] fileBytes = file.getBytes();
+        UploadFileData uploadFileData = new UploadFileData(year, file.getOriginalFilename(), fileBytes);
 
-        RosterFileData rosterFileData = new RosterFileData(year, file.getOriginalFilename(), fileBytes);
+        RosterUploadResult rosterUploadResult = rosterService.assignRosters(uploadFileData);
 
-        List<RosterAssignment> rosterAssignments = rosterService.assignRosters(rosterFileData);
+        return ResponseEntity.ok(rosterUploadResult);
+    }
 
-        return ResponseEntity.ok()
-                .body(
-                        new RosterUploadResult(
-                            rosterAssignments,
-                            rosterFileData.getId(),
-                            rosterFileData.getYear(),
-                            rosterFileData.getFileName()
-                        )
-                );
+    @PostMapping(value = "/upload/schedule", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ScheduleUploadResult> uploadSchedules(
+            @RequestParam("X-Admin-Token") String adminToken,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("year") int year,
+            @RequestParam("season-type") SeasonType seasonType
+    ) throws IOException {
+        if(!isValidAdminToken(adminToken)){
+            throw new UnauthorizedException("Invalid admin token");
+        }
+
+        log.info("Received schedule upload request for year: {}", year);
+        byte[] fileBytes = file.getBytes();
+        UploadFileData uploadFileData = new UploadFileData(year, file.getOriginalFilename(), fileBytes);
+
+        ScheduleUploadResult scheduleUploadResult = scheduleService.uploadSchedule(uploadFileData, seasonType);
+
+        return ResponseEntity.ok(scheduleUploadResult);
+    }
+
+    @PostMapping(value = "/upload/gamesheet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<GamesheetUploadResult> uploadGamesheet(
+            @RequestParam("X-Admin-Token") String adminToken,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("year") int year
+    ) throws IOException {
+        if(!isValidAdminToken(adminToken)){
+            throw new UnauthorizedException("Invalid admin token");
+        }
+
+        log.info("Received gamesheet upload request for year: {}", year);
+        byte[] fileBytes = file.getBytes();
+        UploadFileData uploadFileData = new UploadFileData(year, file.getOriginalFilename(), fileBytes);
+
+
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @PostMapping(value = "/upload/attendance", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AttendanceUploadResult> uploadAttendance(
+            @RequestParam("X-Admin-Token") String adminToken,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("year") int year
+    ) throws IOException {
+        if(!isValidAdminToken(adminToken)){
+            throw new UnauthorizedException("Invalid admin token");
+        }
+
+        log.info("Received attendance upload request for year: {}", year);
+        byte[] fileBytes = file.getBytes();
+        UploadFileData uploadFileData = new UploadFileData(year, file.getOriginalFilename(), fileBytes);
+
+
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
     private boolean isValidAdminToken(String token) {
