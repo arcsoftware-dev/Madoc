@@ -1,11 +1,15 @@
 package dev.arcsoftware.madoc.model.entity;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class PenaltyEntity {
-    private int penaltyId;
-    private Timestamp timestamp;
+    private int id;
+    private GameEntity game;
+    private PlayerEntity player;
+    private String infraction;
+    private int minutes;
     private int period;
-
-    private Integer offenderId;
+    private LocalTime time;
+    private LocalDateTime uploadedAt;
 }

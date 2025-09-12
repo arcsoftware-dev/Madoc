@@ -2,16 +2,18 @@ package dev.arcsoftware.madoc.model.entity;
 
 import dev.arcsoftware.madoc.enums.GoalType;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 
 public class GoalEntity {
-    private Integer goalId;
-    private Timestamp timestamp;
-    private int period;
-
-    private Integer scorerId;
-    private Integer primaryAssistPlayerId;
-    private Integer secondaryAssistPlayerId;
+    private Integer id;
+    private GameEntity game;
     private GoalType goalType;
+    private PlayerEntity player;
+    private PlayerEntity primaryAssistPlayer;
+    private PlayerEntity secondaryAssistPlayer;
+    private int period;
+    private LocalTime time;
+    private LocalDateTime uploadedAt;
 }

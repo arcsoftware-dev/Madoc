@@ -1,0 +1,7 @@
+- attendance sheet upload
+- auto-generate attendance sheet
+- gamesheet upload
+- auto-generate gamesheet
+- how to manage substitute players?
+- add missing players on roster upload (eliminates need to manually add player)
+- add missing teams on roster upload (eliminates need to manually add team)
