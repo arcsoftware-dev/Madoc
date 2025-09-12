@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -37,11 +34,14 @@ public class AdminController {
 
     @PostMapping(value = "/rosters/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RosterUploadResult> uploadRosters(
-            @RequestHeader("X-Admin-Token") String adminToken,
+            @RequestParam("X-Admin-Token") String adminToken,
             @RequestParam("file") MultipartFile file,
             @RequestParam("year") int year
     ) throws IOException {
-        isValidAdminToken(adminToken);
+        if(!isValidAdminToken(adminToken)){
+            throw new UnauthorizedException("Invalid admin token");
+        }
+
         log.info("Received roster upload request for year: {}", year);
         byte[] fileBytes = file.getBytes();
 
@@ -60,14 +60,15 @@ public class AdminController {
                 );
     }
 
-    private void isValidAdminToken(String token) {
+    private boolean isValidAdminToken(String token) {
         // Placeholder for actual token validation logic
         if(!this.adminToken.equals(token)){
             log.error("Invalid admin token");
-            throw new UnauthorizedException("Invalid admin token");
+            return false;
         }
         else{
             log.info("Admin token validated successfully");
+            return true;
         }
     }
 }
