@@ -5,6 +5,6 @@ CREATE TABLE IF NOT EXISTS "madoc"."penalties" (
     "infraction" varchar(50) NOT NULL,
     "minutes" int NOT NULL,
     "period" int NOT NULL,
-    "time" varchar(5) NOT NULL,
+    "time" varchar(10) NOT NULL,
     "uploaded_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

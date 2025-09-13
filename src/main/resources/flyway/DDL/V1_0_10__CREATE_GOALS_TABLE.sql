@@ -6,10 +6,6 @@ CREATE TABLE IF NOT EXISTS "madoc"."goals" (
     "primary_assist_id" integer REFERENCES "madoc"."assists"("id"),
     "secondary_assist_id" integer REFERENCES "madoc"."assists"("id"),
     "period" int NOT NULL,
-    "time" varchar(5) NOT NULL,
+    "time" varchar(10) NOT NULL,
     "uploaded_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-ALTER TABLE IF EXISTS "madoc"."assists"
-    ADD CONSTRAINT FK_goal_id
-    FOREIGN KEY (goal_id) REFERENCES "madoc"."goals"("id")

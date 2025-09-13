@@ -1,11 +1,16 @@
 package dev.arcsoftware.madoc.repository;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
+import dev.arcsoftware.madoc.model.entity.AssistEntity;
+import dev.arcsoftware.madoc.model.entity.GoalEntity;
+import dev.arcsoftware.madoc.model.entity.PenaltyEntity;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
 import dev.arcsoftware.madoc.util.Utils;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.io.BufferedReader;
@@ -17,9 +22,16 @@ import java.util.List;
 @Slf4j
 @Repository
 public class StatsRepository {
+    private final JdbcClient jdbcClient;
+
     private static List<StatsDto> staticSkaterStats2024;
     private static List<StatsDto> staticSkaterPlayoffStats2024;
     private static List<StatsDto> staticGoalieStats2024;
+
+    @Autowired
+    public StatsRepository(JdbcClient jdbcClient) {
+        this.jdbcClient = jdbcClient;
+    }
 
     @PostConstruct
     public void loadData(){
@@ -116,5 +128,64 @@ public class StatsRepository {
             return staticGoalieStats2024;
         }
         return Collections.emptyList();
+    }
+
+    public void insertGoalAndAssists(GoalEntity goal) {
+        Integer primaryAssistId = null;
+        if(goal.getPrimaryAssistPlayer() != null) {
+            primaryAssistId = insertAssist(new AssistEntity(goal.getPrimaryAssistPlayer(), true));
+        }
+        Integer secondaryAssistId = null;
+        if(goal.getSecondaryAssistPlayer() != null) {
+            secondaryAssistId = insertAssist(new AssistEntity(goal.getSecondaryAssistPlayer(), false));
+        }
+
+        int id = jdbcClient
+                .sql(StatsSql.INSERT_GOAL)
+                .params(goal.toParameterMap())
+                .param("primary_assist_id", primaryAssistId)
+                .param("secondary_assist_id", secondaryAssistId)
+                .query(Integer.class)
+                .single();
+        goal.setId(id);
+    }
+
+    public int insertAssist(AssistEntity assist) {
+        int id = jdbcClient
+                .sql(StatsSql.INSERT_ASSIST)
+                .params(assist.toParameterMap())
+                .query(Integer.class)
+                .single();
+        assist.setId(id);
+        return id;
+    }
+
+    public void insertPenalty(PenaltyEntity penalty) {
+        int id = jdbcClient
+                .sql(StatsSql.INSERT_PENALTY)
+                .params(penalty.toParameterMap())
+                .query(Integer.class)
+                .single();
+        penalty.setId(id);
+    }
+
+    public static class StatsSql{
+        public static final String INSERT_GOAL = """
+        INSERT INTO madoc.goals (game_id, goal_type, player_id, primary_assist_id, secondary_assist_id, period, time)
+        VALUES (:game_id, :goal_type, :player_id, :primary_assist_id, :secondary_assist_id, :period, :time)
+        RETURNING id;
+        """;
+
+        public static final String INSERT_ASSIST = """
+        INSERT INTO madoc.assists (player_id, is_primary)
+        VALUES (:player_id, :is_primary)
+        RETURNING id;
+        """;
+
+        public static final String INSERT_PENALTY = """
+        INSERT INTO madoc.penalties (game_id, player_id, infraction, minutes, period, time)
+        VALUES (:game_id, :player_id, :infraction, :minutes, :period, :time)
+        RETURNING id;
+        """;
     }
 }

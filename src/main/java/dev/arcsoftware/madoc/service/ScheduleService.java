@@ -8,7 +8,7 @@ import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.GroupedScheduleDto;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
 import dev.arcsoftware.madoc.model.payload.ScheduleUploadResult;
-import dev.arcsoftware.madoc.repository.ScheduleRepository;
+import dev.arcsoftware.madoc.repository.GameRepository;
 import dev.arcsoftware.madoc.util.FileUploadParser;
 import dev.arcsoftware.madoc.util.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -26,19 +26,19 @@ import java.util.stream.Stream;
 @Slf4j
 @Service
 public class ScheduleService {
-    private final ScheduleRepository scheduleRepository;
+    private final GameRepository gameRepository;
 
     private final SeasonMetadataService seasonMetadataService;
     private final TeamsService teamsService;
     private final FileUploadParser fileUploadParser;
 
     @Autowired
-    public ScheduleService(ScheduleRepository scheduleRepository,
+    public ScheduleService(GameRepository gameRepository,
                            SeasonMetadataService seasonMetadataService,
                            TeamsService teamsService,
                            FileUploadParser fileUploadParser
     ) {
-        this.scheduleRepository = scheduleRepository;
+        this.gameRepository = gameRepository;
         this.seasonMetadataService = seasonMetadataService;
         this.teamsService = teamsService;
         this.fileUploadParser = fileUploadParser;
@@ -74,7 +74,7 @@ public class ScheduleService {
 
         //Insert Game entities
         for(GameEntity createdGame : games){
-            this.scheduleRepository.insertGame(createdGame);
+            this.gameRepository.insertGame(createdGame);
         }
 
         //Convert uploaded game entities to scheduleItemDtos
@@ -87,7 +87,7 @@ public class ScheduleService {
                 .toList();
 
         log.info("Uploading schedule file data to the database");
-        this.scheduleRepository.uploadScheduleFile(uploadFileData);
+        this.gameRepository.uploadScheduleFile(uploadFileData);
 
         return new ScheduleUploadResult(
                 scheduleItemDtos,
@@ -98,7 +98,7 @@ public class ScheduleService {
     }
 
     public List<ScheduleItemDto> getUpcomingMatches() {
-        return scheduleRepository.getUpcomingMatches(seasonMetadataService.getCurrentSeasonType(), seasonMetadataService.getCurrentSeasonYear());
+        return gameRepository.getUpcomingMatches(seasonMetadataService.getCurrentSeasonType(), seasonMetadataService.getCurrentSeasonYear());
     }
 
     public List<ScheduleItemDto> getSchedule(SeasonType seasonType, Integer year) {
@@ -108,11 +108,11 @@ public class ScheduleService {
         if (year == null) {
             year = seasonMetadataService.getCurrentSeasonYear();
         }
-        return scheduleRepository.getSchedule(seasonType, year);
+        return gameRepository.getSchedule(seasonType, year);
     }
 
     public List<GroupedScheduleDto> getGroupedSchedule(SeasonType seasonType, Integer year) {
-        List<ScheduleItemDto> scheduleItemDtos = scheduleRepository.getSchedule(seasonType, year);
+        List<ScheduleItemDto> scheduleItemDtos = gameRepository.getSchedule(seasonType, year);
         return scheduleItemDtos.stream()
                 .collect(Collectors.groupingBy(item -> item.getStartTime().toLocalDate()))
                 .entrySet().stream()

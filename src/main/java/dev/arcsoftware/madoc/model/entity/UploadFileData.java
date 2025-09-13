@@ -16,6 +16,11 @@ public class UploadFileData {
     private byte[] fileContent;
     private LocalDateTime uploadedAt;
 
+    public UploadFileData(String fileName, byte[] fileContent) {
+        this.fileName = fileName;
+        this.fileContent = fileContent;
+    }
+
     public UploadFileData(int year, String fileName, byte[] fileContent) {
         this.year = year;
         this.fileName = fileName;

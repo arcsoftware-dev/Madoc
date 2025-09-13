@@ -5,7 +5,7 @@ import dev.arcsoftware.madoc.enums.Position;
 import dev.arcsoftware.madoc.model.entity.PlayerEntity;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
-import dev.arcsoftware.madoc.model.timesheet.RosterDto;
+import dev.arcsoftware.madoc.model.payload.RosterDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
