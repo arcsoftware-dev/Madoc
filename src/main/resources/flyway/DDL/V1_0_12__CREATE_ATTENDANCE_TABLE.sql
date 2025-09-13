@@ -6,3 +6,6 @@ CREATE TABLE IF NOT EXISTS "madoc"."attendance" (
     "team_id" integer REFERENCES "madoc"."teams"("id") NOT NULL,
     "attended" boolean NOT NULL
 );
+
+ALTER TABLE "madoc"."attendance"
+    ADD CONSTRAINT unique_player_game_constraint UNIQUE (game_id, player_id);

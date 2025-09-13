@@ -3,7 +3,7 @@ package dev.arcsoftware.madoc.repository;
 import dev.arcsoftware.madoc.enums.Arena;
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.entity.GameEntity;
-import dev.arcsoftware.madoc.model.entity.GamesheetUploadData;
+import dev.arcsoftware.madoc.model.entity.GameUploadData;
 import dev.arcsoftware.madoc.model.entity.TeamEntity;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
@@ -157,7 +157,7 @@ public class GameRepository {
                 .single();
     }
 
-    public void insertGamesheetUpload(GamesheetUploadData uploadFileData) {
+    public void insertGamesheetUpload(GameUploadData uploadFileData) {
         int id = jdbcClient
                 .sql(GameSql.INSERT_GAMESHEET_UPLOAD)
                 .params(uploadFileData.toParameterMap())

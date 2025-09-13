@@ -5,6 +5,7 @@ import dev.arcsoftware.madoc.enums.Position;
 import dev.arcsoftware.madoc.model.entity.PlayerEntity;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
+import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
 import dev.arcsoftware.madoc.model.payload.RosterDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,43 @@ public class RosterRepository {
         uploadFileData.setId(id);
     }
 
+    public List<RosterAssignmentDto> getAssignmentsByYearAndTeam(int year, int teamId) {
+        return jdbcClient
+                .sql(RostersSql.GET_ASSIGNMENTS_BY_TEAM_AND_YEAR)
+                .param("season_year", year)
+                .param("team_id", teamId)
+                .query((rs, num) -> {
+                    RosterAssignmentDto rosterAssignment = new RosterAssignmentDto();
+                    rosterAssignment.setId(rs.getInt("id"));
+                    rosterAssignment.setPlayerId(rs.getInt("player_id"));
+                    rosterAssignment.setTeamId(rs.getInt("team_id"));
+                    rosterAssignment.setSeasonYear(rs.getInt("season_year"));
+                    rosterAssignment.setDraftPosition(DraftRank.valueOf(rs.getString("draft_position")));
+                    rosterAssignment.setPosition(Position.valueOf(rs.getString("position")));
+                    rosterAssignment.setJerseyNumber(rs.getInt("jersey_number"));
+                    rosterAssignment.setRookie(rs.getBoolean("is_rookie"));
+                    rosterAssignment.setPlayerName(rs.getString("player_name"));
+                    return rosterAssignment;
+                })
+                .list();
+    }
+
+    public void updateAssignment(RosterAssignment rosterAssignment) {
+        jdbcClient
+                .sql(RostersSql.UPDATE_ROSTER_ASSIGNMENT)
+                .params(rosterAssignment.toParameterMap())
+                .update();
+    }
+
     public static class RostersSql {
+        public static final String GET_ASSIGNMENTS_BY_TEAM_AND_YEAR = """
+        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "player_name"
+        FROM madoc.roster_assignments ra
+        JOIN madoc.players p ON ra.player_id = p.id
+        WHERE ra.season_year = :season_year
+        AND ra.team_id = :team_id;
+        """;
+
         public static final String GET_ROSTERS_BY_YEAR = """
         SELECT r.jersey_number , p.first_name, p.last_name, CONCAT(p.first_name, ' ', p.last_name) as full_name, r.position, r.draft_position, r.is_rookie, t.team_name
             FROM "madoc".roster_assignments as r
@@ -116,6 +153,17 @@ public class RosterRepository {
         SELECT id, first_name, last_name, email, phone_number, created_at
         FROM madoc.players
         ORDER BY id ASC;
+        """;
+        public static final String UPDATE_ROSTER_ASSIGNMENT = """
+        UPDATE madoc.roster_assignments SET
+            team_id = :team_id,
+            player_id = :player_id,
+            season_year = :season_year,
+            draft_position = :draft_position,
+            position = :position,
+            jersey_number = :jersey_number,
+            is_rookie = :is_rookie
+        WHERE id = :id
         """;
     }
 }

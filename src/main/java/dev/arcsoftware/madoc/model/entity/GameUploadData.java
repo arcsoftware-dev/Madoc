@@ -1,16 +1,17 @@
 package dev.arcsoftware.madoc.model.entity;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Getter
 @Setter
-public class GamesheetUploadData extends UploadFileData {
+public class GameUploadData extends UploadFileData {
     private int gameId;
 
-    public GamesheetUploadData(String fileName, byte[] fileContent) {
+    public GameUploadData(String fileName, byte[] fileContent) {
         super(fileName, fileContent);
     }
 

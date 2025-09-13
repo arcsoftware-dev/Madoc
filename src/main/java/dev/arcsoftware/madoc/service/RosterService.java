@@ -6,8 +6,10 @@ import dev.arcsoftware.madoc.model.entity.PlayerEntity;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import dev.arcsoftware.madoc.model.entity.TeamEntity;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
+import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
 import dev.arcsoftware.madoc.model.payload.RosterUploadResult;
 import dev.arcsoftware.madoc.repository.RosterRepository;
+import dev.arcsoftware.madoc.repository.TeamRepository;
 import dev.arcsoftware.madoc.util.FileUploadParser;
 import dev.arcsoftware.madoc.util.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -27,17 +29,20 @@ public class RosterService {
     private final PlayersService playersService;
     private final TeamsService teamsService;
     private final RosterRepository rosterRepository;
+    private final TeamRepository teamRepository;
     private final FileUploadParser fileUploadParser;
 
     @Autowired
     public RosterService(PlayersService playersService,
                          TeamsService teamsService,
                          RosterRepository rosterRepository,
+                         TeamRepository teamRepository,
                          FileUploadParser fileUploadParser
     ) {
         this.playersService = playersService;
         this.teamsService = teamsService;
         this.rosterRepository = rosterRepository;
+        this.teamRepository = teamRepository;
         this.fileUploadParser = fileUploadParser;
     }
 
@@ -80,6 +85,11 @@ public class RosterService {
         );
     }
 
+    public List<RosterAssignmentDto> getAssignedRostersByYearAndTeam(int year, String teamName) {
+        int teamId = teamRepository.findTeamIdByNameAndYear(Utils.toCamelCase(teamName), year);
+        return rosterRepository.getAssignmentsByYearAndTeam(year, teamId);
+    }
+
     private List<RosterAssignment> createRosterAssignments(
             List<RosterUploadRow> rosterUploadRows,
             List<PlayerEntity> playerEntities,
@@ -120,5 +130,11 @@ public class RosterService {
         }
 
         return rosterAssignments;
+    }
+
+    public void modifyRosters(List<RosterAssignmentDto> rosterAssignments) {
+        for(RosterAssignment rosterAssignment : rosterAssignments) {
+            rosterRepository.updateAssignment(rosterAssignment);
+        }
     }
 }

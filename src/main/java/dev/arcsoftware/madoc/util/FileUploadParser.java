@@ -9,6 +9,7 @@ import dev.arcsoftware.madoc.model.csv.RosterUploadRow;
 import dev.arcsoftware.madoc.model.csv.ScheduleUploadRow;
 import dev.arcsoftware.madoc.model.entity.GoalEntity;
 import dev.arcsoftware.madoc.model.entity.PenaltyEntity;
+import dev.arcsoftware.madoc.model.payload.AttendanceUploadResult;
 import dev.arcsoftware.madoc.model.payload.GamesheetSummary;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -22,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -300,4 +300,32 @@ public class FileUploadParser {
     }
 
 
+    public AttendanceUploadResult parseAttendanceSheet(byte[] fileContent) {
+        AttendanceUploadResult result = new AttendanceUploadResult();
+        result.setAttendanceDetails(new ArrayList<>());
+
+        String csvFileString = new String(fileContent, StandardCharsets.UTF_8);
+        String[] lines = csvFileString.split("\n");
+
+        //Parse Metadata
+        String[] metaDataParts = lines[1].split(",");
+        result.setTeamName(metaDataParts[0].trim());
+        result.setGameTime(LocalDateTime.parse(metaDataParts[1].trim()));
+        String[] seasonInfo = metaDataParts[2].split("-");
+        result.setSeasonType(SeasonType.valueOf(seasonInfo[0].trim().toUpperCase()));
+        result.setSeasonYear(Integer.parseInt(seasonInfo[1].trim()));
+
+        //Parse
+        for(int l=3; l<lines.length; l++){
+            String[] data = lines[l].split(",");
+            AttendanceUploadResult.AttendanceDetail attendanceDetail = new AttendanceUploadResult.AttendanceDetail();
+            attendanceDetail.setJerseyNumber(Integer.parseInt(data[0].trim()));
+            attendanceDetail.setPlayerName(data[1].trim());
+            boolean attended = data.length > 2 && !data[2].trim().isBlank();
+            attendanceDetail.setAttended(attended);
+            result.addAttendanceDetail(attendanceDetail);
+        }
+
+        return result;
+    }
 }

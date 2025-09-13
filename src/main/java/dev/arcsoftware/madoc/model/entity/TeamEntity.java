@@ -15,6 +15,10 @@ public class TeamEntity {
     private String teamName;
     private int year;
 
+    public TeamEntity(int id){
+        this.id = id;
+    }
+
     public Map<String, Object> toParameterMap(){
         Map<String, Object> map = new HashMap<>();
         map.put("id", id);
