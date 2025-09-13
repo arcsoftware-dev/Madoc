@@ -116,7 +116,19 @@ public class StatsRepository {
             }
             return staticSkaterStats2024;
         }
-        return Collections.emptyList();
+        return jdbcClient
+                .sql(StatsSql.GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR)
+                .param("year", year)
+                .query((rs, num) -> StatsDto.builder()
+                        .playerName(rs.getString("player_name"))
+                        .teamName(rs.getString("team_name"))
+                        .gamesPlayed(rs.getInt("games_played"))
+                        .goals(rs.getInt("goals"))
+                        .assists(rs.getInt("assists"))
+                        .points(rs.getInt("points"))
+                        .penaltyMinutes(rs.getInt("penalty_minutes"))
+                        .build())
+                .list();
     }
 
     public List<StatsDto> getGoalieStats(int year, SeasonType seasonType) {
@@ -186,6 +198,51 @@ public class StatsRepository {
         INSERT INTO madoc.penalties (game_id, player_id, infraction, minutes, period, time)
         VALUES (:game_id, :player_id, :infraction, :minutes, :period, :time)
         RETURNING id;
+        """;
+
+        //TODO cant filter on season type with this query
+        public static final String GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR = """
+        SELECT
+            pl.id as player_id,
+            ra.jersey_number,
+            CONCAT(pl.first_name, ' ', pl.last_name) as player_name,
+            t.team_name,
+            COUNT(at.player_id) as games_played,
+            COUNT(g.player_id) as goals,
+            COUNT(a.player_id) as assists,
+            (COUNT(g.player_id) + COUNT(a.player_id)) as points,
+            COALESCE(SUM(p.minutes), 0) as penalty_minutes
+        FROM madoc.players pl
+                 FULL OUTER JOIN madoc.attendance at on pl.id = at.player_id
+                 FULL OUTER JOIN madoc.goals g on pl.id = g.player_id
+                 FULL OUTER JOIN madoc.assists a on pl.id = a.player_id
+                 FULL OUTER JOIN madoc.penalties p on pl.id = p.player_id
+                 INNER JOIN madoc.roster_assignments ra on pl.id = ra.player_id and ra.season_year = :year
+                 INNER JOIN madoc.teams t on ra.team_id = t.id
+        GROUP BY pl.id, g.player_id, a.player_id, p.player_id, ra.player_id, ra.team_id, t.team_name, at.player_id, ra.jersey_number
+        ORDER BY points desc;
+        """;
+
+        public static final String GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR_AND_TEAM = """
+        SELECT
+            pl.id as player_id,
+            ra.jersey_number,
+            CONCAT(pl.first_name, ' ', pl.last_name) as player_name,
+            t.team_name,
+            COUNT(at.player_id) as games_played,
+            COUNT(g.player_id) as goals,
+            COUNT(a.player_id) as assists,
+            (COUNT(g.player_id) + COUNT(a.player_id)) as points,
+            COALESCE(SUM(p.minutes), 0) as penalty_minutes
+        FROM madoc.players pl
+                 FULL OUTER JOIN madoc.attendance at on pl.id = at.player_id
+                 FULL OUTER JOIN madoc.goals g on pl.id = g.player_id
+                 FULL OUTER JOIN madoc.assists a on pl.id = a.player_id
+                 FULL OUTER JOIN madoc.penalties p on pl.id = p.player_id
+                 INNER JOIN madoc.roster_assignments ra on pl.id = ra.player_id and ra.season_year = :year
+                 INNER JOIN madoc.teams t on ra.team_id = t.id and t.team_name = :team_name
+        GROUP BY pl.id, g.player_id, a.player_id, p.player_id, ra.player_id, ra.team_id, t.team_name, at.player_id, ra.jersey_number
+        ORDER BY points desc;
         """;
     }
 }
