@@ -1,6 +1,5 @@
 package dev.arcsoftware.madoc.model.payload;
 
-import dev.arcsoftware.madoc.model.timesheet.RosterDto;
 import lombok.Builder;
 import lombok.Data;
 

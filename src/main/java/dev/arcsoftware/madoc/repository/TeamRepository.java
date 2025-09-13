@@ -34,6 +34,15 @@ public class TeamRepository {
         teamEntity.setId(id);
     }
 
+    public int findTeamIdByNameAndYear(String teamName, int year) {
+        return jdbcClient
+                .sql(TeamsSql.GET_TEAM_ID_BY_NAME_YEAR)
+                .param("year", year)
+                .param("team_name", teamName)
+                .query(Integer.class)
+                .single();
+    }
+
     public static class TeamsSql {
         public static final String INSERT_TEAM = """
         INSERT INTO madoc.teams (team_name, year)
@@ -46,6 +55,13 @@ public class TeamRepository {
             FROM madoc.teams
             WHERE year = :year
             ORDER BY id ASC
+        """;
+
+        public static final String GET_TEAM_ID_BY_NAME_YEAR = """
+        SELECT id
+            FROM madoc.teams
+            WHERE year = :year
+            AND team_name = :team_name
         """;
     }
 }

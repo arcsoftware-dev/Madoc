@@ -2,11 +2,13 @@ package dev.arcsoftware.madoc.controller;
 
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.exception.UnauthorizedException;
+import dev.arcsoftware.madoc.model.payload.GamesheetSummary;
+import dev.arcsoftware.madoc.model.entity.GamesheetUploadData;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.AttendanceUploadResult;
-import dev.arcsoftware.madoc.model.payload.GamesheetUploadResult;
 import dev.arcsoftware.madoc.model.payload.RosterUploadResult;
 import dev.arcsoftware.madoc.model.payload.ScheduleUploadResult;
+import dev.arcsoftware.madoc.service.GameService;
 import dev.arcsoftware.madoc.service.RosterService;
 import dev.arcsoftware.madoc.service.ScheduleService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +32,13 @@ public class AdminController {
 
     private final RosterService rosterService;
     private final ScheduleService scheduleService;
+    private final GameService gameService;
 
     @Autowired
-    public AdminController(RosterService rosterService, ScheduleService scheduleService) {
+    public AdminController(RosterService rosterService, ScheduleService scheduleService, GameService gameService) {
         this.rosterService = rosterService;
         this.scheduleService = scheduleService;
+        this.gameService = gameService;
     }
 
     @Value("${admin.token}")
@@ -80,21 +84,21 @@ public class AdminController {
     }
 
     @PostMapping(value = "/upload/gamesheet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<GamesheetUploadResult> uploadGamesheet(
+    public ResponseEntity<GamesheetSummary> uploadGamesheet(
             @RequestParam("X-Admin-Token") String adminToken,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("year") int year
+            @RequestParam("file") MultipartFile gamesheetFile
     ) throws IOException {
         if(!isValidAdminToken(adminToken)){
             throw new UnauthorizedException("Invalid admin token");
         }
 
-        log.info("Received gamesheet upload request for year: {}", year);
-        byte[] fileBytes = file.getBytes();
-        UploadFileData uploadFileData = new UploadFileData(year, file.getOriginalFilename(), fileBytes);
+        log.info("Received gamesheet upload request");
+        byte[] gamesheetFileBytes = gamesheetFile.getBytes();
+        GamesheetUploadData gamesheetUploadData = new GamesheetUploadData(gamesheetFile.getOriginalFilename(), gamesheetFileBytes);
 
+        GamesheetSummary summary = gameService.uploadGamesheet(gamesheetUploadData);
 
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+        return ResponseEntity.ok(summary);
     }
 
     @PostMapping(value = "/upload/attendance", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

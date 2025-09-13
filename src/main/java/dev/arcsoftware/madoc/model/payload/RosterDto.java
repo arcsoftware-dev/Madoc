@@ -1,4 +1,4 @@
-package dev.arcsoftware.madoc.model.timesheet;
+package dev.arcsoftware.madoc.model.payload;
 
 import dev.arcsoftware.madoc.enums.DraftRank;
 import dev.arcsoftware.madoc.enums.Position;

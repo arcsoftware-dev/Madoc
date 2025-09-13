@@ -8,7 +8,7 @@ import dev.arcsoftware.madoc.model.payload.TeamDataDto;
 import dev.arcsoftware.madoc.model.payload.TeamStatsDto;
 import dev.arcsoftware.madoc.model.request.StandingsRequest;
 import dev.arcsoftware.madoc.model.request.StatsRequest;
-import dev.arcsoftware.madoc.model.timesheet.RosterDto;
+import dev.arcsoftware.madoc.model.payload.RosterDto;
 import dev.arcsoftware.madoc.repository.RosterRepository;
 import dev.arcsoftware.madoc.repository.TeamRepository;
 import lombok.extern.slf4j.Slf4j;
