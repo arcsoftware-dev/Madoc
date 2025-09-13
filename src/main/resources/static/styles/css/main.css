@@ -291,6 +291,11 @@ a {
     font-weight: bold;
     width: 100%;
 }
+.team-score {
+    font-weight: bold;
+    width: 100%;
+    color: var(--accent);
+}
 .vs {
     font-size: 1.2em;
     font-weight: bold;

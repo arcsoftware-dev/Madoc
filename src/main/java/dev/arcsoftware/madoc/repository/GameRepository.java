@@ -52,7 +52,9 @@ public class GameRepository {
                 .query((rs, num) -> new ScheduleItemDto(
                         rs.getTimestamp("start_time").toLocalDateTime(),
                         rs.getString("home_team"),
-                        rs.getString("away_team")
+                        rs.getString("away_team"),
+                        rs.getString("home_score"),
+                        rs.getString("away_score")
                 ))
                 .list();
     }
@@ -75,7 +77,9 @@ public class GameRepository {
                 ScheduleItemDto scheduleItemDto = new ScheduleItemDto(
                         LocalDateTime.parse(record.get("Datetime")),
                         record.get("Home Team"),
-                        record.get("Away Team")
+                        record.get("Away Team"),
+                        null,
+                        null
                 );
                 schedule.add(scheduleItemDto);
             }
@@ -168,12 +172,33 @@ public class GameRepository {
 
     public static class GameSql {
         public static final String GET_SCHEDULE_BY_TYPE_AND_YEAR = """
-        SELECT g.game_time as start_time, ht.team_name as home_team, at.team_name as away_team
-            FROM "madoc".games g
-            JOIN "madoc".teams as ht ON g.home_team = ht.id AND g.year = ht.year
-            JOIN "madoc".teams as at ON g.away_team = at.id AND g.year = at.year
+        SELECT
+            g.game_time AS start_time,
+            ht.team_name AS home_team,
+            at.team_name AS away_team,
+            CASE WHEN g.is_finalized THEN COALESCE(hs.home_score, 0) END AS home_score,
+            CASE WHEN g.is_finalized THEN COALESCE(ascore.away_score, 0) END AS away_score
+        FROM madoc.games g
+                 JOIN madoc.teams AS ht ON g.home_team = ht.id AND g.year = ht.year
+                 JOIN madoc.teams AS at ON g.away_team = at.id AND g.year = at.year
+                 LEFT JOIN (
+            SELECT gm.id AS game_id, COUNT(*) AS home_score
+            FROM madoc.games gm
+                     JOIN madoc.goals gl ON gl.game_id = gm.id
+                     JOIN madoc.roster_assignments ra ON gl.player_id = ra.player_id AND ra.season_year = gm.year
+            WHERE ra.team_id = gm.home_team
+            GROUP BY gm.id
+        ) hs ON g.id = hs.game_id
+                 LEFT JOIN (
+            SELECT gm.id AS game_id, COUNT(*) AS away_score
+            FROM madoc.games gm
+                     JOIN madoc.goals gl ON gl.game_id = gm.id
+                     JOIN madoc.roster_assignments ra ON gl.player_id = ra.player_id AND ra.season_year = gm.year
+            WHERE ra.team_id = gm.away_team
+            GROUP BY gm.id
+        ) ascore ON g.id = ascore.game_id
         WHERE g.year = :year
-        AND g.season_type = :season_type
+          AND g.season_type = :season_type
         ORDER BY g.game_time ASC;
         """;
 

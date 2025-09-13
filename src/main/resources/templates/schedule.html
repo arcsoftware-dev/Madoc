@@ -33,6 +33,7 @@
                                     <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.homeTeam)} + '.svg'}" alt="Home Logo" class="team-logo"/>
                                 </a>
                                 <span class="team-name centered" th:text="${game.homeTeam}"></span>
+                                <span class="team-score centered" th:text="${game.homeScore}"></span>
                             </div>
                             <span class="vs">vs</span>
                             <div class="team">
@@ -40,6 +41,7 @@
                                     <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.awayTeam)} + '.svg'}" alt="Away Logo" class="team-logo"/>
                                 </a>
                                 <span class="team-name centered" th:text="${game.awayTeam}"></span>
+                                <span class="team-score centered" th:text="${game.awayScore}"></span>
                             </div>
                         </div>
                     </div>

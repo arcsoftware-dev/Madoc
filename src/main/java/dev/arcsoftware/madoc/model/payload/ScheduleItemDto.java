@@ -11,4 +11,6 @@ public class ScheduleItemDto {
     private LocalDateTime startTime;
     private String homeTeam;
     private String awayTeam;
+    private String homeScore;
+    private String awayScore;
 }
