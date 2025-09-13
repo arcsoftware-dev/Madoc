@@ -82,7 +82,9 @@ public class ScheduleService {
                 .map(game -> new ScheduleItemDto(
                         game.getGameTime(),
                         game.getHomeTeam().getTeamName(),
-                        game.getAwayTeam().getTeamName()
+                        game.getAwayTeam().getTeamName(),
+                        null,
+                        null
                 ))
                 .toList();
 
@@ -129,6 +131,7 @@ public class ScheduleService {
         for(GroupedScheduleDto groupedScheduleDto : groupedScheduleDtos) {
             for(ScheduleItemDto item : groupedScheduleDto.getGames()) {
                 if(teamFilter == null
+                        || teamFilter.equalsIgnoreCase("ALL")
                         || teamFilter.equalsIgnoreCase(item.getHomeTeam())
                         || teamFilter.equalsIgnoreCase(item.getAwayTeam())
                 ) {
