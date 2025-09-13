@@ -1,11 +1,9 @@
 package dev.arcsoftware.madoc.service;
 
 import dev.arcsoftware.madoc.model.entity.*;
+import dev.arcsoftware.madoc.model.payload.AttendanceUploadResult;
 import dev.arcsoftware.madoc.model.payload.GamesheetSummary;
-import dev.arcsoftware.madoc.repository.GameRepository;
-import dev.arcsoftware.madoc.repository.PlayerRepository;
-import dev.arcsoftware.madoc.repository.StatsRepository;
-import dev.arcsoftware.madoc.repository.TeamRepository;
+import dev.arcsoftware.madoc.repository.*;
 import dev.arcsoftware.madoc.util.FileUploadParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,26 +17,30 @@ import java.time.LocalDateTime;
 public class GameService {
     private final StatsRepository statsRepository;
     private final GameRepository gameRepository;
+    private final AttendanceRepository attendanceRepository;
     private final PlayerRepository playerRepository;
     private final TeamRepository teamRepository;
+
     private final FileUploadParser fileUploadParser;
 
     @Autowired
     public GameService(StatsRepository statsRepository,
                        GameRepository gameRepository,
+                       AttendanceRepository attendanceRepository,
                        PlayerRepository playerRepository,
                        TeamRepository teamRepository,
                        FileUploadParser fileUploadParser
     ) {
         this.statsRepository = statsRepository;
         this.gameRepository = gameRepository;
+        this.attendanceRepository = attendanceRepository;
         this.playerRepository = playerRepository;
         this.teamRepository = teamRepository;
         this.fileUploadParser = fileUploadParser;
     }
 
     @Transactional
-    public GamesheetSummary uploadGamesheet(GamesheetUploadData uploadFileData) {
+    public GamesheetSummary uploadGamesheet(GameUploadData uploadFileData) {
         GamesheetSummary summary = fileUploadParser.parseGamesheet(uploadFileData.getFileContent());
         uploadFileData.setYear(summary.getSeasonYear());
 
@@ -61,6 +63,55 @@ public class GameService {
         summary.setGamesheetFileName(uploadFileData.getFileName());
 
         return summary;
+    }
+
+
+    @Transactional
+    public AttendanceUploadResult uploadAttendance(GameUploadData uploadFileData) {
+        AttendanceUploadResult result = fileUploadParser.parseAttendanceSheet(uploadFileData.getFileContent());
+
+        //Handle insertion of attendance entities
+        int gameId = processAttendanceEntities(result);
+
+        //Insert uploadFileData
+        uploadFileData.setGameId(gameId);
+        uploadFileData.setFileName(
+                result.getTeamName()
+                        + "-game"
+                        + gameId
+                        + "-attendance"
+                        + ".csv"
+        );
+        attendanceRepository.insertAttendanceUpload(uploadFileData);
+
+        result.setAttendanceFileId(uploadFileData.getId());
+        result.setAttendanceFileName(uploadFileData.getFileName());
+
+        return result;
+    }
+
+    private int processAttendanceEntities(AttendanceUploadResult result) {
+        //Find game entity by date/seasonYear/seasonType
+        GameEntity foundGame = gameRepository.findByDateYearAndSeasonType(
+                result.getGameTime(),
+                result.getSeasonYear(),
+                result.getSeasonType()
+        );
+        int gameId = foundGame.getId();
+
+        int teamId = teamRepository.findTeamIdByNameAndYear(result.getTeamName(), result.getSeasonYear());
+
+        //Insert Entities
+        for(AttendanceUploadResult.AttendanceDetail homeAttendanceValue : result.getAttendanceDetails()){
+            AttendanceEntity entity = new AttendanceEntity();
+            entity.setGame(foundGame);
+            entity.setJerseyNumber(homeAttendanceValue.getJerseyNumber());
+            entity.setAttended(homeAttendanceValue.isAttended());
+            populateAttendanceEntity(entity, teamId);
+            attendanceRepository.insertAttendanceEntity(entity);
+        }
+
+        return gameId;
     }
 
     private int processGamesheetSummmary(GamesheetSummary summary) {
@@ -133,5 +184,11 @@ public class GameService {
         //set the player id for penalty from roster assignments from players table
         int playerId = playerRepository.findPlayerIdByJerseyNumberAndTeam(penaltyEntity.getJerseyNumber(), teamId);
         penaltyEntity.setPlayer(new PlayerEntity(playerId));
+    }
+
+    private void populateAttendanceEntity(AttendanceEntity attendanceEntity, int teamId) {
+        int playerId = playerRepository.findPlayerIdByJerseyNumberAndTeam(attendanceEntity.getJerseyNumber(), teamId);
+        attendanceEntity.setPlayer(new PlayerEntity(playerId));
+        attendanceEntity.setTeam(new TeamEntity(teamId));
     }
 }
