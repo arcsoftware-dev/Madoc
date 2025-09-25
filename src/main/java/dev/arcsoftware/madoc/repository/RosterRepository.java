@@ -6,7 +6,6 @@ import dev.arcsoftware.madoc.model.entity.PlayerEntity;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
-import dev.arcsoftware.madoc.model.payload.RosterDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -23,24 +22,6 @@ public class RosterRepository {
     @Autowired
     public RosterRepository(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
-    }
-
-    public List<RosterDto> getRostersByYear(int year) {
-        return jdbcClient
-                .sql(RostersSql.GET_ROSTERS_BY_YEAR)
-                .param("year", year)
-                .query((rs, num) -> RosterDto.builder()
-                        .jerseyNumber(rs.getInt("jersey_number"))
-                        .firstName(rs.getString("first_name"))
-                        .lastName(rs.getString("last_name"))
-                        .fullName(rs.getString("full_name"))
-                        .position(Position.valueOf(rs.getString("position")))
-                        .draftRank(DraftRank.valueOf(rs.getString("draft_position")))
-                        .isRookie(rs.getBoolean("is_rookie"))
-                        .teamName(rs.getString("team_name"))
-                        .build()
-                )
-                .list();
     }
 
     public void insertRosterAssignment(RosterAssignment rosterAssignment) {
@@ -86,11 +67,11 @@ public class RosterRepository {
         uploadFileData.setId(id);
     }
 
-    public List<RosterAssignmentDto> getAssignmentsByYearAndTeam(int year, int teamId) {
+    public List<RosterAssignmentDto> getAssignmentsByYearAndTeam(int year, String teamName) {
         return jdbcClient
                 .sql(RostersSql.GET_ASSIGNMENTS_BY_TEAM_AND_YEAR)
                 .param("season_year", year)
-                .param("team_id", teamId)
+                .param("team_name", teamName)
                 .query((rs, num) -> {
                     RosterAssignmentDto rosterAssignment = new RosterAssignmentDto();
                     rosterAssignment.setId(rs.getInt("id"));
@@ -101,7 +82,10 @@ public class RosterRepository {
                     rosterAssignment.setPosition(Position.valueOf(rs.getString("position")));
                     rosterAssignment.setJerseyNumber(rs.getInt("jersey_number"));
                     rosterAssignment.setRookie(rs.getBoolean("is_rookie"));
-                    rosterAssignment.setPlayerName(rs.getString("player_name"));
+                    rosterAssignment.setFullName(rs.getString("full_name"));
+                    rosterAssignment.setTeamName(rs.getString("team_name"));
+                    rosterAssignment.setFirstName(rs.getString("first_name"));
+                    rosterAssignment.setLastName(rs.getString("last_name"));
                     return rosterAssignment;
                 })
                 .list();
@@ -114,21 +98,45 @@ public class RosterRepository {
                 .update();
     }
 
+    public List<RosterAssignmentDto> getAssignmentsByYear(Integer year) {
+        return jdbcClient
+                .sql(RostersSql.GET_ASSIGNMENTS_BY_YEAR)
+                .param("season_year", year)
+                .query((rs, num) -> {
+                    RosterAssignmentDto rosterAssignment = new RosterAssignmentDto();
+                    rosterAssignment.setId(rs.getInt("id"));
+                    rosterAssignment.setPlayerId(rs.getInt("player_id"));
+                    rosterAssignment.setTeamId(rs.getInt("team_id"));
+                    rosterAssignment.setSeasonYear(rs.getInt("season_year"));
+                    rosterAssignment.setDraftPosition(DraftRank.valueOf(rs.getString("draft_position")));
+                    rosterAssignment.setPosition(Position.valueOf(rs.getString("position")));
+                    rosterAssignment.setJerseyNumber(rs.getInt("jersey_number"));
+                    rosterAssignment.setRookie(rs.getBoolean("is_rookie"));
+                    rosterAssignment.setFullName(rs.getString("full_name"));
+                    rosterAssignment.setTeamName(rs.getString("team_name"));
+                    rosterAssignment.setFirstName(rs.getString("first_name"));
+                    rosterAssignment.setLastName(rs.getString("last_name"));
+                    return rosterAssignment;
+                })
+                .list();
+    }
+
     public static class RostersSql {
         public static final String GET_ASSIGNMENTS_BY_TEAM_AND_YEAR = """
-        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "player_name"
-        FROM madoc.roster_assignments ra
-        JOIN madoc.players p ON ra.player_id = p.id
+        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "full_name", p.first_name, p.last_name, t.team_name
+            FROM madoc.roster_assignments ra
+            JOIN madoc.players p ON ra.player_id = p.id
+            JOIN madoc.teams t ON ra.team_id = t.id
         WHERE ra.season_year = :season_year
-        AND ra.team_id = :team_id;
+        AND t.team_name = :team_name;
         """;
 
-        public static final String GET_ROSTERS_BY_YEAR = """
-        SELECT r.jersey_number , p.first_name, p.last_name, CONCAT(p.first_name, ' ', p.last_name) as full_name, r.position, r.draft_position, r.is_rookie, t.team_name
-            FROM "madoc".roster_assignments as r
-            JOIN "madoc".players as p ON r.player_id = p.id
-            JOIN "madoc".teams as t ON r.team_id = t.id
-        where t.year = :year;
+        public static final String GET_ASSIGNMENTS_BY_YEAR = """
+        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "full_name", p.first_name, p.last_name, t.team_name
+            FROM madoc.roster_assignments ra
+            JOIN madoc.players p ON ra.player_id = p.id
+            JOIN madoc.teams t ON ra.team_id = t.id
+        WHERE ra.season_year = :season_year
         """;
 
         public static final String INSERT_ROSTER_ASSIGNMENT = """

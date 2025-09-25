@@ -13,7 +13,7 @@
             <h1 th:text="${year + ' ' + seasonType.getLabel() + ' Schedule'}"></h1>
         </section>
         <section class="centered downloadable">
-            <form th:action="@{/schedule/printable}" method="get" class="team-filter-form">
+            <form th:action="@{/api/schedule/printable}" method="get" class="team-filter-form">
                 <select name="team-filter" id="team-filter" required>
                     <option value="ALL" selected>All Teams</option>
                     <option th:each="team : ${teams}" th:value="${team}" th:text="${team}"></option>

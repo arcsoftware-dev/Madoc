@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,8 +101,13 @@ public class ScheduleService {
         );
     }
 
-    public List<ScheduleItemDto> getUpcomingMatches() {
-        return gameRepository.getUpcomingMatches(seasonMetadataService.getCurrentSeasonType(), seasonMetadataService.getCurrentSeasonYear());
+    public List<ScheduleItemDto> getUpcomingMatches(int limit) {
+        var schedule = getSchedule(seasonMetadataService.getCurrentSeasonType(), seasonMetadataService.getCurrentSeasonYear());
+        LocalDateTime now = LocalDate.now().atStartOfDay();
+        return schedule.stream()
+                .filter(item -> item.getStartTime().isAfter(now))
+                .limit(limit)
+                .toList();
     }
 
     public List<ScheduleItemDto> getSchedule(SeasonType seasonType, Integer year) {

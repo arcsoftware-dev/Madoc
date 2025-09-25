@@ -23,10 +23,17 @@ public class ConstitutionService {
         this.ruleRepository = ruleRepository;
     }
 
-
     @Cacheable(cacheManager = CACHE_MANAGER, value = RULES_CACHE)
     public List<RuleEntity> getRules() {
         log.info("cache miss for rules: calling repository");
         return ruleRepository.getAllRules();
+    }
+
+    public void updateRules(List<RuleEntity> rules) {
+        log.info("Updating {} rules: calling repository", rules.size());
+
+        for(var rule : rules) {
+            this.ruleRepository.updateRule(rule);
+        }
     }
 }

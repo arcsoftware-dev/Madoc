@@ -1,7 +1,9 @@
-package dev.arcsoftware.madoc.controller;
+package dev.arcsoftware.madoc.view;
 
+import dev.arcsoftware.madoc.controller.RosterController;
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.Pair;
+import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
 import dev.arcsoftware.madoc.model.payload.TeamDataDto;
 import dev.arcsoftware.madoc.service.SeasonMetadataService;
 import dev.arcsoftware.madoc.service.TeamsService;
@@ -19,13 +21,18 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequestMapping("/teams")
-public class TeamsController {
+public class TeamsView {
 
+    private final RosterController rosterController;
     private final TeamsService teamsService;
     private final SeasonMetadataService seasonMetadataService;
 
     @Autowired
-    public TeamsController(TeamsService teamsService, SeasonMetadataService seasonMetadataService) {
+    public TeamsView(RosterController rosterController,
+                     TeamsService teamsService,
+                     SeasonMetadataService seasonMetadataService
+    ) {
+        this.rosterController = rosterController;
         this.teamsService = teamsService;
         this.seasonMetadataService = seasonMetadataService;
     }
@@ -38,40 +45,36 @@ public class TeamsController {
             Model model
     ) {
         log.info("Fetching data for team with ID: {}", teamName);
+        Pair<Integer, SeasonType> normalizedRequest = seasonMetadataService.normalizeSeasonData(year, seasonType);
+        List<RosterAssignmentDto> roster = rosterController.getRosterAssignmentsByTeam(normalizedRequest.left(), teamName).getBody();
 
-        Pair<Integer, SeasonType> normalizedRequest = normalizeYearAndSeasonType(year, seasonType);
-        TeamDataDto teamData = teamsService.getTeamData(teamName, normalizedRequest.left(), normalizedRequest.right());
+        TeamDataDto teamData = teamsService.getTeamData(roster, normalizedRequest.left(), normalizedRequest.right());
 
         model.addAttribute("teamData", teamData);
         return "team-details";
     }
 
+    //Just need teamname and roster
     @GetMapping(path = "")
     public String getAllTeams(
             @RequestParam(value = "year", required = false) Integer year,
-            @RequestParam(value = "season-type", required = false) SeasonType seasonType,
             Model model
     ) {
         log.info("Fetching data for all teams");
 
-        Pair<Integer, SeasonType> normalizedRequest = normalizeYearAndSeasonType(year, seasonType);
-        List<TeamDataDto> teams = teamsService.getTeams(normalizedRequest.left(), normalizedRequest.right());
+        Pair<Integer, SeasonType> normalizedRequest = seasonMetadataService.normalizeSeasonData(year, null);
+        var rosters = rosterController.getRostersByYear(normalizedRequest.left()).getBody();
+
+        //convert to TeamDataDto
+        assert rosters != null;
+        List<TeamDataDto> teams = rosters.stream()
+                .map(r -> TeamDataDto.builder()
+                .teamName(r.getFirst().getTeamName())
+                        .roster(r)
+                        .build())
+                .toList();
 
         model.addAttribute("teams", teams);
         return "teams";
-    }
-
-    private Pair<Integer, SeasonType> normalizeYearAndSeasonType(Integer year, SeasonType seasonType) {
-        Integer yearResult = year;
-        if(yearResult == null){
-            yearResult = seasonMetadataService.getCurrentSeasonYear();
-        }
-
-        SeasonType seasonTypeResult = seasonType;
-        if(seasonTypeResult == null){
-            seasonTypeResult = seasonMetadataService.getCurrentSeasonType();
-        }
-
-        return new Pair<>(yearResult, seasonTypeResult);
     }
 }

@@ -9,4 +9,14 @@ public record StandingsRequest(
         SeasonType seasonType,
         StandingsCategory sortCategory,
         SortOrder sortOrder
-) {}
+) {
+    public StandingsRequest(Integer year,
+                            SeasonType seasonType,
+                            StandingsCategory sortCategory,
+                            SortOrder sortOrder){
+        this.year = year;
+        this.seasonType = seasonType;
+        this.sortCategory = sortCategory == null ? StandingsCategory.POINTS : sortCategory;
+        this.sortOrder = sortOrder == null ? SortOrder.DESC : sortOrder;
+    }
+}
