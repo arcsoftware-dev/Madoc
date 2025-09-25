@@ -9,7 +9,6 @@ import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
 import dev.arcsoftware.madoc.model.payload.RosterUploadResult;
 import dev.arcsoftware.madoc.repository.RosterRepository;
-import dev.arcsoftware.madoc.repository.TeamRepository;
 import dev.arcsoftware.madoc.util.FileUploadParser;
 import dev.arcsoftware.madoc.util.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -29,20 +28,17 @@ public class RosterService {
     private final PlayersService playersService;
     private final TeamsService teamsService;
     private final RosterRepository rosterRepository;
-    private final TeamRepository teamRepository;
     private final FileUploadParser fileUploadParser;
 
     @Autowired
     public RosterService(PlayersService playersService,
                          TeamsService teamsService,
                          RosterRepository rosterRepository,
-                         TeamRepository teamRepository,
                          FileUploadParser fileUploadParser
     ) {
         this.playersService = playersService;
         this.teamsService = teamsService;
         this.rosterRepository = rosterRepository;
-        this.teamRepository = teamRepository;
         this.fileUploadParser = fileUploadParser;
     }
 
@@ -86,8 +82,15 @@ public class RosterService {
     }
 
     public List<RosterAssignmentDto> getAssignedRostersByYearAndTeam(int year, String teamName) {
-        int teamId = teamRepository.findTeamIdByNameAndYear(Utils.toCamelCase(teamName), year);
-        return rosterRepository.getAssignmentsByYearAndTeam(year, teamId);
+        return rosterRepository.getAssignmentsByYearAndTeam(year, teamName);
+    }
+
+    public List<List<RosterAssignmentDto>> getAssignedRostersByYear(Integer year) {
+        List<RosterAssignmentDto> allAssignmentsForYear = rosterRepository.getAssignmentsByYear(year);
+        return new ArrayList<>(allAssignmentsForYear
+                .stream()
+                .collect(Collectors.groupingBy(RosterAssignmentDto::getTeamId))
+                .values());
     }
 
     private List<RosterAssignment> createRosterAssignments(

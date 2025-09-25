@@ -1,11 +1,14 @@
 package dev.arcsoftware.madoc.model.payload;
 
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class RosterAssignmentDto extends RosterAssignment {
-    @Getter
-    @Setter
-    private String playerName;
+    private String firstName;
+    private String lastName;
+    private String fullName;
+    private String teamName;
 }

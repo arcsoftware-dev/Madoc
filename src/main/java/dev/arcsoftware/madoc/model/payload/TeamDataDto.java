@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public class TeamDataDto {
     private String teamName;
-    private List<RosterDto> roster;
+    private List<RosterAssignmentDto> roster;
     private TeamStatsDto teamStats;
     private List<StatsDto> playerStats;
     private List<StatsDto> goalieStats;

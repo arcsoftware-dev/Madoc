@@ -26,11 +26,24 @@ public class RuleRepository {
                 .list();
     }
 
+    public void updateRule(RuleEntity ruleEntity){
+        log.info("Updating Rule in DB: {}", ruleEntity.getTitle());
+        this.jdbcClient
+                .sql(RulesSql.UPDATE_RULE)
+                .params(ruleEntity.toParameterMap())
+                .update();
+    }
+
     public static class RulesSql {
         public static final String GET_ALL_RULES = """
         SELECT id, title, description, created_at, updated_at
             FROM madoc.rules
             ORDER BY id ASC
+        """;
+
+        public static final String UPDATE_RULE = """
+            UPDATE madoc.rules SET title = :title, description = :description, updated_at = ?
+            WHERE id = :id
         """;
     }
 }

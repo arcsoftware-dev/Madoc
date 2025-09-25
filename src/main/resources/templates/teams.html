@@ -36,8 +36,8 @@
                             <td th:text="${player.fullName}"></td>
                             <td th:text="${player.position.getLabel()}"></td>
                             <td>
-                                <span th:if="${player.rookie}" th:text="${player.draftRank + ' *R'}"></span>
-                                <span th:if="${!player.rookie}" th:text="${player.draftRank}"></span>
+                                <span th:if="${player.rookie}" th:text="${player.draftPosition + ' *R'}"></span>
+                                <span th:if="${!player.rookie}" th:text="${player.draftPosition}"></span>
                             </td>
                         </tr>
                         </tbody>
