@@ -46,12 +46,29 @@ public class TeamsView {
     ) {
         log.info("Fetching data for team with ID: {}", teamName);
         Pair<Integer, SeasonType> normalizedRequest = seasonMetadataService.normalizeSeasonData(year, seasonType);
-        List<RosterAssignmentDto> roster = rosterController.getRosterAssignmentsByTeam(normalizedRequest.left(), teamName).getBody();
+
+        //We need to normalize the team name to match how it's stored.  Teams like the 'Red Wings' will come in as 'RedWings', and db lookup will fail otherwise
+        String normalizedTeamName = normalizeTeamName(teamName);
+
+        List<RosterAssignmentDto> roster = rosterController.getRosterAssignmentsByTeam(normalizedRequest.left(), normalizedTeamName).getBody();
 
         TeamDataDto teamData = teamsService.getTeamData(roster, normalizedRequest.left(), normalizedRequest.right());
 
         model.addAttribute("teamData", teamData);
         return "team-details";
+    }
+
+    private String normalizeTeamName(String teamName) {
+        StringBuilder normalizedTeamName = new StringBuilder();
+        char[] chars = teamName.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+            if (i > 0 && Character.isUpperCase(c)) {
+                normalizedTeamName.append(" ");
+            }
+            normalizedTeamName.append(c);
+        }
+        return normalizedTeamName.toString();
     }
 
     //Just need teamname and roster
