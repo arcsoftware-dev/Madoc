@@ -18,8 +18,10 @@ public class CacheConfig {
 
     public static final String RULES_CACHE = "rules";
     public static final String NEWS_CACHE = "news";
+    public static final String LATEST_NEWS_CACHE = "latest_news";
     public static final String SEASON_METADATA_YEAR_CACHE = "season-metadata-year";
     public static final String SEASON_METADATA_TYPE_CACHE = "season-metadata-season-type";
+    public static final String SEASON_METADATA_CACHE = "season-metadata";
 
     @Bean
     public CacheManager cacheManager() {
@@ -28,8 +30,10 @@ public class CacheConfig {
                 List.of(
                         RULES_CACHE,
                         NEWS_CACHE,
+                        LATEST_NEWS_CACHE,
                         SEASON_METADATA_YEAR_CACHE,
-                        SEASON_METADATA_TYPE_CACHE
+                        SEASON_METADATA_TYPE_CACHE,
+                        SEASON_METADATA_CACHE
                 )
         );
         return cacheManager;
