@@ -4,6 +4,7 @@ import dev.arcsoftware.madoc.model.entity.RuleEntity;
 import dev.arcsoftware.madoc.repository.RuleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -29,9 +30,9 @@ public class ConstitutionService {
         return ruleRepository.getAllRules();
     }
 
+    @CacheEvict(cacheManager = CACHE_MANAGER, value = RULES_CACHE)
     public void updateRules(List<RuleEntity> rules) {
-        log.info("Updating {} rules: calling repository", rules.size());
-
+        log.info("Updating {} rules and evicting rules cache", rules.size());
         for(var rule : rules) {
             this.ruleRepository.updateRule(rule);
         }
