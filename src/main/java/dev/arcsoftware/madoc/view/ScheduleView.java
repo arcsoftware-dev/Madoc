@@ -54,8 +54,8 @@ public class ScheduleView {
                 .toList();
 
         model.addAttribute("teams", teams);
-        model.addAttribute("year", year);
-        model.addAttribute("seasonType", seasonType);
+        model.addAttribute("year", seasonData.left());
+        model.addAttribute("seasonType", seasonData.right());
         model.addAttribute("groupedSchedule", groupedSchedule);
         return "schedule";
     }
