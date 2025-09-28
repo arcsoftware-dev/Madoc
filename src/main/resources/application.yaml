@@ -38,3 +38,11 @@ spring:
 
 admin:
   token: ${ADMIN_TOKEN}
+
+auth:
+  cookie:
+    name: jwt-auth
+    expiry_seconds: 3600
+  jwt:
+    secret: ${JWT_SIGNING_SECRET}
+    expiry_seconds: 3600
