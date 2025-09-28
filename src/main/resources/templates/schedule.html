@@ -18,6 +18,8 @@
                     <option value="ALL" selected>All Teams</option>
                     <option th:each="team : ${teams}" th:value="${team}" th:text="${team}"></option>
                 </select>
+                <input type="hidden" name="year" id="year" th:value="${year}"/>
+                <input type="hidden" name="season-type" id="season-type" th:value="${seasonType}"/>
                 <button type="submit">Download Printable Schedule</button>
             </form>
         </section>

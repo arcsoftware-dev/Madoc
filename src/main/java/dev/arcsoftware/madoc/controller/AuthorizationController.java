@@ -2,17 +2,20 @@ package dev.arcsoftware.madoc.controller;
 
 import dev.arcsoftware.madoc.auth.model.AuthToken;
 import dev.arcsoftware.madoc.auth.model.AuthenticationRequest;
+import dev.arcsoftware.madoc.auth.model.ChangePasswordRequest;
 import dev.arcsoftware.madoc.service.AuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Controller
@@ -29,17 +32,18 @@ public class AuthorizationController {
         this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/login")
+    @PostMapping(path = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<Boolean> login(
             HttpServletResponse response,
-            @RequestBody AuthenticationRequest authRequest
+            @RequestParam Map<String, String> paramMap
     ){
+        AuthenticationRequest authRequest = new AuthenticationRequest(paramMap.get("username"), paramMap.get("password"));
         AuthToken authToken = authenticationService.authenticate(authRequest);
         addAuthCookie(response, authToken);
         return ResponseEntity.ok(true);
     }
 
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity<Boolean> logout(
             HttpServletResponse response
     ){
@@ -47,10 +51,26 @@ public class AuthorizationController {
         return ResponseEntity.ok(true);
     }
 
+    @PutMapping(path = "/manage/password", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<Boolean> changePassword(
+            HttpServletResponse response,
+            @RequestParam Map<String, String> paramMap
+    ){
+        ChangePasswordRequest authRequest = new ChangePasswordRequest(
+                Objects.requireNonNull(paramMap.get("username")),
+                Objects.requireNonNull(paramMap.get("oldPassword")),
+                Objects.requireNonNull(paramMap.get("newPassword"))
+        );
+
+        AuthToken authToken = authenticationService.changePassword(authRequest);
+        addAuthCookie(response, authToken);
+        log.info("Password changed for user '{}'", authRequest.username());
+        return ResponseEntity.ok(true);
+    }
+
     private void addAuthCookie(HttpServletResponse response, AuthToken token){
-        // Create a new Cookie
         Cookie authCookie = new Cookie(cookieName, token.jwt());
-        authCookie.setMaxAge(token.expiryInSeconds()); // Set cookie to expire in 1 hour (in seconds)
+        authCookie.setMaxAge(token.expiryInSeconds());
         authCookie.setPath(token.validityPath());
         authCookie.setSecure(true);
         authCookie.setHttpOnly(true);
