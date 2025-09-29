@@ -1,0 +1,20 @@
+meta {
+  name: get rosters by team
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{host}}/api/roster/{{year}}/{{team}}
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  year: 2025
+  team: Golden Knights
+}
+
+settings {
+  encodeUrl: true
+}

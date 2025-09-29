@@ -1,0 +1,26 @@
+meta {
+  name: upload schedule
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/api/schedule/upload
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file()
+  year: {{year}}
+  season-type: {{seasonType}}
+}
+
+vars:pre-request {
+  year: 2025
+  seasonType: REGULAR_SEASON
+}
+
+settings {
+  encodeUrl: true
+}

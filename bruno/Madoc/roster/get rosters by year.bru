@@ -1,0 +1,19 @@
+meta {
+  name: get rosters by year
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/api/roster/{{year}}
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  year: 2025
+}
+
+settings {
+  encodeUrl: true
+}

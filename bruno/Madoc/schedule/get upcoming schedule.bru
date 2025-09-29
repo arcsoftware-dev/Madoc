@@ -1,0 +1,23 @@
+meta {
+  name: get upcoming schedule
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{host}}/api/schedule/upcoming?limit=3
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 3
+}
+
+vars:pre-request {
+  year: 2025
+}
+
+settings {
+  encodeUrl: true
+}

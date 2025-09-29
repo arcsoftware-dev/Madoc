@@ -1,0 +1,19 @@
+meta {
+  name: upload attendance
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/api/game/upload/attendance
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file()
+}
+
+settings {
+  encodeUrl: true
+}

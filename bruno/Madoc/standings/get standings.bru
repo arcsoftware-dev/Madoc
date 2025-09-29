@@ -1,0 +1,26 @@
+meta {
+  name: get standings
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{host}}/api/standings?year=2025&season-type=REGULAR_SEASON&sort-field=POINTS&sort-order=DESC
+  body: none
+  auth: inherit
+}
+
+params:query {
+  year: 2025
+  season-type: REGULAR_SEASON
+  sort-field: POINTS
+  sort-order: DESC
+}
+
+vars:pre-request {
+  year: 2025
+}
+
+settings {
+  encodeUrl: true
+}
