@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,12 +64,19 @@ public class JwtAuthFilter implements Filter {
             if(username != null) {
                 @SuppressWarnings("unchecked")
                 List<String> authorities = (List<String>) claims.get("authorities");
+                @SuppressWarnings("unchecked")
+                List<String> roles = (List<String>) claims.get("roles");
+
+                List<String> combinedAuthorities = Stream.concat(
+                        Optional.ofNullable(authorities).orElse(new ArrayList<>()).stream(),
+                        Optional.ofNullable(roles).stream().map(role -> "ROLE_" + role)
+                ).toList();
 
                 // 5. Create auth object
                 // UsernamePasswordAuthenticationToken: A built-in object, used by spring to represent the current authenticated / being authenticated user.
                 // It needs a list of authorities, which has type of GrantedAuthority interface, where SimpleGrantedAuthority is an implementation of that interface
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                        username, null, authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+                        username, null, combinedAuthorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
 
                 // 6. Authenticate the user
                 // Now, user is authenticated
