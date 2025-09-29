@@ -1,11 +1,13 @@
 package dev.arcsoftware.madoc.repository;
 
 import dev.arcsoftware.madoc.auth.model.UserEntity;
+import dev.arcsoftware.madoc.enums.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Repository
@@ -19,11 +21,23 @@ public class UserRepository {
     }
 
     public Optional<UserEntity> findUserByUsername(String username) {
-        return jdbcClient
+        Optional<UserEntity> optUser = jdbcClient
                 .sql(UsersSql.GET_USER_BY_USERNAME)
                 .param("username", username)
                 .query(UserEntity.class)
                 .optional();
+
+        if(optUser.isEmpty()) return optUser;
+
+        //Fetch roles
+        var roles = jdbcClient
+                .sql(UsersSql.FETCH_USER_ROLES)
+                .param("username", username)
+                .query(Role.class)
+                .list();
+        optUser.get().setRoles(roles);
+
+        return optUser;
     }
 
     public void updateUserPasswordHash(UserEntity user) {
@@ -46,6 +60,14 @@ public class UserRepository {
                 .param("created_at", user.getCreatedAt())
                 .param("updated_at", user.getUpdatedAt())
                 .update();
+        //Insert the roles
+        for (Role roleName : Optional.ofNullable(user.getRoles()).orElse(new ArrayList<>())) {
+            jdbcClient
+                    .sql(UsersSql.INSERT_ROLE_ASSIGNMENT)
+                    .param("username", user.getUsername())
+                    .param("role_name", roleName.name())
+                    .update();
+        }
     }
 
 
@@ -64,6 +86,17 @@ public class UserRepository {
         UPDATE madoc.users
         SET password_hash = :password_hash, updated_at = :updated_at
         WHERE username = :username
+        """;
+
+        public static final String INSERT_ROLE_ASSIGNMENT = """
+        INSERT INTO madoc.role_assignments (username, role_id)
+        SELECT :username, r.id FROM madoc.roles r WHERE r.role = :role_name
+        """;
+
+        public static final String FETCH_USER_ROLES = """
+        SELECT r.role FROM madoc.roles r
+        JOIN madoc.role_assignments ra ON r.id = ra.role_id
+        WHERE ra.username = :username
         """;
     }
 }
