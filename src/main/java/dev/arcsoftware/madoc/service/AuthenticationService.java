@@ -80,7 +80,7 @@ public class AuthenticationService {
                 .subject(user.getUsername())
                 .issuedAt(Date.from(Instant.now()))
                 .expiration(Date.from(Instant.now().plusSeconds(jwtConfig.getExpirySeconds())))
-                .claim("authorities", Optional.ofNullable(user.getRoles()).orElse(Collections.emptyList()))
+                .claim("roles", Optional.ofNullable(user.getRoles()).orElse(Collections.emptyList()))
                 .signWith(jwtConfig.getSecretKey())
                 .compact();
     }
