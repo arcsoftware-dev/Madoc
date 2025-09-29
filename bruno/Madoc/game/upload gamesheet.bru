@@ -1,0 +1,19 @@
+meta {
+  name: upload gamesheet
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/api/game/upload/gamesheet
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file()
+}
+
+settings {
+  encodeUrl: true
+}

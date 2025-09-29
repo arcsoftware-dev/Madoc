@@ -1,0 +1,25 @@
+meta {
+  name: get printable
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{host}}/api/schedule/printable?year=2025&season-type=REGULAR_SEASON&team-filter=all
+  body: none
+  auth: inherit
+}
+
+params:query {
+  year: 2025
+  season-type: REGULAR_SEASON
+  team-filter: all
+}
+
+vars:pre-request {
+  year: 2025
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,24 @@
+meta {
+  name: get schedule
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/api/schedule?year=2025&season-type=REGULAR_SEASON
+  body: none
+  auth: inherit
+}
+
+params:query {
+  year: 2025
+  season-type: REGULAR_SEASON
+}
+
+vars:pre-request {
+  year: 2025
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,25 @@
+meta {
+  name: get grouped schedule
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{host}}/api/schedule/grouped?year=2025&season-type=REGULAR_SEASON
+  body: none
+  auth: inherit
+}
+
+params:query {
+  year: 2025
+  season-type: REGULAR_SEASON
+}
+
+vars:pre-request {
+  year: 2025
+  team: Golden Knights
+}
+
+settings {
+  encodeUrl: true
+}
