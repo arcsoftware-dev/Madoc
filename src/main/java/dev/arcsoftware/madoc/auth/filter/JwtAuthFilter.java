@@ -7,6 +7,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,8 @@ import java.util.stream.Stream;
 @Slf4j
 public class JwtAuthFilter implements Filter {
 
+    @Value("${auth.cookie.name}")
+    private String cookieName;
     private final JwtConfig jwtConfig;
 
     public JwtAuthFilter(JwtConfig jwtConfig) {
@@ -49,8 +52,6 @@ public class JwtAuthFilter implements Filter {
         log.debug("Successfully authenticated using jwt token");
         filterChain.doFilter(servletRequest, servletResponse);
     }
-
-
 
     private void setSecurityContext(String token) {
         try {	// exceptions might be thrown in creating the claims if for example the token is expired
@@ -91,7 +92,7 @@ public class JwtAuthFilter implements Filter {
 
     private String extractJwtFromRequest(HttpServletRequest request) {
         return Stream.of(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
-                .filter(cookie -> "jwt-auth".equals(cookie.getName()))
+                .filter(cookie -> cookieName.equals(cookie.getName()))
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
