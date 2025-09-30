@@ -119,6 +119,7 @@ public class StatsRepository {
         return jdbcClient
                 .sql(StatsSql.GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR)
                 .param("year", year)
+                .param("season_type", seasonType.name())
                 .query((rs, num) -> StatsDto.builder()
                         .playerName(rs.getString("player_name"))
                         .teamName(rs.getString("team_name"))
@@ -200,27 +201,53 @@ public class StatsRepository {
         RETURNING id;
         """;
 
-        //TODO cant filter on season type with this query
         public static final String GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR = """
-        SELECT
-            pl.id as player_id,
-            ra.jersey_number,
-            CONCAT(pl.first_name, ' ', pl.last_name) as player_name,
-            t.team_name,
-            COUNT(at.player_id) as games_played,
-            COUNT(g.player_id) as goals,
-            COUNT(a.player_id) as assists,
-            (COUNT(g.player_id) + COUNT(a.player_id)) as points,
-            COALESCE(SUM(p.minutes), 0) as penalty_minutes
-        FROM madoc.players pl
-                 FULL OUTER JOIN madoc.attendance at on pl.id = at.player_id
-                 FULL OUTER JOIN madoc.goals g on pl.id = g.player_id
-                 FULL OUTER JOIN madoc.assists a on pl.id = a.player_id
-                 FULL OUTER JOIN madoc.penalties p on pl.id = p.player_id
-                 INNER JOIN madoc.roster_assignments ra on pl.id = ra.player_id and ra.season_year = :year
-                 INNER JOIN madoc.teams t on ra.team_id = t.id
-        GROUP BY pl.id, g.player_id, a.player_id, p.player_id, ra.player_id, ra.team_id, t.team_name, at.player_id, ra.jersey_number
-        ORDER BY points desc;
+        
+                SELECT
+            p.id AS player_id,
+            ra.jersey_number as jersey_number,
+            CONCAT(p.first_name, ' ', p.last_name) as player_name,
+            t.team_name AS team_name,
+            COUNT(DISTINCT a.id) AS games_played,
+            COUNT(DISTINCT go.id) AS goals,
+            COUNT(DISTINCT ass.id) AS assists,
+            (COUNT(DISTINCT go.id) + COUNT(DISTINCT ass.id)) as points,
+            COALESCE(SUM(pe.minutes), 0) AS penalty_minutes
+        FROM madoc.players p
+                 LEFT JOIN madoc.attendance a
+                           ON p.id = a.player_id
+                               AND a.attended = true
+                 LEFT JOIN madoc.games ga_att
+                           ON a.game_id = ga_att.id
+                               AND ga_att.year = :year
+                               AND ga_att.season_type = :season_type
+                 LEFT JOIN madoc.goals go
+                           ON p.id = go.player_id
+                 LEFT JOIN madoc.games ga_go
+                           ON go.game_id = ga_go.id
+                               AND ga_go.year = :year
+                               AND ga_go.season_type = :season_type
+                 LEFT JOIN madoc.assists ass
+                           ON p.id = ass.player_id
+                 LEFT JOIN madoc.goals go_ass
+                           ON (go_ass.primary_assist_id = ass.id OR go_ass.secondary_assist_id = ass.id)
+                 LEFT JOIN madoc.games ga_ass
+                           ON go_ass.game_id = ga_ass.id
+                               AND ga_ass.year = :year
+                               AND ga_ass.season_type = :season_type
+                 LEFT JOIN madoc.penalties pe
+                           ON p.id = pe.player_id
+                 LEFT JOIN madoc.games ga_pe
+                           ON pe.game_id = ga_pe.id
+                               AND ga_pe.year = :year
+                               AND ga_pe.season_type = :season_type
+                 LEFT JOIN madoc.roster_assignments ra
+                           ON ra.player_id = p.id
+                            AND ra.season_year = :year
+                 LEFT JOIN madoc.teams t
+                           ON ra.team_id = t.id
+                            AND t.year = :year
+        GROUP BY p.id, ra.jersey_number, t.team_name;
         """;
 
         public static final String GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR_AND_TEAM = """
