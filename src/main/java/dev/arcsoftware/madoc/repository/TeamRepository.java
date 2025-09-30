@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class TeamRepository {
@@ -43,6 +44,14 @@ public class TeamRepository {
                 .single();
     }
 
+    public Optional<String> findTeamNameById(Integer teamId) {
+        return jdbcClient
+                .sql(TeamsSql.GET_TEAM_NAME_BY_ID)
+                .param("id", teamId)
+                .query(String.class)
+                .optional();
+    }
+
     public static class TeamsSql {
         public static final String INSERT_TEAM = """
         INSERT INTO madoc.teams (team_name, year)
@@ -62,6 +71,9 @@ public class TeamRepository {
             FROM madoc.teams
             WHERE year = :year
             AND team_name = :team_name
+        """;
+        public static final String GET_TEAM_NAME_BY_ID = """
+        SELECT team_name FROM madoc.teams WHERE id = :id
         """;
     }
 }

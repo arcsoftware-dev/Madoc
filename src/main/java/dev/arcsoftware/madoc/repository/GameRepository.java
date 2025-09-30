@@ -14,6 +14,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -170,6 +172,54 @@ public class GameRepository {
         uploadFileData.setId(id);
     }
 
+    public Optional<GameEntity> findById(Integer gameId) {
+        return jdbcClient
+                .sql(GameSql.FIND_GAME_BY_ID)
+                .param("id", gameId)
+                .query((rs, num) -> {
+                    int seasonYear = rs.getInt("year");
+                    SeasonType seasonType = SeasonType.valueOf(rs.getString("season_type"));
+                    LocalDateTime gameTime = rs.getTimestamp("game_time").toLocalDateTime();
+
+                    TeamEntity homeTeam = new TeamEntity();
+                    homeTeam.setId(rs.getInt("home_team"));
+                    homeTeam.setTeamName(rs.getString("home_team_name"));
+                    homeTeam.setYear(seasonYear);
+
+                    TeamEntity awayTeam = new TeamEntity();
+                    awayTeam.setId(rs.getInt("away_team"));
+                    awayTeam.setTeamName(rs.getString("away_team_name"));
+                    awayTeam.setYear(seasonYear);
+
+                    GameEntity game = new GameEntity();
+                    game.setId(rs.getInt("id"));
+                    game.setHomeTeam(homeTeam);
+                    game.setAwayTeam(awayTeam);
+                    game.setYear(seasonYear);
+                    game.setSeasonType(seasonType);
+                    game.setVenue(Arena.valueOf(rs.getString("venue")));
+                    game.setGameTime(gameTime);
+                    game.setRefereeNameOne(rs.getString("referee_name_one"));
+                    game.setRefereeNameTwo(rs.getString("referee_name_two"));
+                    game.setRefereeNameThree(rs.getString("referee_name_three"));
+
+                    Array rawArray = rs.getArray("referee_notes");
+                    if(rawArray != null){
+                        String[] refNotesArray = (String[]) rawArray.getArray();
+                        game.setRefereeNotes(Arrays.stream(refNotesArray).toList());
+                    }
+
+                    game.setFinalized(rs.getBoolean("is_finalized"));
+                    Timestamp finalizedTimestamp = rs.getTimestamp("finalized_at");
+                    if(finalizedTimestamp != null){
+                        game.setFinalizedAt(finalizedTimestamp.toLocalDateTime());
+                    }
+
+                    return game;
+                })
+                .optional();
+    }
+
     public static class GameSql {
         public static final String GET_SCHEDULE_BY_TYPE_AND_YEAR = """
         SELECT
@@ -200,6 +250,14 @@ public class GameRepository {
         WHERE g.year = :year
           AND g.season_type = :season_type
         ORDER BY g.game_time ASC;
+        """;
+
+        public static final String FIND_GAME_BY_ID = """
+                SELECT g.id, g.year, g.season_type, g.game_time, g.home_team, g.away_team, g.venue, g.referee_name_one, g.referee_name_two, g.referee_name_three, g.referee_notes, g.is_finalized, g.finalized_at, ht.team_name as home_team_name, at.team_name as away_team_name
+            FROM "madoc".games g
+            JOIN "madoc".teams as ht ON g.home_team = ht.id AND g.year = ht.year
+            JOIN "madoc".teams as at ON g.away_team = at.id AND g.year = at.year
+        WHERE g.id = :id;
         """;
 
         public static final String INSERT_NEW_GAME = """

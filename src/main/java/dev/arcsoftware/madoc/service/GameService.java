@@ -1,6 +1,8 @@
 package dev.arcsoftware.madoc.service;
 
+import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.entity.*;
+import dev.arcsoftware.madoc.model.payload.AttendanceDto;
 import dev.arcsoftware.madoc.model.payload.AttendanceUploadResult;
 import dev.arcsoftware.madoc.model.payload.GamesheetSummary;
 import dev.arcsoftware.madoc.repository.*;
@@ -20,6 +22,7 @@ public class GameService {
     private final AttendanceRepository attendanceRepository;
     private final PlayerRepository playerRepository;
     private final TeamRepository teamRepository;
+    private final RosterRepository rosterRepository;
 
     private final FileUploadParser fileUploadParser;
 
@@ -29,6 +32,7 @@ public class GameService {
                        AttendanceRepository attendanceRepository,
                        PlayerRepository playerRepository,
                        TeamRepository teamRepository,
+                       RosterRepository rosterRepository,
                        FileUploadParser fileUploadParser
     ) {
         this.statsRepository = statsRepository;
@@ -36,6 +40,7 @@ public class GameService {
         this.attendanceRepository = attendanceRepository;
         this.playerRepository = playerRepository;
         this.teamRepository = teamRepository;
+        this.rosterRepository = rosterRepository;
         this.fileUploadParser = fileUploadParser;
     }
 
@@ -191,4 +196,76 @@ public class GameService {
         attendanceEntity.setPlayer(new PlayerEntity(playerId));
         attendanceEntity.setTeam(new TeamEntity(teamId));
     }
+
+    //TODO verify this works correctly before using in prod
+    @Transactional
+    public AttendanceUploadResult addAttendanceReport(AttendanceDto attendance) {
+        GameEntity foundGame = gameRepository.findById(attendance.getGameId()).orElseThrow();
+
+        //Handle insertion of attendance entities
+        for(AttendanceUploadResult.AttendanceDetail attendanceDetail : attendance.getAttendanceDetails()){
+            AttendanceEntity entity = new AttendanceEntity();
+            entity.setGame(foundGame);
+            entity.setJerseyNumber(attendanceDetail.getJerseyNumber());
+            entity.setAttended(attendanceDetail.isAttended());
+
+            populateAttendanceEntity(entity, attendance.getTeamId());
+            //attendanceRepository.insertAttendanceEntity(entity);
+        }
+
+        //Create result object
+        String teamName = teamRepository.findTeamNameById(attendance.getTeamId()).orElseThrow();
+
+        AttendanceUploadResult result = new AttendanceUploadResult();
+        result.setSeasonYear(foundGame.getYear());
+        result.setSeasonType(foundGame.getSeasonType());
+        result.setGameTime(foundGame.getGameTime());
+        result.setTeamName(teamName);
+        result.setAttendanceDetails(attendance.getAttendanceDetails());
+
+        //Create a csv file to upload
+        byte[] fileContent = createCsvFromAttendanceDetails(result);
+        String fileName = result.getTeamName()
+                + "-game"
+                + attendance.getGameId()
+                + "-attendance"
+                + "-generated"
+                + ".csv";
+        GameUploadData uploadFileData = new GameUploadData(fileName, fileContent);
+        uploadFileData.setGameId(foundGame.getId());
+        uploadFileData.setYear(foundGame.getYear());
+        //attendanceRepository.insertAttendanceUpload(uploadFileData);
+
+        result.setAttendanceFileId(uploadFileData.getId());
+        result.setAttendanceFileName(uploadFileData.getFileName());
+
+        return result;
+    }
+
+    private byte[] createCsvFromAttendanceDetails(AttendanceUploadResult result) {
+        StringBuilder sb = new StringBuilder();
+
+        //Add game info
+        sb.append("Team,Date,Season Type/Year,Attended\n")
+            .append(result.getTeamName()).append(",")
+            .append(result.getGameTime().toLocalDate().toString()).append(",")
+            .append(result.getSeasonType().name()).append("-").append(result.getSeasonYear()).append("\n");
+
+        //Add attendance details
+        sb.append("#,Player Name,Attending\n");
+        for(AttendanceUploadResult.AttendanceDetail detail : result.getAttendanceDetails()){
+            sb.append(detail.getJerseyNumber()).append(",")
+                    .append(detail.getPlayerName()).append(",")
+                    .append(detail.isAttended() ? "Yes" : "No")
+                    .append("\n");
+        }
+
+        //Remove the last newline
+        if(!sb.isEmpty() && sb.charAt(sb.length() - 1) == '\n') {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+
+        return sb.toString().getBytes();
+    }
+
 }
