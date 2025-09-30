@@ -1,0 +1,28 @@
+meta {
+  name: add new player
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{host}}/api/roster/create/player
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "firstName": "Jake",
+    "lastName": "Wong",
+    "email": null,
+    "phoneNumber": null
+  }
+}
+
+body:multipart-form {
+  file: @file()
+}
+
+settings {
+  encodeUrl: true
+}

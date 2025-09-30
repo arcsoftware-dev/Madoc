@@ -1,6 +1,7 @@
 package dev.arcsoftware.madoc.service;
 
 import dev.arcsoftware.madoc.model.entity.PlayerEntity;
+import dev.arcsoftware.madoc.repository.PlayerRepository;
 import dev.arcsoftware.madoc.repository.RosterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,12 +18,14 @@ import java.util.stream.Collectors;
 public class PlayersService {
 
     private final RosterRepository rosterRepository;
+    private final PlayerRepository playerRepository;
 
     @Autowired
     public PlayersService(
-            RosterRepository rosterRepository
-    ) {
+            RosterRepository rosterRepository,
+            PlayerRepository playerRepository) {
         this.rosterRepository = rosterRepository;
+        this.playerRepository = playerRepository;
     }
 
     public List<PlayerEntity> getPlayers() {
@@ -54,5 +58,13 @@ public class PlayersService {
             log.info("Inserted an additional {} players", playerEntities.size() - originalPlayerCount);
         }
         return playerEntities;
+    }
+
+    public boolean playerExistsById(Integer playerId) {
+        return playerRepository.playerExistsById(playerId);
+    }
+
+    public void insertNewPlayer(PlayerEntity playerEntity) {
+        rosterRepository.insertPlayer(playerEntity);
     }
 }

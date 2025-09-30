@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class PlayerRepository {
@@ -31,6 +32,16 @@ public class PlayerRepository {
                 .param("jersey_number", jerseyNumber)
                 .query(Integer.class)
                 .single();
+    }
+
+    public boolean playerExistsById(Integer playerId) {
+        String sql = "SELECT COUNT(*) FROM madoc.players WHERE id = :player_id";
+        Integer count = jdbcClient
+                .sql(sql)
+                .param("player_id", playerId)
+                .query(Integer.class)
+                .single();
+        return count > 0;
     }
 
     public static class PlayersSql {

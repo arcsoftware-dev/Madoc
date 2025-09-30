@@ -1,5 +1,6 @@
 package dev.arcsoftware.madoc.controller;
 
+import dev.arcsoftware.madoc.model.entity.PlayerEntity;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
 import dev.arcsoftware.madoc.model.payload.RosterUploadResult;
@@ -41,6 +42,28 @@ public class RosterController {
         RosterUploadResult rosterUploadResult = rosterService.assignRosters(uploadFileData);
 
         return ResponseEntity.ok(rosterUploadResult);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]')")
+    @PostMapping(value = "/create/assignment", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RosterAssignmentDto> createRosterAssignment(
+            @RequestBody RosterAssignmentDto rosterAssignment
+    ) {
+        log.info("Received add roster assignment request: {}", rosterAssignment);
+        rosterService.addPlayerToRoster(rosterAssignment);
+
+        return ResponseEntity.ok(rosterAssignment);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]')")
+    @PostMapping(value = "/create/player", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PlayerEntity> createPlayerEntity(
+            @RequestBody PlayerEntity playerEntity
+    ) {
+        log.info("Received add player request: {}", playerEntity);
+        rosterService.addPlayer(playerEntity);
+
+        return ResponseEntity.ok(playerEntity);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]')")

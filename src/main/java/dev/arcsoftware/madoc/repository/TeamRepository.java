@@ -52,6 +52,16 @@ public class TeamRepository {
                 .optional();
     }
 
+    public boolean teamExistsById(Integer teamId) {
+        String sql = "SELECT COUNT(*) FROM madoc.teams WHERE id = :team_id";
+        Integer count = jdbcClient
+                .sql(sql)
+                .param("team_id", teamId)
+                .query(Integer.class)
+                .single();
+        return count > 0;
+    }
+
     public static class TeamsSql {
         public static final String INSERT_TEAM = """
         INSERT INTO madoc.teams (team_name, year)

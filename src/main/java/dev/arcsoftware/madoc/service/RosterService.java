@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -82,15 +83,21 @@ public class RosterService {
     }
 
     public List<RosterAssignmentDto> getAssignedRostersByYearAndTeam(int year, String teamName) {
-        return rosterRepository.getAssignmentsByYearAndTeam(year, teamName);
+        var assignments = rosterRepository.getAssignmentsByYearAndTeam(year, teamName);
+        assignments.sort(Comparator.comparing(p -> p.getDraftPosition().getRank()));
+        return assignments;
     }
 
     public List<List<RosterAssignmentDto>> getAssignedRostersByYear(Integer year) {
         List<RosterAssignmentDto> allAssignmentsForYear = rosterRepository.getAssignmentsByYear(year);
-        return new ArrayList<>(allAssignmentsForYear
+        var assignmentsByTeam = new ArrayList<>(allAssignmentsForYear
                 .stream()
                 .collect(Collectors.groupingBy(RosterAssignmentDto::getTeamId))
                 .values());
+        for(List<RosterAssignmentDto> teamAssignments : assignmentsByTeam) {
+            teamAssignments.sort(Comparator.comparing(p -> p.getDraftPosition().getRank()));
+        }
+        return assignmentsByTeam;
     }
 
     private List<RosterAssignment> createRosterAssignments(
@@ -139,5 +146,21 @@ public class RosterService {
         for(RosterAssignment rosterAssignment : rosterAssignments) {
             rosterRepository.updateAssignment(rosterAssignment);
         }
+    }
+
+    public void addPlayerToRoster(RosterAssignmentDto rosterAssignment) {
+        //Look up player and team to ensure they exist
+        if(!teamsService.teamExistsById(rosterAssignment.getTeamId())) {
+            throw new RuntimeException("Team not found with ID: " + rosterAssignment.getTeamId());
+        }
+        if(!playersService.playerExistsById(rosterAssignment.getPlayerId())) {
+            throw new RuntimeException("Player not found with ID: " + rosterAssignment.getPlayerId());
+        }
+
+        rosterRepository.insertRosterAssignment(rosterAssignment);
+    }
+
+    public void addPlayer(PlayerEntity playerEntity) {
+        playersService.insertNewPlayer(playerEntity);
     }
 }

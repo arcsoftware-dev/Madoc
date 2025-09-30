@@ -1,0 +1,29 @@
+meta {
+  name: add attendance
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/api/game/attendance
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "gameId": 4,
+    "teamId": 6,
+    "attendanceDetails": [
+      {
+        "playerName": "Jacob Arsenault",
+        "jerseyNumber": 1,
+        "attended": true
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

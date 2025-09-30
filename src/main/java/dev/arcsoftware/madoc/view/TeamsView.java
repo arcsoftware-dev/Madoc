@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -84,12 +86,14 @@ public class TeamsView {
 
         //convert to TeamDataDto
         assert rosters != null;
-        List<TeamDataDto> teams = rosters.stream()
-                .map(r -> TeamDataDto.builder()
-                .teamName(r.getFirst().getTeamName())
-                        .roster(r)
-                        .build())
-                .toList();
+        List<TeamDataDto> teams = new ArrayList<>();
+        for(var r : rosters){
+            r.sort(Comparator.comparingInt(a -> a.getDraftPosition().getRank()));
+            teams.add(TeamDataDto.builder()
+                    .teamName(r.getFirst().getTeamName())
+                    .roster(r)
+                    .build());
+        }
 
         model.addAttribute("teams", teams);
         return "teams";

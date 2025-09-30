@@ -1,0 +1,31 @@
+meta {
+  name: add roster assignment
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{host}}/api/roster/create/assignment
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "playerId": 90,
+    "teamId": 1,
+    "seasonYear": 2025,
+    "draftPosition": "D_C1",
+    "position": "DEFENCE",
+    "jerseyNumber": 55,
+    "rookie": true
+  }
+}
+
+body:multipart-form {
+  file: @file()
+}
+
+settings {
+  encodeUrl: true
+}
