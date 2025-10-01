@@ -1,6 +1,9 @@
-- auto-generate attendance sheet
-- auto-generate gamesheet
 - how to manage substitute players?
 - what to do if player wears different jersey number
 - goalie stats
 - filter player stats by season type
+
+URGENT
+- multiple roster assignments per player (rookie draft)
+- keep finalized gamesheet rosters as is after roster changes
+  -(populate attendance at creation of gamesheet, option to refresh roster to latest, option to clear gamesheet while keeping existing attendance layout)

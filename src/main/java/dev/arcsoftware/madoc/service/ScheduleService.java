@@ -83,6 +83,7 @@ public class ScheduleService {
         List<ScheduleItemDto> scheduleItemDtos = games.stream()
                 .map(game -> new ScheduleItemDto(
                         game.getGameTime(),
+                        game.getId(),
                         game.getHomeTeam().getTeamName(),
                         game.getAwayTeam().getTeamName(),
                         null,

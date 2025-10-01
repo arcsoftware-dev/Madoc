@@ -15,6 +15,8 @@ public class GamesheetSummary {
     private int gamesheetFileId;
     private String gamesheetFileName;
 
+    private int gameId;
+
     private LocalDateTime gameTime;
     private Arena venue;
     private int seasonYear;

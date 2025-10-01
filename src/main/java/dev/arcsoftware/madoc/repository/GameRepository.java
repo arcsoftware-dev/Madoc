@@ -1,15 +1,18 @@
 package dev.arcsoftware.madoc.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.arcsoftware.madoc.enums.Arena;
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.entity.GameEntity;
 import dev.arcsoftware.madoc.model.entity.GameUploadData;
 import dev.arcsoftware.madoc.model.entity.TeamEntity;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
+import dev.arcsoftware.madoc.model.payload.GamesheetPayload;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -31,19 +34,12 @@ import java.util.Optional;
 @Repository
 public class GameRepository {
     private final JdbcClient jdbcClient;
+    private final ObjectMapper objectMapper;
 
-    public GameRepository(JdbcClient jdbcClient) {
+    @Autowired
+    public GameRepository(JdbcClient jdbcClient, ObjectMapper objectMapper) {
         this.jdbcClient = jdbcClient;
-    }
-
-    public List<ScheduleItemDto> getUpcomingMatches(SeasonType seasonType, int year) {
-        List<ScheduleItemDto> schedule = getSchedule(seasonType, year);
-
-        LocalDateTime now = LocalDate.now().atStartOfDay();
-        return schedule.stream()
-                .filter(item -> item.getStartTime().isAfter(now))
-                .limit(3) // Limit to 3 upcoming matches
-                .toList();
+        this.objectMapper = objectMapper;
     }
 
     public List<ScheduleItemDto> getSchedule(SeasonType seasonType, int year) {
@@ -53,43 +49,13 @@ public class GameRepository {
                 .param("season_type", seasonType.name())
                 .query((rs, num) -> new ScheduleItemDto(
                         rs.getTimestamp("start_time").toLocalDateTime(),
+                        rs.getInt("game_id"),
                         rs.getString("home_team"),
                         rs.getString("away_team"),
                         rs.getString("home_score"),
                         rs.getString("away_score")
                 ))
                 .list();
-    }
-
-    private List<ScheduleItemDto> loadScheduleFromCsv(SeasonType seasonType, int year) {
-        List<ScheduleItemDto> schedule = new ArrayList<>();
-
-        String scheduleFileName = String.format("data/schedule/%d/%s.csv", year, seasonType.name());
-        ClassPathResource scheduleCsv = new ClassPathResource(scheduleFileName);
-
-        final String[] HEADERS = {"Datetime","Home Team","Away Team"};
-        try(Reader reader = new InputStreamReader(scheduleCsv.getInputStream())) {
-            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                    .setHeader(HEADERS)
-                    .setSkipHeaderRecord(true)
-                    .get();
-
-            Iterable<CSVRecord> records = csvFormat.parse(reader);
-            for(CSVRecord record : records) {
-                ScheduleItemDto scheduleItemDto = new ScheduleItemDto(
-                        LocalDateTime.parse(record.get("Datetime")),
-                        record.get("Home Team"),
-                        record.get("Away Team"),
-                        null,
-                        null
-                );
-                schedule.add(scheduleItemDto);
-            }
-        } catch (IOException e) {
-            log.error("Error loading schedule from CSV for {} {}", seasonType, year, e);
-            return new ArrayList<>(); // Return empty list on error
-        }
-        return schedule;
     }
 
     public void uploadScheduleFile(UploadFileData uploadFileData) {
@@ -220,10 +186,58 @@ public class GameRepository {
                 .optional();
     }
 
+    public Optional<GamesheetPayload> fetchGamesheetPayloadByGameId(int gameId) {
+        return jdbcClient
+                .sql(GameSql.FETCH_GAMESHEET_PAYLOAD_BY_GAME_ID)
+                .param("game_id", gameId)
+                .query((rs, num) -> {
+                    String jsonString = rs.getString("json_string");
+                    // Deserialize JSON string to GamesheetPayload
+                    // Assuming you have a method to do this, e.g., using Jackson or Gson
+                    return deserializeGamesheetPayload(jsonString);
+                })
+                .optional();
+    }
+
+    private GamesheetPayload deserializeGamesheetPayload(String jsonString) {
+        try {
+            return objectMapper.readValue(jsonString, GamesheetPayload.class);
+        } catch (IOException e) {
+            log.error("Error deserializing GamesheetPayload JSON", e);
+            return null;
+        }
+    }
+
+    public void updateGamesheetPayload(GamesheetPayload gamesheet) {
+        jdbcClient
+                .sql(GameSql.UPDATE_GAMESHEET_PAYLOAD)
+                .param("game_id", gamesheet.getGameId())
+                .param("json_string", serializeGamesheetPayload(gamesheet))
+                .update();
+    }
+
+    public void insertNewGamesheetPayload(GamesheetPayload gamesheet) {
+        jdbcClient
+                .sql(GameSql.INSERT_GAMESHEET_PAYLOAD)
+                .param("game_id", gamesheet.getGameId())
+                .param("json_string", serializeGamesheetPayload(gamesheet))
+                .update();
+    }
+
+    private String serializeGamesheetPayload(GamesheetPayload gamesheet) {
+        try {
+            return objectMapper.writeValueAsString(gamesheet);
+        } catch (IOException e) {
+            log.error("Error serializing GamesheetPayload to JSON", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public static class GameSql {
         public static final String GET_SCHEDULE_BY_TYPE_AND_YEAR = """
         SELECT
             g.game_time AS start_time,
+            g.id AS game_id,
             ht.team_name AS home_team,
             at.team_name AS away_team,
             CASE WHEN g.is_finalized THEN COALESCE(hs.home_score, 0) END AS home_score,
@@ -304,6 +318,20 @@ public class GameRepository {
         WHERE g.year = :year
         AND g.season_type = :season_type
         AND g.game_time = :game_time;
+        """;
+
+        public static final String FETCH_GAMESHEET_PAYLOAD_BY_GAME_ID = """
+        SELECT json_string from madoc.gamesheets where game_id = :game_id;
+        """;
+
+        public static final String INSERT_GAMESHEET_PAYLOAD = """
+        INSERT INTO madoc.gamesheets (game_id, json_string)
+        VALUES (:game_id, :json_string::jsonb)
+        """;
+
+        public static final String UPDATE_GAMESHEET_PAYLOAD = """
+        UPDATE madoc.gamesheets SET json_string = :json_string::jsonb
+        WHERE game_id = :game_id;
         """;
     }
 }

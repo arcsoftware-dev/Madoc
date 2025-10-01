@@ -22,6 +22,7 @@ public class CacheConfig {
     public static final String SEASON_METADATA_YEAR_CACHE = "season-metadata-year";
     public static final String SEASON_METADATA_TYPE_CACHE = "season-metadata-season-type";
     public static final String SEASON_METADATA_CACHE = "season-metadata";
+    public static final String ROSTER_TEAM_CACHE = "roster-team";
 
     @Bean
     public CacheManager cacheManager() {
@@ -33,7 +34,8 @@ public class CacheConfig {
                         LATEST_NEWS_CACHE,
                         SEASON_METADATA_YEAR_CACHE,
                         SEASON_METADATA_TYPE_CACHE,
-                        SEASON_METADATA_CACHE
+                        SEASON_METADATA_CACHE,
+                        ROSTER_TEAM_CACHE
                 )
         );
         return cacheManager;

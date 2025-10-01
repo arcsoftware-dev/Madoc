@@ -20,8 +20,6 @@
                     <h3 th:text="${article.title}">Article Title</h3>
                     <p class="news-date" th:text="${#temporals.format(article.createdAt, 'MMMM dd yyyy')}"></p>
                     <p class="news-summary" th:text="${article.summary}"></p>
-<!--                    <a th:href="@{/news/{id}(id=${article.id})}" class="read-more">Read more</a>-->
-                    <a class="read-more">Read more</a>
                 </div>
             </div>
             <div class="upcoming-cards feed-item feed-item-schedule">
@@ -35,7 +33,7 @@
                             </a>
                             <span class="team-name centered" th:text="${upcomingGame.homeTeam}"></span>
                         </div>
-                        <span class="vs">vs</span>
+                        <a th:href="@{|/games/${upcomingGame.gameId}|}" class="vs">vs</a>
                         <div class="team">
                             <a th:href="@{/teams/{team}(team=${utils.stripSpaces(upcomingGame.awayTeam)})}">
                                 <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(upcomingGame.awayTeam)} + '.svg'}" alt="Away Logo" class="team-logo"/>

@@ -3,6 +3,7 @@ package dev.arcsoftware.madoc.controller;
 import dev.arcsoftware.madoc.model.entity.GameUploadData;
 import dev.arcsoftware.madoc.model.payload.AttendanceDto;
 import dev.arcsoftware.madoc.model.payload.AttendanceUploadResult;
+import dev.arcsoftware.madoc.model.payload.GamesheetPayload;
 import dev.arcsoftware.madoc.model.payload.GamesheetSummary;
 import dev.arcsoftware.madoc.service.GameService;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -69,5 +68,39 @@ public class GameController {
         AttendanceUploadResult attendanceReport = gameService.addAttendanceReport(attendance);
 
         return ResponseEntity.ok(attendanceReport);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
+    @PostMapping(value = "/gamesheet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<GamesheetSummary> postGamesheet(
+            @RequestBody GamesheetPayload gamesheet,
+            @RequestParam(value="submit", defaultValue = "false") boolean submit
+    ){
+        log.info("Received gamesheet post request with submit={}", submit);
+
+        GamesheetSummary summary = gameService.createGamesheetSummary(gamesheet, submit);
+
+        return ResponseEntity.ok(summary);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
+    @PutMapping(value = "/gamesheet/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<GamesheetPayload> updateGamesheetPayload(
+            @RequestBody GamesheetPayload gamesheet
+    ){
+        log.info("Received gamesheet draft update request for game {}", gamesheet.getGameId());
+
+        GamesheetPayload payload = gameService.updateGamesheetPayload(gamesheet, true);
+
+        return ResponseEntity.ok(payload);
+    }
+
+    @GetMapping(value = "/gamesheet/dto/{gameId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<GamesheetPayload> fetchGamesheetPayload(@PathVariable("gameId") int gameId){
+        log.info("Received fetch gamesheet dto for game {}", gameId);
+
+        GamesheetPayload payload = gameService.fetchGamesheetPayloadByGameId(gameId);
+
+        return ResponseEntity.ok(payload);
     }
 }

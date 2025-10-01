@@ -13,7 +13,6 @@ public enum SeasonType {
     private final String code;
     private final String label;
 
-    @JsonCreator
     public static SeasonType fromCode(String code){
         for (SeasonType seasonType : SeasonType.values()) {
             if (seasonType.code.equalsIgnoreCase(code)){
