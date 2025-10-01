@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ScheduleItemDto {
     private LocalDateTime startTime;
+    private Integer gameId;
     private String homeTeam;
     private String awayTeam;
     private String homeScore;

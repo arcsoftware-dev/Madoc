@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title>404 Not Found</title>
+    <title th:text="${status}+' Code Error'"></title>
     <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
     <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
 </head>

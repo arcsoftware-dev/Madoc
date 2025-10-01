@@ -1,3 +1,9 @@
-<footer class="main-footer" th:fragment="footer">
-    &copy; 2025 Arc Software
+<footer class="main-footer" th:fragment="footer" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+    <p>&copy; 2025 Arc Software</p>
+    <div sec:authorize="isAnonymous()">
+        <a th:href="@{/login}">Login</a>
+    </div>
+    <div sec:authorize="isAuthenticated()">
+        <a th:href="@{/logout}">Logout</a>
+    </div>
 </footer>

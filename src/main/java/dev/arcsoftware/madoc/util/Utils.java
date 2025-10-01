@@ -1,6 +1,9 @@
 package dev.arcsoftware.madoc.util;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Collection;
 
 @Component
 public class Utils {
@@ -18,6 +21,14 @@ public class Utils {
             case "CANUCKS" -> "CNK";
             default -> teamName.length() <= 3 ? teamName : teamName.substring(0, 3).toUpperCase();
         };
+    }
+
+    public boolean collectionIsNotEmpty(Collection<?> collection) {
+        return !collectionIsEmpty(collection);
+    }
+
+    public boolean collectionIsEmpty(Collection<?> collection) {
+        return CollectionUtils.isEmpty(collection);
     }
 
     public String stripSpaces(String s){

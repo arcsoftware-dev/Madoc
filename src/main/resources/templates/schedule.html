@@ -37,7 +37,7 @@
                                 <span class="team-name centered" th:text="${game.homeTeam}"></span>
                                 <span class="team-score centered" th:text="${game.homeScore}"></span>
                             </div>
-                            <span class="vs">vs</span>
+                            <a th:href="@{|/games/${game.gameId}|}" class="vs">vs</a>
                             <div class="team">
                                 <a th:href="@{/teams/{team}(team=${utils.stripSpaces(game.awayTeam)})}">
                                     <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.awayTeam)} + '.svg'}" alt="Away Logo" class="team-logo"/>

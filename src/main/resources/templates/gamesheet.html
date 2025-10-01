@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6" lang="en">
+<head>
+    <title>MMHL</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/responsive.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/constitution.css}"/>
+</head>
+<body>
+    <div th:replace="~{fragments/header.html :: header}"></div>
+    <main class="content">
+        <section id="gamesheet_header">
+            <h1 th:text="${gamesheet.homeTeam} + ' vs ' + ${gamesheet.awayTeam}">Home vs Away</h1>
+            <p th:text="${#temporals.format(gamesheet.gameTime, 'MMMM d, yyyy hh:mm a')} + ' at ' + ${gamesheet.venue.name()}">Date at Location</p>
+        </section>
+        <section id="gamesheet_summary" sec:authorize="isAnonymous() || !hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')">
+            <div id="homeRoster">
+                <h3 th:text="${gamesheet.homeTeam}"></h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Jersey</th>
+                        <th>Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="player : ${homeTeamPlayers}">
+                        <td th:text="${player.jerseyNumber}"></td>
+                        <td th:text="${player.fullName}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="awayRoster">
+                <h3 th:text="${gamesheet.awayTeam}"></h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Jersey</th>
+                        <th>Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="player : ${awayTeamPlayers}">
+                        <td th:text="${player.jerseyNumber}"></td>
+                        <td th:text="${player.fullName}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <div id="gamesheet_form" sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')">
+            <form action="#" th:action="@{/games/{gameId}(gameId=${gamesheet.gameId})}" th:object="${gamesheet}" method="post">
+                <div id="gamesheet_form_metadata">
+                    <input type="hidden" th:field="*{gameId}"/>
+                    <input type="hidden" th:field="*{gameTime}"/>
+                    <input type="hidden" th:field="*{venue}"/>
+                    <input type="hidden" th:field="*{seasonYear}"/>
+                    <input type="hidden" th:field="*{seasonType}"/>
+                    <input type="hidden" th:field="*{finalized}"/>
+
+                    <input type="hidden" th:field="*{homeTeam}"/>
+                    <input type="hidden" th:field="*{homeTeamId}"/>
+                    <input type="hidden" th:field="*{awayTeam}"/>
+                    <input type="hidden" th:field="*{awayTeamId}"/>
+                </div>
+
+                <div th:if="${#fields.hasErrors()}" style="margin: 1em">
+                    <div th:each="error: ${#fields.errors()}">
+                        <span th:text="${error}" style="color: #CC1919"></span>
+                    </div>
+                </div>
+
+                <div id="update_buttons">
+                    <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Save</button>
+                    <button type="submit" name="finalize" onclick="return confirm('Are you sure you want to finalize the Gamesheet?  This cannot be undone');" th:disabled="${gamesheet.finalized}">Finalize</button>
+                </div>
+
+                <div id="addGoal" th:if="${!gamesheet.finalized}">
+                    <h4>Add Goal</h4>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Team</th>
+                            <th>Scorer</th>
+                            <th>Primary Assist</th>
+                            <th>Secondary Assist</th>
+                            <th>Goal Type</th>
+                            <th>Period</th>
+                            <th>Time</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr>
+                            <td>
+                                <select th:field="*{nextGoal.team}">
+                                    <option th:value="${gamesheet.homeTeam}" th:text="${gamesheet.homeTeam}"></option>
+                                    <option th:value="${gamesheet.awayTeam}" th:text="${gamesheet.awayTeam}"></option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextGoal.goal.scorer}"/>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextGoal.goal.assist1}"/>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextGoal.goal.assist2}"/>
+                            </td>
+                            <td>
+                                <select th:field="*{nextGoal.goal.goalType}">
+                                    <option th:each="type : ${goalTypes}"
+                                            th:value="${type}"
+                                            th:text="${type}"></option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextGoal.goal.period}"/>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextGoal.goal.time}"/>
+                            </td>
+                            <td>
+                                <button type="submit" name="addGoal" value="${nextGoal.team}">Add Goal</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="addPenalty" th:if="${!gamesheet.finalized}">
+                    <h4>Add Penalty</h4>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Team</th>
+                            <th>Player</th>
+                            <th>Minutes</th>
+                            <th>Infraction</th>
+                            <th>Period</th>
+                            <th>Time</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr>
+                            <td>
+                                <select th:field="*{nextPenalty.team}">
+                                    <option th:value="${gamesheet.homeTeam}" th:text="${gamesheet.homeTeam}"></option>
+                                    <option th:value="${gamesheet.awayTeam}" th:text="${gamesheet.awayTeam}"></option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextPenalty.penalty.jerseyNumber}"/>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextPenalty.penalty.minutes}"/>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextPenalty.penalty.infraction}"/>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextPenalty.penalty.period}"/>
+                            </td>
+                            <td>
+                                <input type="text" th:field="*{nextPenalty.penalty.time}"/>
+                            </td>
+                            <td>
+                                <button type="submit" name="addPenalty" value="${nextPenalty.team}">Add Penalty</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="homeAttendance">
+                    <h3 th:text="${gamesheet.homeTeam}"></h3>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Played</th>
+                            <th>Jersey</th>
+                            <th>Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="player, rowStat : ${homeTeamPlayers}">
+                            <td>
+                                <input type="checkbox" th:field="*{homeAttendanceByPlayerId[__${rowStat.index}__].attended}" th:disabled="${gamesheet.finalized}"/>
+                                <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].playerName" th:value="${player.fullName}">
+                                <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].playerId" th:value="${player.playerId}">
+                                <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].teamId" th:value="${player.teamId}">
+                                <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].gameId" th:value="${gamesheet.gameId}">
+                                <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].jerseyNumber" th:value="${player.jerseyNumber}">
+                            </td>
+                            <td th:text="${player.jerseyNumber}"></td>
+                            <td th:text="${player.fullName}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="awayAttendance">
+                    <h3 th:text="${gamesheet.awayTeam}"></h3>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Played</th>
+                            <th>Jersey</th>
+                            <th>Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="player, rowStat : ${awayTeamPlayers}">
+                            <td>
+                                <input type="checkbox" th:field="*{awayAttendanceByPlayerId[__${rowStat.index}__].attended}" th:disabled="${gamesheet.finalized}"/>
+                                <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].playerName" th:value="${player.fullName}">
+                                <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].playerId" th:value="${player.playerId}">
+                                <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].teamId" th:value="${player.teamId}">
+                                <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].gameId" th:value="${gamesheet.gameId}">
+                                <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].jerseyNumber" th:value="${player.jerseyNumber}">
+                            </td>
+                            <td th:text="${player.jerseyNumber}"></td>
+                            <td th:text="${player.fullName}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="home_goals">
+                    <h2 th:text="${gamesheet.homeTeam} + ' Goals'"></h2>
+                    <div th:if="${utils.collectionIsEmpty(gamesheet.homeGoals)}">
+                        <p>No Data</p>
+                    </div>
+                    <div th:if="${utils.collectionIsNotEmpty(gamesheet.homeGoals)}">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Goal Number</th>
+                                <th>Scorer</th>
+                                <th>Primary Assist</th>
+                                <th>Secondary Assist</th>
+                                <th>Goal Type</th>
+                                <th>Period</th>
+                                <th>Time</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            <tr th:each="goal,rowStat : *{homeGoals}">
+                                <td th:text="${rowStat.count}"></td>
+                                <td>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].scorer}" th:value="${goal.scorer}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].assist1}" th:value="${goal.assist1}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].assist2}" th:value="${goal.assist2}"/>
+                                </td>
+                                <td>
+                                    <select th:field="*{homeGoals[__${rowStat.index}__].goalType}">
+                                        <option th:each="type : ${goalTypes}"
+                                                th:value="${type}"
+                                                th:text="${type}"></option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].period}" th:value="${goal.period}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].time}" th:value="${goal.time}"/>
+                                </td>
+                                <td>
+                                    <button type="submit" name="removeGoal" th:disabled="${gamesheet.finalized}"
+                                            th:value="'home-'+${rowStat.index}">Delete</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Update</button>
+                    </div>
+                </div>
+                <div id="home_penalties">
+                    <h2 th:text="${gamesheet.homeTeam} + ' Penalties'"></h2>
+
+                    <div th:if="${utils.collectionIsEmpty(gamesheet.homePenalties)}">
+                        <p>No Data</p>
+                    </div>
+                    <div th:if="${utils.collectionIsNotEmpty(gamesheet.homePenalties)}">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Penalty Number</th>
+                                <th>Player</th>
+                                <th>Minutes</th>
+                                <th>Infraction</th>
+                                <th>Period</th>
+                                <th>Time</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            <tr th:each="penalty,rowStat : *{homePenalties}">
+                                <td th:text="${rowStat.count}"></td>
+                                <td>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].jerseyNumber}" th:value="${penalty.jerseyNumber}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].minutes}" th:value="${penalty.minutes}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].infraction}" th:value="${penalty.infraction}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].period}" th:value="${penalty.period}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].time}" th:value="${penalty.time}"/>
+                                </td>
+                                <td>
+                                    <button type="submit" name="removePenalty" th:disabled="${gamesheet.finalized}"
+                                            th:value="'home-'+${rowStat.index}">Delete</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Update</button>
+                    </div>
+                </div>
+                <div id="away_goals">
+                    <h2 th:text="${gamesheet.awayTeam} + ' Goals'"></h2>
+                    <div th:if="${utils.collectionIsEmpty(gamesheet.awayGoals)}">
+                        <p>No Data</p>
+                    </div>
+                    <div th:if="${utils.collectionIsNotEmpty(gamesheet.awayGoals)}">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Goal Number</th>
+                                <th>Scorer</th>
+                                <th>Primary Assist</th>
+                                <th>Secondary Assist</th>
+                                <th>Goal Type</th>
+                                <th>Period</th>
+                                <th>Time</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            <tr th:each="goal,rowStat : *{awayGoals}">
+                                <td th:text="${rowStat.count}"></td>
+                                <td>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].scorer}" th:value="${goal.scorer}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].assist1}" th:value="${goal.assist1}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].assist2}" th:value="${goal.assist2}"/>
+                                </td>
+                                <td>
+                                    <select th:field="*{awayGoals[__${rowStat.index}__].goalType}">
+                                        <option th:each="type : ${goalTypes}"
+                                                th:value="${type}"
+                                                th:text="${type}"></option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].period}" th:value="${goal.period}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].time}" th:value="${goal.time}"/>
+                                </td>
+                                <td>
+                                    <button type="submit" name="removeGoal" th:disabled="${gamesheet.finalized}"
+                                            th:value="'away-'+${rowStat.index}">Delete</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Update</button>
+                    </div>
+                </div>
+                <div id="away_penalties">
+                    <h2 th:text="${gamesheet.awayTeam} + ' Penalties'"></h2>
+                    <div th:if="${utils.collectionIsEmpty(gamesheet.awayPenalties)}">
+                        <p>No Data</p>
+                    </div>
+                    <div th:if="${utils.collectionIsNotEmpty(gamesheet.awayPenalties)}">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Penalty Number</th>
+                                <th>Player</th>
+                                <th>Minutes</th>
+                                <th>Infraction</th>
+                                <th>Period</th>
+                                <th>Time</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            <tr th:each="penalty,rowStat : *{awayPenalties}">
+                                <td th:text="${rowStat.count}"></td>
+                                <td>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].jerseyNumber}" th:value="${penalty.jerseyNumber}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].minutes}" th:value="${penalty.minutes}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].infraction}" th:value="${penalty.infraction}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].period}" th:value="${penalty.period}"/>
+                                </td>
+                                <td>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].time}" th:value="${penalty.time}"/>
+                                </td>
+                                <td>
+                                    <button type="submit" name="removePenalty" th:disabled="${gamesheet.finalized}"
+                                            th:value="'away-'+${rowStat.index}">Delete</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Update</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>
