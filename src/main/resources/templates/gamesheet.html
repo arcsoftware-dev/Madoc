@@ -72,9 +72,9 @@
                     </div>
                 </div>
 
-                <div id="update_buttons">
-                    <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Save</button>
-                    <button type="submit" name="finalize" onclick="return confirm('Are you sure you want to finalize the Gamesheet?  This cannot be undone');" th:disabled="${gamesheet.finalized}">Finalize</button>
+                <div id="update_buttons" th:if="${!gamesheet.finalized}">
+                    <button type="submit" name="save">Save</button>
+                    <button type="submit" name="finalize" onclick="return confirm('Are you sure you want to finalize the Gamesheet?  This cannot be undone');">Finalize</button>
                 </div>
 
                 <div id="addGoal" th:if="${!gamesheet.finalized}">
@@ -253,26 +253,26 @@
                             <tr th:each="goal,rowStat : *{homeGoals}">
                                 <td th:text="${rowStat.count}"></td>
                                 <td>
-                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].scorer}" th:value="${goal.scorer}"/>
+                                    <input type="text"  th:field="*{homeGoals[__${rowStat.index}__].scorer}" th:value="${goal.scorer}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].assist1}" th:value="${goal.assist1}"/>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].assist1}" th:value="${goal.assist1}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].assist2}" th:value="${goal.assist2}"/>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].assist2}" th:value="${goal.assist2}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <select th:field="*{homeGoals[__${rowStat.index}__].goalType}">
+                                    <select th:field="*{homeGoals[__${rowStat.index}__].goalType}" th:disabled="${gamesheet.finalized}">
                                         <option th:each="type : ${goalTypes}"
                                                 th:value="${type}"
                                                 th:text="${type}"></option>
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].period}" th:value="${goal.period}"/>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].period}" th:value="${goal.period}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].time}" th:value="${goal.time}"/>
+                                    <input type="text" th:field="*{homeGoals[__${rowStat.index}__].time}" th:value="${goal.time}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
                                     <button type="submit" name="removeGoal" th:disabled="${gamesheet.finalized}"
@@ -281,7 +281,7 @@
                             </tr>
                             </tbody>
                         </table>
-                        <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Update</button>
+                        <button type="submit" name="save" th:if="${!gamesheet.finalized}">Update</button>
                     </div>
                 </div>
                 <div id="home_penalties">
@@ -308,19 +308,19 @@
                             <tr th:each="penalty,rowStat : *{homePenalties}">
                                 <td th:text="${rowStat.count}"></td>
                                 <td>
-                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].jerseyNumber}" th:value="${penalty.jerseyNumber}"/>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].jerseyNumber}" th:value="${penalty.jerseyNumber}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].minutes}" th:value="${penalty.minutes}"/>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].minutes}" th:value="${penalty.minutes}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].infraction}" th:value="${penalty.infraction}"/>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].infraction}" th:value="${penalty.infraction}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].period}" th:value="${penalty.period}"/>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].period}" th:value="${penalty.period}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].time}" th:value="${penalty.time}"/>
+                                    <input type="text" th:field="*{homePenalties[__${rowStat.index}__].time}" th:value="${penalty.time}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
                                     <button type="submit" name="removePenalty" th:disabled="${gamesheet.finalized}"
@@ -329,7 +329,7 @@
                             </tr>
                             </tbody>
                         </table>
-                        <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Update</button>
+                        <button type="submit" name="save" th:if="${!gamesheet.finalized}">Update</button>
                     </div>
                 </div>
                 <div id="away_goals">
@@ -356,26 +356,26 @@
                             <tr th:each="goal,rowStat : *{awayGoals}">
                                 <td th:text="${rowStat.count}"></td>
                                 <td>
-                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].scorer}" th:value="${goal.scorer}"/>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].scorer}" th:value="${goal.scorer}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].assist1}" th:value="${goal.assist1}"/>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].assist1}" th:value="${goal.assist1}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].assist2}" th:value="${goal.assist2}"/>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].assist2}" th:value="${goal.assist2}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <select th:field="*{awayGoals[__${rowStat.index}__].goalType}">
+                                    <select th:field="*{awayGoals[__${rowStat.index}__].goalType}" th:disabled="${gamesheet.finalized}">
                                         <option th:each="type : ${goalTypes}"
                                                 th:value="${type}"
                                                 th:text="${type}"></option>
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].period}" th:value="${goal.period}"/>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].period}" th:value="${goal.period}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].time}" th:value="${goal.time}"/>
+                                    <input type="text" th:field="*{awayGoals[__${rowStat.index}__].time}" th:value="${goal.time}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
                                     <button type="submit" name="removeGoal" th:disabled="${gamesheet.finalized}"
@@ -384,7 +384,7 @@
                             </tr>
                             </tbody>
                         </table>
-                        <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Update</button>
+                        <button type="submit" name="save" th:if="${!gamesheet.finalized}">Update</button>
                     </div>
                 </div>
                 <div id="away_penalties">
@@ -410,19 +410,19 @@
                             <tr th:each="penalty,rowStat : *{awayPenalties}">
                                 <td th:text="${rowStat.count}"></td>
                                 <td>
-                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].jerseyNumber}" th:value="${penalty.jerseyNumber}"/>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].jerseyNumber}" th:value="${penalty.jerseyNumber}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].minutes}" th:value="${penalty.minutes}"/>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].minutes}" th:value="${penalty.minutes}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].infraction}" th:value="${penalty.infraction}"/>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].infraction}" th:value="${penalty.infraction}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].period}" th:value="${penalty.period}"/>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].period}" th:value="${penalty.period}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
-                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].time}" th:value="${penalty.time}"/>
+                                    <input type="text" th:field="*{awayPenalties[__${rowStat.index}__].time}" th:value="${penalty.time}" th:disabled="${gamesheet.finalized}"/>
                                 </td>
                                 <td>
                                     <button type="submit" name="removePenalty" th:disabled="${gamesheet.finalized}"
@@ -431,7 +431,7 @@
                             </tr>
                             </tbody>
                         </table>
-                        <button type="submit" name="save" th:disabled="${gamesheet.finalized}">Update</button>
+                        <button type="submit" name="save" th:if="${!gamesheet.finalized}">Update</button>
                     </div>
                 </div>
             </form>
