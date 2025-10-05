@@ -402,7 +402,7 @@ public class GamesheetView {
         }
 
         clearNextData(gamesheet);
-        gameController.postGamesheet(gamesheet, true);
+        gameController.postGamesheet(gamesheet, true, false);
         return "gamesheet";
     }
 
