@@ -576,4 +576,28 @@ public class GameService {
 
         return gamesheet;
     }
+
+    @Transactional
+    public GamesheetPayload unlockGamesheet(int gameId) {
+        GamesheetPayload gamesheet = gameRepository.fetchGamesheetPayloadByGameId(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("No gamesheet found for game id " + gameId));
+
+        GameEntity gameEntity = gameRepository.findById(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("Game id " + gameId + " does not exist"));
+
+        //Clear Gamesheet
+        gamesheet.setFinalized(false);
+        gameRepository.updateGamesheetPayload(gamesheet);
+
+        //Clear game
+        gameEntity.setFinalizedAt(null);
+        gameEntity.setFinalized(false);
+        gameRepository.updateGame(gameEntity);
+
+        //Clear goals, assists and penalty tables
+        statsRepository.clearStatsByGameId(gameId);
+        //Clear attendance table
+        attendanceRepository.clearByGameId(gameId);
+        return gamesheet;
+    }
 }
