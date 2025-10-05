@@ -1,9 +1,6 @@
 package dev.arcsoftware.madoc.service;
 
-import dev.arcsoftware.madoc.auth.model.AuthToken;
-import dev.arcsoftware.madoc.auth.model.AuthenticationRequest;
-import dev.arcsoftware.madoc.auth.model.ChangePasswordRequest;
-import dev.arcsoftware.madoc.auth.model.UserEntity;
+import dev.arcsoftware.madoc.auth.model.*;
 import dev.arcsoftware.madoc.config.JwtConfig;
 import dev.arcsoftware.madoc.enums.Role;
 import dev.arcsoftware.madoc.exception.UnauthorizedException;
@@ -15,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -100,5 +98,23 @@ public class AuthenticationService {
         String token = generateJwtToken(user);
         return new AuthToken(cookieExpiryInSeconds, token);
 
+    }
+
+    @Transactional
+    public UserEntity addUser(AddUserRequest userRequest) {
+        if(userRequest.password().trim().isEmpty() || userRequest.username().trim().isEmpty()){
+            throw new IllegalArgumentException("Username or password is empty");
+        }
+        if(!userRequest.password().equals(userRequest.confirmPassword())){
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
+        UserEntity user = new UserEntity();
+        user.setUsername(userRequest.username());
+        user.setPasswordHash(passwordEncoder.encode(userRequest.password()));
+        user.setRoles(Collections.singletonList(userRequest.role()));
+        userRepository.insertUser(user);
+
+        return user;
     }
 }

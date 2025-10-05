@@ -1,8 +1,7 @@
 package dev.arcsoftware.madoc.controller;
 
-import dev.arcsoftware.madoc.auth.model.AuthToken;
-import dev.arcsoftware.madoc.auth.model.AuthenticationRequest;
-import dev.arcsoftware.madoc.auth.model.ChangePasswordRequest;
+import dev.arcsoftware.madoc.auth.model.*;
+import dev.arcsoftware.madoc.enums.Role;
 import dev.arcsoftware.madoc.service.AuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,6 +66,24 @@ public class AuthorizationController {
         addAuthCookie(response, authToken);
         log.info("Password changed for user '{}'", authRequest.username());
         return ResponseEntity.ok(true);
+    }
+
+    @PreAuthorize("hasRole('ROLE_[ADMIN]')")
+    @PostMapping(path = "/manage/user", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<UserEntity> addUser(
+            @RequestParam Map<String, String> paramMap
+    ){
+        AddUserRequest userRequest = new AddUserRequest(
+                Objects.requireNonNull(paramMap.get("username")),
+                Objects.requireNonNull(paramMap.get("password")),
+                Objects.requireNonNull(paramMap.get("confirmPassword")),
+                Role.valueOf(Objects.requireNonNull(paramMap.get("role")))
+        );
+
+        UserEntity newUser = authenticationService.addUser(userRequest);
+        log.info("User {} created with Roles: {}", newUser.getUsername(), newUser.getRoles());
+        newUser.setPasswordHash(null);
+        return ResponseEntity.ok(newUser);
     }
 
     private void addAuthCookie(HttpServletResponse response, AuthToken token){
