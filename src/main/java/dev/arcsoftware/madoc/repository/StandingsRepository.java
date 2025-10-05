@@ -113,7 +113,7 @@ public class StandingsRepository {
     public static class StandingsSql{
         public static final String GET_STANDINGS_FOR_YEAR_AND_SEASON_TYPE = """
         
-                WITH game_scores AS (
+        WITH game_scores AS (
             SELECT
                 gm.id AS game_id,
                 gm.home_team,
@@ -126,22 +126,22 @@ public class StandingsRepository {
                      LEFT JOIN madoc.roster_assignments ra ON pl.id = ra.player_id AND ra.season_year = :year
             WHERE gm.is_finalized = true
               AND gm.season_type = :season_type
-              AND ra.season_year = :year
+              AND gm.year = :year
             GROUP BY gm.id, gm.home_team, gm.away_team
         ),
-             team_penalties AS (
-                 SELECT
-                     ra.team_id,
-                     SUM(p.minutes) AS total_penalty_minutes
-                 FROM madoc.penalties p
-                          INNER JOIN madoc.players pl ON p.player_id = pl.id
-                          INNER JOIN madoc.roster_assignments ra ON pl.id = ra.player_id AND ra.season_year = :year
-                          INNER JOIN madoc.games gm ON p.game_id = gm.id
-                 WHERE gm.is_finalized = true
-                   AND gm.season_type = :season_type
-                   AND ra.season_year = :year
-                 GROUP BY ra.team_id
-             )
+        team_penalties AS (
+             SELECT
+                 ra.team_id,
+                 SUM(p.minutes) AS total_penalty_minutes
+             FROM madoc.penalties p
+                      INNER JOIN madoc.players pl ON p.player_id = pl.id
+                      INNER JOIN madoc.roster_assignments ra ON pl.id = ra.player_id AND ra.season_year = :year
+                      INNER JOIN madoc.games gm ON p.game_id = gm.id
+             WHERE gm.is_finalized = true
+               AND gm.season_type = :season_type
+               AND gm.year = :year
+             GROUP BY ra.team_id
+        )
         SELECT
             t.team_name,
             COUNT(DISTINCT gs.game_id) AS games_played,
