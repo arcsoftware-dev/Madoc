@@ -42,7 +42,7 @@ admin:
 auth:
   cookie:
     name: jwt-auth
-    expiry_seconds: 3600
+    expiry_seconds: 36000
   jwt:
     secret: ${JWT_SIGNING_SECRET}
-    expiry_seconds: 3600
+    expiry_seconds: 36000
