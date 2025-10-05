@@ -319,6 +319,14 @@ a {
     flex-direction: column;
 }
 
+.left {
+    display: flex;
+    justify-content: left;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+
 .team-filter-form select,
 .team-filter-form button {
     background-color: var(--card-bg);

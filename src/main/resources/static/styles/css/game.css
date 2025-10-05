@@ -1,0 +1,56 @@
+.game-feed {
+    display: flex;
+    flex-direction: row;
+    padding: 2rem;
+    background: var(--secondary);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.game-feed-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    flex-grow: 1;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.game-feed-item-child {
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    margin-bottom: 1rem;
+}
+
+.stats-table {
+    margin: 1rem 0;
+}
+
+h3 {
+    margin: 0;
+}
+
+input:disabled {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+select:disabled {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+input[type="checkbox"]:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+    pointer-events: none;
+    background-color: var(--accent);
+}
+
+input[type="checkbox"] {
+    accent-color: blue; /* Changes the background color when checked */
+}
+input[type="checkbox"]:checked:disabled {
+    background-color: var(--accent);
+}

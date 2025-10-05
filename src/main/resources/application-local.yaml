@@ -11,7 +11,7 @@ admin:
 auth:
   cookie:
     name: jwt-auth
-    expiry_seconds: 3600
+    expiry_seconds: 36000 #10hr
   jwt:
     secret: "4fa75b715171cd9c063b4b4313e17b6b11d3c5efcd4e1acbbfb4b769c1f0181be2ca3d7ff9e5a2ce09a09d5ae29c3c37b0b0faa86344f14e1e17e953ca904897"
-    expiry_seconds: 3600
+    expiry_seconds: 36000 #10hr
