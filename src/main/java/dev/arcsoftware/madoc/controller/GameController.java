@@ -71,14 +71,15 @@ public class GameController {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
-    @PostMapping(value = "/gamesheet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/gamesheet", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GamesheetSummary> postGamesheet(
             @RequestBody GamesheetPayload gamesheet,
-            @RequestParam(value="submit", defaultValue = "false") boolean submit
+            @RequestParam(value="submit", defaultValue = "false") boolean submit,
+            @RequestParam(value="create-new", defaultValue = "false") boolean createNew
     ){
         log.info("Received gamesheet post request with submit={}", submit);
 
-        GamesheetSummary summary = gameService.createGamesheetSummary(gamesheet, submit);
+        GamesheetSummary summary = gameService.createGamesheetSummary(gamesheet, submit, createNew);
 
         return ResponseEntity.ok(summary);
     }
@@ -90,7 +91,7 @@ public class GameController {
     ){
         log.info("Received gamesheet draft update request for game {}", gamesheet.getGameId());
 
-        GamesheetPayload payload = gameService.updateGamesheetPayload(gamesheet, true);
+        GamesheetPayload payload = gameService.updateGamesheetPayload(gamesheet, true, false);
 
         return ResponseEntity.ok(payload);
     }

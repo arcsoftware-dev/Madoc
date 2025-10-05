@@ -7,3 +7,12 @@ URGENT
 - multiple roster assignments per player (rookie draft)
 - keep finalized gamesheet rosters as is after roster changes
   -(populate attendance at creation of gamesheet, option to refresh roster to latest, option to clear gamesheet while keeping existing attendance layout)
+
+
+Recreating Process:
+- Upload roster
+- Upload schedule
+- Add late joining player
+- Assign late joining player to roster
+- Copy roster assignments from staging to prod
+- Post staging gamesheets to prod, set finalized=false on payload

@@ -295,7 +295,7 @@ public class GameService {
     }
 
     @Transactional
-    public GamesheetSummary createGamesheetSummary(GamesheetPayload gamesheet, boolean submit) {
+    public GamesheetSummary createGamesheetSummary(GamesheetPayload gamesheet, boolean submit, boolean createNew) {
         GameEntity game = validateGamesheetGameEntity(gamesheet);
 
         GamesheetSummary summary = new GamesheetSummary();
@@ -338,7 +338,7 @@ public class GameService {
             log.info("Finalizing and saving all stats for game {}", gamesheet.getGameId());
             //save gamesheet to db
             gamesheet.setFinalized(true);
-            updateGamesheetPayload(gamesheet, false);
+            updateGamesheetPayload(gamesheet, false, createNew);
 
             //Update all stats from a gamesheet
             updateStatsFromGamesheet(summary);
@@ -440,7 +440,7 @@ public class GameService {
     }
 
     @Transactional
-    public GamesheetPayload updateGamesheetPayload(GamesheetPayload gamesheet, boolean validate) {
+    public GamesheetPayload updateGamesheetPayload(GamesheetPayload gamesheet, boolean validate, boolean createNew) {
         if(validate){
             validateGamesheetGameEntity(gamesheet);
         }
@@ -448,7 +448,12 @@ public class GameService {
         //sort Goals and penalties by period then time
         sortStats(gamesheet);
 
-        gameRepository.updateGamesheetPayload(gamesheet);
+        if(createNew){
+            gameRepository.insertNewGamesheetPayload(gamesheet);
+        }
+        else{
+            gameRepository.updateGamesheetPayload(gamesheet);
+        }
 
         return gamesheet;
     }
