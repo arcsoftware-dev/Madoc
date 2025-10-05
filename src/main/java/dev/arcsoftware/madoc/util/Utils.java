@@ -1,9 +1,14 @@
 package dev.arcsoftware.madoc.util;
 
+import dev.arcsoftware.madoc.model.payload.GoalPayload;
+import dev.arcsoftware.madoc.model.payload.PenaltyPayload;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class Utils {
@@ -21,6 +26,17 @@ public class Utils {
             case "CANUCKS" -> "CNK";
             default -> teamName.length() <= 3 ? teamName : teamName.substring(0, 3).toUpperCase();
         };
+    }
+
+    public int countGoals(List<GoalPayload> goals){
+        return Optional.ofNullable(goals).orElse(new ArrayList<>()).size();
+    }
+
+    public int countPenaltyMinutes(List<PenaltyPayload> penalties){
+        return Optional.ofNullable(penalties).orElse(new ArrayList<>())
+                .stream()
+                .mapToInt(PenaltyPayload::getMinutes)
+                .sum();
     }
 
     public boolean collectionIsNotEmpty(Collection<?> collection) {

@@ -54,3 +54,16 @@ input[type="checkbox"] {
 input[type="checkbox"]:checked:disabled {
     background-color: var(--accent);
 }
+
+input {
+    width: 5ch;
+}
+
+.medium-input {
+    width: 15ch;
+}
+
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+}
