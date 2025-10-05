@@ -1,0 +1,20 @@
+meta {
+  name: post gamesheet
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{host}}/api/game/gamesheet?submit=true&create-new=true
+  body: json
+  auth: inherit
+}
+
+params:query {
+  submit: true
+  create-new: true
+}
+
+settings {
+  encodeUrl: true
+}
