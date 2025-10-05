@@ -1,0 +1,22 @@
+meta {
+  name: addUser
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{host}}/auth/manage/user
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  username: 
+  password: 
+  confirmPassword: 
+  role: 
+}
+
+settings {
+  encodeUrl: true
+}
