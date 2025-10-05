@@ -104,4 +104,17 @@ public class GameController {
 
         return ResponseEntity.ok(payload);
     }
+
+    @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
+    @DeleteMapping(value = "/gamesheet")
+    public ResponseEntity<GamesheetPayload> clearGamesheet(
+            @RequestParam(value="finalized", defaultValue = "false") boolean gameIsFinalized,
+            @RequestParam(value="game-id", required = true) int gameId
+    ){
+        log.info("Received gamesheet clear request with id={}", gameId);
+
+        GamesheetPayload clearedGamesheet = gameService.clearGamesheet(gameId, gameIsFinalized);
+
+        return ResponseEntity.ok(clearedGamesheet);
+    }
 }

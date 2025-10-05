@@ -534,4 +534,46 @@ public class GameService {
             throw new IllegalArgumentException("Invalid time string: " + timeString);
         }
     }
+
+    @Transactional
+    public GamesheetPayload clearGamesheet(int gameId, boolean gameIsFinalized) {
+        GamesheetPayload gamesheet = gameRepository.fetchGamesheetPayloadByGameId(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("No gamesheet found for game id " + gameId));
+        if(gameIsFinalized != gamesheet.getFinalized()){
+            throw new IllegalArgumentException("Gamesheet finalized state doesnt match request");
+        }
+
+        GameEntity gameEntity = gameRepository.findById(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("Game id " + gameId + " does not exist"));
+        if(gameIsFinalized != gameEntity.isFinalized()){
+            throw new IllegalArgumentException("Game Entity finalized state doesnt match request");
+
+        }
+
+        //Clear Gamesheet
+        gamesheet.setHomeGoals(null);
+        gamesheet.setAwayGoals(null);
+        gamesheet.setHomePenalties(null);
+        gamesheet.setAwayPenalties(null);
+        Optional.ofNullable(gamesheet.getHomeAttendanceByPlayerId()).orElse(new ArrayList<>()).forEach(a -> a.setAttended(false));
+        Optional.ofNullable(gamesheet.getAwayAttendanceByPlayerId()).orElse(new ArrayList<>()).forEach(a -> a.setAttended(false));
+        gamesheet.setFinalized(false);
+        gameRepository.updateGamesheetPayload(gamesheet);
+
+        //Clear game
+        gameEntity.setFinalizedAt(null);
+        gameEntity.setFinalized(false);
+        gameEntity.setRefereeNameOne(null);
+        gameEntity.setRefereeNameTwo(null);
+        gameEntity.setRefereeNameThree(null);
+        gameEntity.setRefereeNotes(new ArrayList<>());
+        gameRepository.updateGame(gameEntity);
+
+        //Clear goals, assists and penalty tables
+        statsRepository.clearStatsByGameId(gameId);
+        //Clear attendance table
+        attendanceRepository.clearByGameId(gameId);
+
+        return gamesheet;
+    }
 }

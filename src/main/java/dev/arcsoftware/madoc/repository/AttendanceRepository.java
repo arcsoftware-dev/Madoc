@@ -35,6 +35,14 @@ public class AttendanceRepository {
         uploadFileData.setId(id);
     }
 
+    public void clearByGameId(int gameId) {
+        int results = jdbcClient
+                .sql(AttendanceSql.DELETE_BY_GAME_ID)
+                .param("game_id", gameId)
+                .update();
+        log.info("{} attendance records deleted", results);
+    }
+
     public static class AttendanceSql {
         public static final String INSERT = """
         INSERT INTO madoc.attendance (game_id, player_id, jersey_number, team_id, attended)
@@ -46,6 +54,11 @@ public class AttendanceRepository {
         INSERT INTO madoc.attendance_uploads (game_id, file_name, file_content)
         VALUES (:game_id, :file_name, :file_content)
         RETURNING id;
+        """;
+
+        public static final String DELETE_BY_GAME_ID = """
+        DELETE FROM madoc.attendance
+        WHERE game_id = :game_id
         """;
     }
 }

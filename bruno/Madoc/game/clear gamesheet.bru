@@ -1,0 +1,20 @@
+meta {
+  name: clear gamesheet
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{host}}/api/game/gamesheet?finalized=true&game-id=12
+  body: none
+  auth: inherit
+}
+
+params:query {
+  finalized: true
+  game-id: 12
+}
+
+settings {
+  encodeUrl: true
+}

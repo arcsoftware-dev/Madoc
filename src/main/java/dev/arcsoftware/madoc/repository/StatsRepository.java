@@ -182,6 +182,23 @@ public class StatsRepository {
         penalty.setId(id);
     }
 
+    public void clearStatsByGameId(int gameId){
+        int assists = jdbcClient
+                .sql(StatsSql.CLEAR_ASSISTS_BY_GAME_ID)
+                .param("game_id", gameId)
+                .update();
+        int goals = jdbcClient
+                .sql(StatsSql.CLEAR_GOALS_BY_GAME_ID)
+                .param("game_id", gameId)
+                .update();
+        int penalties = jdbcClient
+                .sql(StatsSql.CLEAR_PENALTIES_BY_GAME_ID)
+                .param("game_id", gameId)
+                .update();
+
+        log.info("Deleted {} goals, {} assists, {} penalties", goals, assists, penalties);
+    }
+
     public static class StatsSql{
         public static final String INSERT_GOAL = """
         INSERT INTO madoc.goals (game_id, goal_type, player_id, primary_assist_id, secondary_assist_id, period, time)
@@ -261,6 +278,20 @@ public class StatsRepository {
                  INNER JOIN madoc.teams t on ra.team_id = t.id and t.team_name = :team_name
         GROUP BY pl.id, g.player_id, a.player_id, p.player_id, ra.player_id, ra.team_id, t.team_name, at.player_id, ra.jersey_number
         ORDER BY points desc;
+        """;
+
+        public static final String CLEAR_ASSISTS_BY_GAME_ID = """
+        DELETE FROM madoc.assists AS a
+        WHERE a.id IN (SELECT primary_assist_id FROM madoc.goals WHERE game_id = :game_id)
+        OR a.id IN (SELECT secondary_assist_id FROM madoc.goals WHERE game_id = :game_id);
+        """;
+        public static final String CLEAR_GOALS_BY_GAME_ID = """
+        DELETE FROM madoc.goals
+        WHERE game_id = :game_id
+        """;
+        public static final String CLEAR_PENALTIES_BY_GAME_ID = """
+        DELETE FROM madoc.penalties
+        WHERE game_id = :game_id
         """;
     }
 }

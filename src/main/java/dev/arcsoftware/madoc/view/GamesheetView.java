@@ -406,6 +406,23 @@ public class GamesheetView {
         return "gamesheet";
     }
 
+    @PreAuthorize("hasRole('ROLE_[ADMIN]')")
+    @RequestMapping(value = "/{gameId}", params = {"clear"})
+    public String clearGamesheet(
+            @PathVariable("gameId") int gameId,
+            @ModelAttribute("gamesheet") @Valid GamesheetPayload gamesheet,
+            BindingResult bindingResult,
+            Model model
+    ) {
+        log.info("Resetting gamesheet: {}", gameId);
+
+        GamesheetPayload clearedGamesheet = gameController.clearGamesheet(gamesheet.getFinalized(), gameId).getBody();
+        clearNextData(clearedGamesheet);
+        addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
+        model.addAttribute("gamesheet", clearedGamesheet);
+        return "gamesheet";
+    }
+
     private List<ObjectError> getGoalAndPenaltyErrors(GamesheetPayload gamesheet) {
         List<ObjectError> allErrors = new ArrayList<>();
         allErrors.addAll(getGoalPayloadErrors(gamesheet.getHomeGoals(), gamesheet.getHomeAttendanceByPlayerId(), gamesheet.getHomeTeam(), false));
