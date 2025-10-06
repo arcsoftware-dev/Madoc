@@ -183,12 +183,12 @@ public class StatsRepository {
     }
 
     public void clearStatsByGameId(int gameId){
-        int assists = jdbcClient
-                .sql(StatsSql.CLEAR_ASSISTS_BY_GAME_ID)
-                .param("game_id", gameId)
-                .update();
         int goals = jdbcClient
                 .sql(StatsSql.CLEAR_GOALS_BY_GAME_ID)
+                .param("game_id", gameId)
+                .update();
+        int assists = jdbcClient
+                .sql(StatsSql.CLEAR_ASSISTS_BY_GAME_ID)
                 .param("game_id", gameId)
                 .update();
         int penalties = jdbcClient
