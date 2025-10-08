@@ -1,6 +1,5 @@
 package dev.arcsoftware.madoc.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static dev.arcsoftware.madoc.config.CacheConfig.*;
+import static dev.arcsoftware.madoc.config.CacheConfig.CACHE_MANAGER;
+import static dev.arcsoftware.madoc.config.CacheConfig.ROSTER_TEAM_CACHE;
 
 @Slf4j
 @Service
