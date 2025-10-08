@@ -34,6 +34,26 @@ public class RuleRepository {
                 .update();
     }
 
+    public void insertNewRules(List<RuleEntity> rules) {
+        log.info("Inserting {} Rules in DB", rules.size());
+        int total = 0;
+        for(RuleEntity ruleEntity : rules){
+            total += this.jdbcClient
+                    .sql(RulesSql.INSERT_RULE)
+                    .params(ruleEntity.toParameterMap())
+                    .update();
+        }
+        log.info("Successfully inserted {} Rules in DB", total);
+    }
+
+    public void deleteAll() {
+        log.info("Deleting all rules from the database");
+        int deleted = this.jdbcClient
+                .sql(RulesSql.DELETE_ALL_RULES)
+                .update();
+        log.info("Deleted {} rules from the database", deleted);
+    }
+
     public static class RulesSql {
         public static final String GET_ALL_RULES = """
         SELECT id, title, description, created_at, updated_at
@@ -44,6 +64,15 @@ public class RuleRepository {
         public static final String UPDATE_RULE = """
             UPDATE madoc.rules SET title = :title, description = :description, updated_at = ?
             WHERE id = :id
+        """;
+
+        public static final String DELETE_ALL_RULES = """
+        DELETE FROM madoc.rules WHERE 1=1;
+        """;
+
+        public static final String INSERT_RULE = """
+        INSERT INTO madoc.rules (title, description)
+        VALUES (:title, :description)
         """;
     }
 }

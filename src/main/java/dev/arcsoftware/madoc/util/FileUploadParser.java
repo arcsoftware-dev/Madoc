@@ -9,6 +9,7 @@ import dev.arcsoftware.madoc.model.csv.RosterUploadRow;
 import dev.arcsoftware.madoc.model.csv.ScheduleUploadRow;
 import dev.arcsoftware.madoc.model.entity.GoalEntity;
 import dev.arcsoftware.madoc.model.entity.PenaltyEntity;
+import dev.arcsoftware.madoc.model.entity.RuleEntity;
 import dev.arcsoftware.madoc.model.payload.AttendanceUploadResult;
 import dev.arcsoftware.madoc.model.payload.GamesheetSummary;
 import org.apache.commons.csv.CSVFormat;
@@ -327,5 +328,32 @@ public class FileUploadParser {
         }
 
         return result;
+    }
+
+    public List<RuleEntity> parseRuleFile(byte[] ruleFileBytes){
+        List<RuleEntity> rules = new ArrayList<>();
+
+        String ruleFileString = new String(ruleFileBytes, StandardCharsets.UTF_8);
+        String[] lines = ruleFileString.split("\n");
+
+        assert(lines.length > 0);
+        String[] header = lines[0].split(",");
+        assert(header.length == 2);
+        assert("Title".equalsIgnoreCase(header[0].trim()));
+        assert("Description".equalsIgnoreCase(header[1].trim()));
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for(int r=1; r<lines.length; r++){
+            String[] data = lines[r].split(",");
+            RuleEntity ruleEntity = new RuleEntity();
+            ruleEntity.setTitle(data[0].trim());
+            ruleEntity.setDescription(data[1].trim());
+            ruleEntity.setCreatedAt(now);
+            ruleEntity.setUpdatedAt(now);
+            rules.add(ruleEntity);
+        }
+
+        return rules;
     }
 }

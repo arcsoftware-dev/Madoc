@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
 <head>
     <title>MMHL</title>
     <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
@@ -13,9 +13,18 @@
         <section class="hero">
             <h1>Constitution & Rules</h1>
         </section>
+        <div sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]')" style="border: 2px solid var(--accent);" class="centered" >
+            <form action="#" th:action="@{/constitution/replace}" method="post" enctype="multipart/form-data" style="padding: 1rem">
+                <span>Upload File to Replace Current Rule Set</span>
+                <div style="padding-top: 1rem">
+                    <input type="file" name="file" required />
+                    <button type="submit" name="replace">Replace</button>
+                </div>
+            </form>
+        </div>
         <section>
-            <div th:each="rule : ${rules}">
-                <h3 class="rule-title" th:text="${rule.title}">Rule Title</h3>
+            <div th:each="rule, rowStat : ${rules}">
+                <h3 class="rule-title" th:text="'Article '+${__${rowStat.index}__+1}+' - '+${rule.title}">Rule Title</h3>
                 <p class="rule-description" th:text="${rule.description}">Description</p>
             </div>
         </section>

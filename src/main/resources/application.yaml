@@ -34,7 +34,16 @@ spring:
       ddl-auto: update
 #    database-platform: org.hibernate.dialect.H2Dialect
   thymeleaf:
-    cache: false
+    cache: true
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths:
+              - /assets/**
+              - /styles/**
 
 admin:
   token: ${ADMIN_TOKEN}
