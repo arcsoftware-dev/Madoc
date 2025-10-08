@@ -330,28 +330,26 @@ public class FileUploadParser {
         return result;
     }
 
-    public List<RuleEntity> parseRuleFile(byte[] ruleFileBytes){
+    public List<RuleEntity> parseRuleFile(byte[] csvFileBytes) {
         List<RuleEntity> rules = new ArrayList<>();
 
-        String ruleFileString = new String(ruleFileBytes, StandardCharsets.UTF_8);
-        String[] lines = ruleFileString.split("\n");
+        final String[] HEADERS = {"Title", "Description"};
+        try(Reader reader = new InputStreamReader(new ByteArrayInputStream(csvFileBytes))) {
+            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                    .setHeader(HEADERS)
+                    .setSkipHeaderRecord(true)
+                    .get();
 
-        assert(lines.length > 0);
-        String[] header = lines[0].split(",");
-        assert(header.length == 2);
-        assert("Title".equalsIgnoreCase(header[0].trim()));
-        assert("Description".equalsIgnoreCase(header[1].trim()));
+            Iterable<CSVRecord> records = csvFormat.parse(reader);
+            for(CSVRecord record : records) {
+                RuleEntity ruleEntity = new RuleEntity();
+                ruleEntity.setTitle(record.get("Title"));
+                ruleEntity.setDescription(record.get("Description"));
 
-        LocalDateTime now = LocalDateTime.now();
-
-        for(int r=1; r<lines.length; r++){
-            String[] data = lines[r].split(",");
-            RuleEntity ruleEntity = new RuleEntity();
-            ruleEntity.setTitle(data[0].trim());
-            ruleEntity.setDescription(data[1].trim());
-            ruleEntity.setCreatedAt(now);
-            ruleEntity.setUpdatedAt(now);
-            rules.add(ruleEntity);
+                rules.add(ruleEntity);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return rules;
