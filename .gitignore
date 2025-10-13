@@ -42,3 +42,4 @@ build/
 *.log*.gz
 
 .env
+release.sh

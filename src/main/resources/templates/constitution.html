@@ -24,7 +24,7 @@
         </div>
         <section>
             <div th:each="rule, rowStat : ${rules}">
-                <h3 class="rule-title" th:text="'Article '+${__${rowStat.index}__+1}+' - '+${rule.title}">Rule Title</h3>
+                <h3 class="rule-title" th:text="${rule.title}">Rule Title</h3>
                 <p class="rule-description" th:text="${rule.description}">Description</p>
             </div>
         </section>
