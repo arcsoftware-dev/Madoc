@@ -19,6 +19,7 @@ public class RosterAssignment {
     private Position position;
     private Integer jerseyNumber;
     private boolean isRookie;
+    private boolean isActive;
 
     public Map<String, Object> toParameterMap() {
         Map<String, Object> map = new HashMap<>();
@@ -30,6 +31,7 @@ public class RosterAssignment {
         map.put("position", position.name());
         map.put("jersey_number", jerseyNumber);
         map.put("is_rookie", isRookie);
+        map.put("is_active", isActive);
         return map;
     }
 }

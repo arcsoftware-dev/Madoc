@@ -86,6 +86,7 @@ public class RosterRepository {
                     rosterAssignment.setTeamName(rs.getString("team_name"));
                     rosterAssignment.setFirstName(rs.getString("first_name"));
                     rosterAssignment.setLastName(rs.getString("last_name"));
+                    rosterAssignment.setActive(rs.getBoolean("is_active"));
                     return rosterAssignment;
                 })
                 .list();
@@ -116,6 +117,7 @@ public class RosterRepository {
                     rosterAssignment.setTeamName(rs.getString("team_name"));
                     rosterAssignment.setFirstName(rs.getString("first_name"));
                     rosterAssignment.setLastName(rs.getString("last_name"));
+                    rosterAssignment.setActive(rs.getBoolean("is_active"));
                     return rosterAssignment;
                 })
                 .list();
@@ -123,7 +125,7 @@ public class RosterRepository {
 
     public static class RostersSql {
         public static final String GET_ASSIGNMENTS_BY_TEAM_AND_YEAR = """
-        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "full_name", p.first_name, p.last_name, t.team_name
+        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "full_name", p.first_name, p.last_name, t.team_name, ra.is_active
             FROM madoc.roster_assignments ra
             JOIN madoc.players p ON ra.player_id = p.id
             JOIN madoc.teams t ON ra.team_id = t.id
@@ -132,7 +134,7 @@ public class RosterRepository {
         """;
 
         public static final String GET_ASSIGNMENTS_BY_YEAR = """
-        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "full_name", p.first_name, p.last_name, t.team_name
+        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "full_name", p.first_name, p.last_name, t.team_name, ra.is_active
             FROM madoc.roster_assignments ra
             JOIN madoc.players p ON ra.player_id = p.id
             JOIN madoc.teams t ON ra.team_id = t.id

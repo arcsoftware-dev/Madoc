@@ -219,43 +219,46 @@ public class StatsRepository {
         """;
 
         public static final String GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR = """
-        SELECT
-            p.id AS player_id,
-            ra.jersey_number AS jersey_number,
-            CONCAT(p.first_name, ' ', p.last_name) AS player_name,
-            t.team_name AS team_name,
-            COUNT(DISTINCT a.id) AS games_played,
-            COUNT(DISTINCT go.id) AS goals,
-            COUNT(DISTINCT ass.id) AS assists,
-            (COUNT(DISTINCT go.id) + COUNT(DISTINCT ass.id)) AS points,
-            COALESCE(pm.total_minutes, 0) AS penalty_minutes
-        FROM madoc.players p
-                 LEFT JOIN madoc.attendance a
-                           ON p.id = a.player_id AND a.attended = true
-                 LEFT JOIN madoc.games ga_att
-                           ON a.game_id = ga_att.id AND ga_att.year = :year AND ga_att.season_type = :season_type
-                 LEFT JOIN madoc.goals go
-                           ON p.id = go.player_id
-                 LEFT JOIN madoc.games ga_go
-                           ON go.game_id = ga_go.id AND ga_go.year = :year AND ga_go.season_type = :season_type
-                 LEFT JOIN madoc.assists ass
-                           ON p.id = ass.player_id
-                 LEFT JOIN madoc.goals go_ass
-                           ON (go_ass.primary_assist_id = ass.id OR go_ass.secondary_assist_id = ass.id)
-                 LEFT JOIN madoc.games ga_ass
-                           ON go_ass.game_id = ga_ass.id AND ga_ass.year = :year AND ga_ass.season_type = :season_type
-                 LEFT JOIN (
-            SELECT pe.player_id, SUM(pe.minutes) AS total_minutes
-            FROM madoc.penalties pe
-                     JOIN madoc.games ga_pe ON pe.game_id = ga_pe.id
-            WHERE ga_pe.year = :year AND ga_pe.season_type = :season_type
-            GROUP BY pe.player_id
-        ) pm ON p.id = pm.player_id
-                 LEFT JOIN madoc.roster_assignments ra
-                           ON ra.player_id = p.id AND ra.season_year = :year
-                 LEFT JOIN madoc.teams t
-                           ON ra.team_id = t.id AND t.year = :year
-        GROUP BY p.id, ra.jersey_number, t.team_name, player_name, pm.total_minutes;
+        WITH attendance AS (
+            SELECT ra.id, count(*) AS games_played
+            FROM madoc.attendance at
+                     JOIN madoc.roster_assignments ra ON at.roster_assignment_id = ra.id
+            GROUP BY ra.id, at.attended
+            HAVING at.attended = true
+        ),
+        goals AS (
+            SELECT ra.id, count(*) AS goals_scored
+            FROM madoc.goals go
+                     JOIN madoc.roster_assignments ra ON go.scorer_roster_assignment_id = ra.id
+            GROUP BY ra.id
+        ),
+        assists AS (
+            SELECT ra.id, count(*) AS total_assists
+            FROM madoc.goals go
+                     JOIN madoc.roster_assignments ra ON go.primary_assist_roster_assignment_id = ra.id OR go.secondary_assist_roster_assignment_id = ra.id
+            GROUP BY ra.id
+        ),
+        penalty_minutes AS (
+            SELECT roster_assignment_id, SUM(minutes) AS total_penalty_minutes
+            FROM madoc.penalties
+            GROUP BY roster_assignment_id
+        )
+        SELECT p.id AS player_id,
+               ra.jersey_number AS jersey_number,
+               CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+               t.team_name AS team_name,
+               COALESCE(attendance.games_played, 0) AS games_played,
+               COALESCE(goals.goals_scored, 0) AS goals,
+               COALESCE(assists.total_assists, 0) AS assists,
+               COALESCE(goals.goals_scored, 0) + COALESCE(assists.total_assists, 0) AS points,
+               COALESCE(penalty_minutes.total_penalty_minutes, 0) AS penalty_minutes
+        FROM madoc.roster_assignments ra
+                 LEFT JOIN madoc.players p ON ra.player_id = p.id
+                 LEFT JOIN madoc.teams t ON ra.team_id = t.id
+                 LEFT JOIN attendance ON ra.id = attendance.id
+                 LEFT JOIN goals ON ra.id = goals.id
+                 LEFT JOIN assists ON ra.id = assists.id
+                 LEFT JOIN penalty_minutes ON ra.id = penalty_minutes.roster_assignment_id;
         """;
 
         public static final String GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR_AND_TEAM = """

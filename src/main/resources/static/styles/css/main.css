@@ -349,3 +349,9 @@ a {
 .downloadable {
     margin-bottom: 2rem;
 }
+
+.inactive-roster-assignment {
+    text-decoration: line-through;
+    text-decoration-thickness: 12%;
+    text-decoration-color: var(--text);
+}

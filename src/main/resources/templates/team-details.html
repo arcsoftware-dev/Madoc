@@ -29,7 +29,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="player : ${teamData.roster}">
+                        <tr th:each="player : ${teamData.roster}" th:classappend="${player.isActive()} ? 'active-roster-assignment' : 'inactive-roster-assignment'">
                             <td class="shrink" th:text="${player.jerseyNumber}">0</td>
                             <td th:text="${player.fullName}"></td>
                             <td th:text="${player.position.getLabel()}"></td>

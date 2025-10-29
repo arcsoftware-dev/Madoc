@@ -241,7 +241,7 @@ public class GameRepository {
             SELECT gm.id AS game_id, COUNT(*) AS home_score
             FROM madoc.games gm
                      JOIN madoc.goals gl ON gl.game_id = gm.id
-                     JOIN madoc.roster_assignments ra ON gl.player_id = ra.player_id AND ra.season_year = gm.year
+                     JOIN madoc.roster_assignments ra ON gl.scorer_roster_assignment_id = ra.id AND ra.season_year = gm.year
             WHERE ra.team_id = gm.home_team
             GROUP BY gm.id
         ) hs ON g.id = hs.game_id
@@ -249,7 +249,7 @@ public class GameRepository {
             SELECT gm.id AS game_id, COUNT(*) AS away_score
             FROM madoc.games gm
                      JOIN madoc.goals gl ON gl.game_id = gm.id
-                     JOIN madoc.roster_assignments ra ON gl.player_id = ra.player_id AND ra.season_year = gm.year
+                     JOIN madoc.roster_assignments ra ON gl.scorer_roster_assignment_id = ra.id AND ra.season_year = gm.year
             WHERE ra.team_id = gm.away_team
             GROUP BY gm.id
         ) ascore ON g.id = ascore.game_id

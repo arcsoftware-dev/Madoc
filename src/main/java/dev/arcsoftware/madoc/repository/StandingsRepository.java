@@ -112,70 +112,67 @@ public class StandingsRepository {
 
     public static class StandingsSql{
         public static final String GET_STANDINGS_FOR_YEAR_AND_SEASON_TYPE = """
-        
-        WITH game_scores AS (
+            WITH game_scores AS (
+                SELECT
+                    gm.id AS game_id,
+                    gm.home_team,
+                    gm.away_team,
+                    SUM(CASE WHEN ra.team_id = gm.home_team THEN 1 ELSE 0 END) AS home_score,
+                    SUM(CASE WHEN ra.team_id = gm.away_team THEN 1 ELSE 0 END) AS away_score
+                FROM madoc.games gm
+                         LEFT JOIN madoc.goals g ON g.game_id = gm.id
+                         LEFT JOIN madoc.roster_assignments ra ON g.scorer_roster_assignment_id = ra.id AND ra.season_year = :year
+                WHERE gm.is_finalized = true
+                  AND gm.season_type = :season_type
+                  AND gm.year = :year
+                GROUP BY gm.id, gm.home_team, gm.away_team
+            ),
+                 team_penalties AS (
+                     SELECT
+                         ra.team_id,
+                         SUM(p.minutes) AS total_penalty_minutes
+                     FROM madoc.penalties p
+                              INNER JOIN madoc.roster_assignments ra ON p.roster_assignment_id = ra.id AND ra.season_year = :year
+                              INNER JOIN madoc.games gm ON p.game_id = gm.id
+                     WHERE gm.is_finalized = true
+                       AND gm.season_type = :season_type
+                       AND gm.year = :year
+                     GROUP BY ra.team_id
+                 )
             SELECT
-                gm.id AS game_id,
-                gm.home_team,
-                gm.away_team,
-                SUM(CASE WHEN ra.team_id = gm.home_team THEN 1 ELSE 0 END) AS home_score,
-                SUM(CASE WHEN ra.team_id = gm.away_team THEN 1 ELSE 0 END) AS away_score
-            FROM madoc.games gm
-                     LEFT JOIN madoc.goals g ON g.game_id = gm.id
-                     LEFT JOIN madoc.players pl ON g.player_id = pl.id
-                     LEFT JOIN madoc.roster_assignments ra ON pl.id = ra.player_id AND ra.season_year = :year
-            WHERE gm.is_finalized = true
-              AND gm.season_type = :season_type
-              AND gm.year = :year
-            GROUP BY gm.id, gm.home_team, gm.away_team
-        ),
-        team_penalties AS (
-             SELECT
-                 ra.team_id,
-                 SUM(p.minutes) AS total_penalty_minutes
-             FROM madoc.penalties p
-                      INNER JOIN madoc.players pl ON p.player_id = pl.id
-                      INNER JOIN madoc.roster_assignments ra ON pl.id = ra.player_id AND ra.season_year = :year
-                      INNER JOIN madoc.games gm ON p.game_id = gm.id
-             WHERE gm.is_finalized = true
-               AND gm.season_type = :season_type
-               AND gm.year = :year
-             GROUP BY ra.team_id
-        )
-        SELECT
-            t.team_name,
-            COUNT(DISTINCT gs.game_id) AS games_played,
-            SUM(CASE
-                    WHEN (t.id = gs.home_team AND gs.home_score > gs.away_score)
-                        OR (t.id = gs.away_team AND gs.away_score > gs.home_score)
-                        THEN 1 ELSE 0 END) AS wins,
-            SUM(CASE
-                    WHEN (t.id = gs.home_team AND gs.home_score < gs.away_score)
-                        OR (t.id = gs.away_team AND gs.away_score < gs.home_score)
-                        THEN 1 ELSE 0 END) AS losses,
-            SUM(CASE WHEN gs.home_score = gs.away_score THEN 1 ELSE 0 END) AS ties,
-            SUM(CASE
-                    WHEN (t.id = gs.home_team AND gs.away_score = 0)
-                        OR (t.id = gs.away_team AND gs.home_score = 0)
-                        THEN 1 ELSE 0 END) AS shutouts,
-            SUM(CASE WHEN t.id = gs.home_team THEN gs.home_score
-                     WHEN t.id = gs.away_team THEN gs.away_score
-                     ELSE 0 END) AS goals_for,
-            SUM(CASE WHEN t.id = gs.home_team THEN gs.away_score
-                     WHEN t.id = gs.away_team THEN gs.home_score
-                     ELSE 0 END) AS goals_against,
-            (2 * SUM(CASE
-                         WHEN (t.id = gs.home_team AND gs.home_score > gs.away_score)
-                             OR (t.id = gs.away_team AND gs.away_score > gs.home_score)
-                             THEN 1 ELSE 0 END)
-                + SUM(CASE WHEN gs.home_score = gs.away_score THEN 1 ELSE 0 END)
-                ) AS points,
-            COALESCE(tp.total_penalty_minutes, 0) AS penalty_minutes
-        FROM madoc.teams t
-                 LEFT JOIN game_scores gs ON t.id = gs.home_team OR t.id = gs.away_team
-                 LEFT JOIN team_penalties tp ON t.id = tp.team_id
-        GROUP BY t.id, t.team_name, tp.total_penalty_minutes
-        ORDER BY points DESC, games_played ASC;
+                t.team_name,
+                COUNT(DISTINCT gs.game_id) AS games_played,
+                SUM(CASE
+                        WHEN (t.id = gs.home_team AND gs.home_score > gs.away_score)
+                            OR (t.id = gs.away_team AND gs.away_score > gs.home_score)
+                            THEN 1 ELSE 0 END) AS wins,
+                SUM(CASE
+                        WHEN (t.id = gs.home_team AND gs.home_score < gs.away_score)
+                            OR (t.id = gs.away_team AND gs.away_score < gs.home_score)
+                            THEN 1 ELSE 0 END) AS losses,
+                SUM(CASE WHEN gs.home_score = gs.away_score THEN 1 ELSE 0 END) AS ties,
+                SUM(CASE
+                        WHEN (t.id = gs.home_team AND gs.away_score = 0)
+                            OR (t.id = gs.away_team AND gs.home_score = 0)
+                            THEN 1 ELSE 0 END) AS shutouts,
+                SUM(CASE WHEN t.id = gs.home_team THEN gs.home_score
+                         WHEN t.id = gs.away_team THEN gs.away_score
+                         ELSE 0 END) AS goals_for,
+                SUM(CASE WHEN t.id = gs.home_team THEN gs.away_score
+                         WHEN t.id = gs.away_team THEN gs.home_score
+                         ELSE 0 END) AS goals_against,
+                (2 * SUM(CASE
+                             WHEN (t.id = gs.home_team AND gs.home_score > gs.away_score)
+                                 OR (t.id = gs.away_team AND gs.away_score > gs.home_score)
+                                 THEN 1 ELSE 0 END)
+                    + SUM(CASE WHEN gs.home_score = gs.away_score THEN 1 ELSE 0 END)
+                    ) AS points,
+                COALESCE(tp.total_penalty_minutes, 0) AS penalty_minutes
+            FROM madoc.teams t
+                     LEFT JOIN game_scores gs ON t.id = gs.home_team OR t.id = gs.away_team
+                     LEFT JOIN team_penalties tp ON t.id = tp.team_id
+            GROUP BY t.id, t.team_name, tp.total_penalty_minutes
+            ORDER BY points DESC, games_played ASC;
         """;
     }
 }

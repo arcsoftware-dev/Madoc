@@ -1,0 +1,1 @@
+ALTER TABLE madoc.roster_assignments ADD COLUMN IF NOT EXISTS is_active boolean DEFAULT true;
