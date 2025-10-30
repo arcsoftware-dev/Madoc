@@ -1,10 +1,10 @@
-<div th:fragment="sortArrow(playerType, sortField, sortOrder, requestSortField, seasonType)">
-    <a th:href="@{/stats/{playerType}(playerType=${playerType}, sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'}, season-type=${seasonType})}"
+<div th:fragment="sortArrow(playerType, sortField, sortOrder, requestSortField, seasonType, year)">
+    <a th:href="@{/stats/{playerType}(playerType=${playerType}, sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'}, season-type=${seasonType}, year=${year})}"
        th:classappend="|${sortOrder == 'ASC' ? 'sorted-asc' : 'sorted-desc'} ${requestSortField == sortField ? 'active-sort' : ''}|">
     </a>
 </div>
-<div th:fragment="standingsSortArrow(sortField, sortOrder, requestSortField, seasonType)">
-    <a th:href="@{/standings(sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'}, season-type=${seasonType})}"
+<div th:fragment="standingsSortArrow(sortField, sortOrder, requestSortField, seasonType, year)">
+    <a th:href="@{/standings(sort-field=${sortField}, sort-order=${sortOrder == 'ASC' ? 'DESC' : 'ASC'}, season-type=${seasonType}, year=${year})}"
        th:classappend="|${sortOrder == 'ASC' ? 'sorted-asc' : 'sorted-desc'} ${requestSortField == sortField ? 'active-sort' : ''}|">
     </a>
 </div>
