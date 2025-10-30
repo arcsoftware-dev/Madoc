@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static dev.arcsoftware.madoc.config.CacheConfig.*;
 
 @Slf4j
@@ -49,5 +51,13 @@ public class SeasonMetadataService {
         log.info("cache-miss for season metadata year: calling repository");
         return seasonMetadataRepository.getCurrentYear()
                 .orElseThrow(() -> new IllegalStateException("No current season year found in database"));
+    }
+
+    public List<Integer> getAllSeasonYears() {
+        var years = seasonMetadataRepository.getAllSeasonYears();
+        years.add(2024);
+        //TODO add back when 2023 season is manually added
+        // years.add(2023);
+        return years;
     }
 }

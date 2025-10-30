@@ -32,6 +32,24 @@
     background: var(--accent);
 }
 
+.year-filter-form select {
+    background-color: var(--secondary);
+    font-weight: bold;
+    color: var(--text);
+    border: 1px solid;
+    border-color: var(--text);
+    border-radius: 4px;
+    padding: 0.5em 1em;
+    margin-right: 0.5em;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.year-filter-form select:focus {
+    outline: 2px solid var(--secondary);
+}
+
 .stats-toggle-bar {
     display: flex;
     justify-content: space-between;

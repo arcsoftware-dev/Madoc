@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -17,6 +18,14 @@ public class SeasonMetadataRepository {
     @Autowired
     public SeasonMetadataRepository(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
+    }
+
+    public List<Integer> getAllSeasonYears() {
+        log.info("Fetching all season years from database");
+        return jdbcClient
+                .sql("SELECT DISTINCT season_year FROM madoc.season_metadata ORDER BY season_year DESC")
+                .query(Integer.class)
+                .list();
     }
 
     public Optional<Integer> getCurrentYear() {

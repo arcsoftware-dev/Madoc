@@ -12,16 +12,28 @@
     <main class="content">
         <div class="stats-toggle-bar">
             <div class="stats-toggle">
-                <a th:href="@{/stats/{playerType}(playerType='SKATERS', season-type=${request.seasonType().name()})}"
+                <a th:href="@{/stats/{playerType}(playerType='SKATERS', season-type=${request.seasonType().name()}, year=${request.year()})}"
                    th:classappend="${request.playerType().name() == 'SKATERS'} ? 'active' : ''">Skaters</a>
-                <a th:href="@{/stats/{playerType}(playerType='GOALIES', season-type=${request.seasonType().name()})}"
+                <a th:href="@{/stats/{playerType}(playerType='GOALIES', season-type=${request.seasonType().name()}, year=${request.year()})}"
                    th:classappend="${request.playerType().name() == 'GOALIES'} ? 'active' : ''">Goalies</a>
             </div>
             <div class="stats-toggle season-toggle">
-                <a th:href="@{/stats/{playerType}(playerType=${request.playerType().name()}, season-type='REGULAR_SEASON')}"
+                <a th:href="@{/stats/{playerType}(playerType=${request.playerType().name()}, season-type='REGULAR_SEASON', year=${request.year()})}"
                    th:classappend="${request.seasonType().name() == 'REGULAR_SEASON'} ? 'active' : ''">Regular Season</a>
-                <a th:href="@{/stats/{playerType}(playerType=${request.playerType().name()}, season-type='PLAYOFFS')}"
+                <a th:href="@{/stats/{playerType}(playerType=${request.playerType().name()}, season-type='PLAYOFFS', year=${request.year()})}"
                    th:classappend="${request.seasonType().name() == 'PLAYOFFS'} ? 'active' : ''">Playoffs</a>
+            </div>
+            <div class="stats-toggle">
+                <form th:action="@{/stats/{playerType}(playerType=${request.playerType().name()}, season-type=${request.seasonType().name()}, year=${request.year()})}" method="get" class="year-filter-form" id="year-select-form">
+                    <input type="hidden" name="season-type" th:value="${request.seasonType().name()}" />
+                    <select name="year" id="year" required onchange="document.getElementById('year-select-form').submit();">>
+                        <option th:each="season_year : ${season_years}"
+                                th:value="${season_year}"
+                                th:text="${season_year}"
+                                th:selected="${season_year == request.year()}">
+                        </option>
+                    </select>
+                </form>
             </div>
         </div>
 
