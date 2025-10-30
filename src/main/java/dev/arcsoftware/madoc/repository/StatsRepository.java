@@ -118,8 +118,6 @@ public class StatsRepository {
         }
         return jdbcClient
                 .sql(StatsSql.GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR)
-                .param("year", year)
-                .param("season_type", seasonType.name())
                 .query((rs, num) -> StatsDto.builder()
                         .playerName(rs.getString("player_name"))
                         .teamName(rs.getString("team_name"))
@@ -144,33 +142,12 @@ public class StatsRepository {
     }
 
     public void insertGoalAndAssists(GoalEntity goal) {
-        Integer primaryAssistId = null;
-        if(goal.getPrimaryAssistPlayer() != null) {
-            primaryAssistId = insertAssist(new AssistEntity(goal.getPrimaryAssistPlayer(), true));
-        }
-        Integer secondaryAssistId = null;
-        if(goal.getSecondaryAssistPlayer() != null) {
-            secondaryAssistId = insertAssist(new AssistEntity(goal.getSecondaryAssistPlayer(), false));
-        }
-
         int id = jdbcClient
                 .sql(StatsSql.INSERT_GOAL)
                 .params(goal.toParameterMap())
-                .param("primary_assist_id", primaryAssistId)
-                .param("secondary_assist_id", secondaryAssistId)
                 .query(Integer.class)
                 .single();
         goal.setId(id);
-    }
-
-    public int insertAssist(AssistEntity assist) {
-        int id = jdbcClient
-                .sql(StatsSql.INSERT_ASSIST)
-                .params(assist.toParameterMap())
-                .query(Integer.class)
-                .single();
-        assist.setId(id);
-        return id;
     }
 
     public void insertPenalty(PenaltyEntity penalty) {
@@ -187,33 +164,23 @@ public class StatsRepository {
                 .sql(StatsSql.CLEAR_GOALS_BY_GAME_ID)
                 .param("game_id", gameId)
                 .update();
-        int assists = jdbcClient
-                .sql(StatsSql.CLEAR_ASSISTS_BY_GAME_ID)
-                .param("game_id", gameId)
-                .update();
         int penalties = jdbcClient
                 .sql(StatsSql.CLEAR_PENALTIES_BY_GAME_ID)
                 .param("game_id", gameId)
                 .update();
 
-        log.info("Deleted {} goals, {} assists, {} penalties", goals, assists, penalties);
+        log.info("Deleted {} goals, {} penalties", goals, penalties);
     }
 
     public static class StatsSql{
         public static final String INSERT_GOAL = """
-        INSERT INTO madoc.goals (game_id, goal_type, player_id, primary_assist_id, secondary_assist_id, period, time)
-        VALUES (:game_id, :goal_type, :player_id, :primary_assist_id, :secondary_assist_id, :period, :time)
-        RETURNING id;
-        """;
-
-        public static final String INSERT_ASSIST = """
-        INSERT INTO madoc.assists (player_id, is_primary)
-        VALUES (:player_id, :is_primary)
+        INSERT INTO madoc.goals (game_id, goal_type, scorer_roster_assignment_id, primary_assist_roster_assignment_id, secondary_assist_roster_assignment_id, period, time)
+        VALUES (:game_id, :goal_type, :scorer_id, :primary_assist_id, :secondary_assist_id, :period, :time)
         RETURNING id;
         """;
 
         public static final String INSERT_PENALTY = """
-        INSERT INTO madoc.penalties (game_id, player_id, infraction, minutes, period, time)
+        INSERT INTO madoc.penalties (game_id, roster_assignment_id, infraction, minutes, period, time)
         VALUES (:game_id, :player_id, :infraction, :minutes, :period, :time)
         RETURNING id;
         """;
@@ -261,33 +228,6 @@ public class StatsRepository {
                  LEFT JOIN penalty_minutes ON ra.id = penalty_minutes.roster_assignment_id;
         """;
 
-        public static final String GET_PLAYER_SEASON_TYPE_STATS_BY_YEAR_AND_TEAM = """
-        SELECT
-            pl.id as player_id,
-            ra.jersey_number,
-            CONCAT(pl.first_name, ' ', pl.last_name) as player_name,
-            t.team_name,
-            COUNT(at.player_id) as games_played,
-            COUNT(g.player_id) as goals,
-            COUNT(a.player_id) as assists,
-            (COUNT(g.player_id) + COUNT(a.player_id)) as points,
-            COALESCE(SUM(p.minutes), 0) as penalty_minutes
-        FROM madoc.players pl
-                 FULL OUTER JOIN madoc.attendance at on pl.id = at.player_id
-                 FULL OUTER JOIN madoc.goals g on pl.id = g.player_id
-                 FULL OUTER JOIN madoc.assists a on pl.id = a.player_id
-                 FULL OUTER JOIN madoc.penalties p on pl.id = p.player_id
-                 INNER JOIN madoc.roster_assignments ra on pl.id = ra.player_id and ra.season_year = :year
-                 INNER JOIN madoc.teams t on ra.team_id = t.id and t.team_name = :team_name
-        GROUP BY pl.id, g.player_id, a.player_id, p.player_id, ra.player_id, ra.team_id, t.team_name, at.player_id, ra.jersey_number
-        ORDER BY points desc;
-        """;
-
-        public static final String CLEAR_ASSISTS_BY_GAME_ID = """
-        DELETE FROM madoc.assists AS a
-        WHERE a.id IN (SELECT primary_assist_id FROM madoc.goals WHERE game_id = :game_id)
-        OR a.id IN (SELECT secondary_assist_id FROM madoc.goals WHERE game_id = :game_id);
-        """;
         public static final String CLEAR_GOALS_BY_GAME_ID = """
         DELETE FROM madoc.goals
         WHERE game_id = :game_id

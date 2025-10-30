@@ -21,6 +21,10 @@ public class RosterAssignment {
     private boolean isRookie;
     private boolean isActive;
 
+    public RosterAssignment(Integer id) {
+        this.id = id;
+    }
+
     public Map<String, Object> toParameterMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("id", id);

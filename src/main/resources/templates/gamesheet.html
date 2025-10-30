@@ -209,7 +209,7 @@
                                     <td>
                                         <input type="checkbox" th:field="*{homeAttendanceByPlayerId[__${rowStat.index}__].attended}" th:disabled="${gamesheet.finalized}"/>
                                         <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].playerName" th:value="${player.fullName}">
-                                        <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].playerId" th:value="${player.playerId}">
+                                        <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].rosterId" th:value="${player.id}">
                                         <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].teamId" th:value="${player.teamId}">
                                         <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].gameId" th:value="${gamesheet.gameId}">
                                         <input type="hidden" th:name="homeAttendanceByPlayerId[__${rowStat.index}__].jerseyNumber" th:value="${player.jerseyNumber}">
@@ -235,7 +235,7 @@
                                     <td>
                                         <input type="checkbox" th:field="*{awayAttendanceByPlayerId[__${rowStat.index}__].attended}" th:disabled="${gamesheet.finalized}"/>
                                         <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].playerName" th:value="${player.fullName}">
-                                        <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].playerId" th:value="${player.playerId}">
+                                        <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].rosterId" th:value="${player.id}">
                                         <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].teamId" th:value="${player.teamId}">
                                         <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].gameId" th:value="${gamesheet.gameId}">
                                         <input type="hidden" th:name="awayAttendanceByPlayerId[__${rowStat.index}__].jerseyNumber" th:value="${player.jerseyNumber}">

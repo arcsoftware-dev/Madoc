@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class AttendancePayload {
     private String playerName;
-    private Integer playerId;
+    private Integer rosterId;
     private Integer teamId;
     private Integer gameId;
     private Integer jerseyNumber;

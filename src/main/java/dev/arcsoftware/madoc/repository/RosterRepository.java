@@ -123,7 +123,22 @@ public class RosterRepository {
                 .list();
     }
 
+    public int findRosterIdByJerseyNumberAndTeam(Integer jerseyNumber, int teamId) {
+        return jdbcClient
+                .sql(RosterRepository.RostersSql.GET_ROSTER_ID_BY_JERSEY_AND_TEAM)
+                .param("team_id", teamId)
+                .param("jersey_number", jerseyNumber)
+                .query(Integer.class)
+                .single();
+    }
+
     public static class RostersSql {
+        public static final String GET_ROSTER_ID_BY_JERSEY_AND_TEAM = """
+        SELECT id from madoc.roster_assignments
+        WHERE team_id = :team_id
+        AND jersey_number = :jersey_number
+        """;
+
         public static final String GET_ASSIGNMENTS_BY_TEAM_AND_YEAR = """
         SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "full_name", p.first_name, p.last_name, t.team_name, ra.is_active
             FROM madoc.roster_assignments ra
@@ -172,7 +187,8 @@ public class RosterRepository {
             draft_position = :draft_position,
             position = :position,
             jersey_number = :jersey_number,
-            is_rookie = :is_rookie
+            is_rookie = :is_rookie,
+            is_active = :is_active
         WHERE id = :id
         """;
     }

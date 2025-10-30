@@ -14,9 +14,9 @@ public class GoalEntity {
     private Integer id;
     private GameEntity game;
     private GoalType goalType;
-    private PlayerEntity player;
-    private PlayerEntity primaryAssistPlayer;
-    private PlayerEntity secondaryAssistPlayer;
+    private RosterAssignment scorer;
+    private RosterAssignment primaryAssistPlayer;
+    private RosterAssignment secondaryAssistPlayer;
     private int period;
     private LocalTime time;
     private LocalDateTime uploadedAt;
@@ -33,7 +33,9 @@ public class GoalEntity {
         map.put("id", id);
         map.put("game_id", game.getId());
         map.put("goal_type", goalType.name());
-        map.put("player_id", player.getId());
+        map.put("scorer_id", scorer.getId());
+        map.put("primary_assist_id", primaryAssistPlayer != null ? primaryAssistPlayer.getId() : null);
+        map.put("secondary_assist_id", secondaryAssistPlayer != null ? secondaryAssistPlayer.getId() : null);
         map.put("period", period);
         map.put("time", time.toString());
         map.put("uploaded_at", uploadedAt);

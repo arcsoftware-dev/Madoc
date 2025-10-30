@@ -26,15 +26,6 @@ public class AttendanceRepository {
         attendanceEntity.setId(id);
     }
 
-    public void insertAttendanceUpload(GameUploadData uploadFileData) {
-        int id = jdbcClient
-                .sql(AttendanceSql.INSERT_ATTENDANCE_UPLOAD)
-                .params(uploadFileData.toParameterMap())
-                .query(Integer.class)
-                .single();
-        uploadFileData.setId(id);
-    }
-
     public void clearByGameId(int gameId) {
         int results = jdbcClient
                 .sql(AttendanceSql.DELETE_BY_GAME_ID)
@@ -45,14 +36,8 @@ public class AttendanceRepository {
 
     public static class AttendanceSql {
         public static final String INSERT = """
-        INSERT INTO madoc.attendance (game_id, player_id, jersey_number, team_id, attended)
-        VALUES (:game_id, :player_id, :jersey_number, :team_id, :attended)
-        RETURNING id;
-        """;
-
-        public static final String INSERT_ATTENDANCE_UPLOAD = """
-        INSERT INTO madoc.attendance_uploads (game_id, file_name, file_content)
-        VALUES (:game_id, :file_name, :file_content)
+        INSERT INTO madoc.attendance (game_id, roster_assignment_id, jersey_number, attended)
+        VALUES (:game_id, :roster_assignment_id, :jersey_number, :attended)
         RETURNING id;
         """;
 

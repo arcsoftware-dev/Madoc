@@ -12,7 +12,7 @@ import java.util.Map;
 public class PenaltyEntity {
     private int id;
     private GameEntity game;
-    private PlayerEntity player;
+    private RosterAssignment player;
     private String infraction;
     private int minutes;
     private int period;

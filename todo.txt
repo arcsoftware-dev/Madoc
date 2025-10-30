@@ -3,6 +3,10 @@
 - goalie stats
 - filter player stats by season type
 
+- roster changes after rookie draft currently have to be done manually
+    - set current ra to inactive
+    - add new ra for traded player
+
 URGENT
 - multiple roster assignments per player (rookie draft)
 - keep finalized gamesheet rosters as is after roster changes

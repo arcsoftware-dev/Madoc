@@ -3,6 +3,7 @@ package dev.arcsoftware.madoc.view;
 import dev.arcsoftware.madoc.controller.GameController;
 import dev.arcsoftware.madoc.controller.RosterController;
 import dev.arcsoftware.madoc.enums.GoalType;
+import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import dev.arcsoftware.madoc.model.payload.*;
 import dev.arcsoftware.madoc.service.GameService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,8 +51,8 @@ public class GamesheetView {
     }
 
     private void addRostersToModel(Model model, String homeTeam, String awayTeam, int year) {
-        var homeRoster = rosterController.getRosterAssignmentsByTeam(year, homeTeam).getBody();
-        var awayRoster = rosterController.getRosterAssignmentsByTeam(year, awayTeam).getBody();
+        var homeRoster = rosterController.getRosterAssignmentsByTeam(year, homeTeam).getBody().stream().filter(RosterAssignment::isActive).toList();
+        var awayRoster = rosterController.getRosterAssignmentsByTeam(year, awayTeam).getBody().stream().filter(RosterAssignment::isActive).toList();
         model.addAttribute("homeTeamPlayers", homeRoster);
         model.addAttribute("awayTeamPlayers", awayRoster);
     }
@@ -61,7 +62,7 @@ public class GamesheetView {
         @PathVariable("gameId") int gameId,
             Model model
     ) {
-        GamesheetPayload gamesheet = gameController.fetchGamesheetPayload(gameId).getBody();
+        GamesheetPayload gamesheet = gameController.fetchGamesheet(gameId).getBody();
 
         model.addAttribute("gamesheet", gamesheet);
         assert gamesheet != null;
@@ -102,7 +103,7 @@ public class GamesheetView {
 
         clearNextData(gamesheet);
 
-        gameController.updateGamesheetPayload(gamesheet);
+        gameController.updateGamesheet(gamesheet);
         return "gamesheet";
     }
 
@@ -268,13 +269,13 @@ public class GamesheetView {
         String side = parts[0];
         int goalIndex = Integer.parseInt(parts[1]);
 
-        GamesheetPayload lastUpdatedGamesheet = gameController.fetchGamesheetPayload(gameId).getBody();
+        GamesheetPayload lastUpdatedGamesheet = gameController.fetchGamesheet(gameId).getBody();
 
         log.info("Removing {} goal {} from gamesheet {}", side, goalIndex, gameId);
         getTeamGoals(lastUpdatedGamesheet, side).remove(goalIndex);
 
         addRostersToModel(model, lastUpdatedGamesheet.getHomeTeam(), lastUpdatedGamesheet.getAwayTeam(), lastUpdatedGamesheet.getSeasonYear());
-        gameController.updateGamesheetPayload(lastUpdatedGamesheet);
+        gameController.updateGamesheet(lastUpdatedGamesheet);
         model.addAttribute("gamesheet", lastUpdatedGamesheet);
         return "gamesheet";
     }
@@ -322,7 +323,7 @@ public class GamesheetView {
 
         clearNextData(gamesheet);
 
-        gameController.updateGamesheetPayload(gamesheet);
+        gameController.updateGamesheet(gamesheet);
         return "gamesheet";
     }
 
@@ -339,12 +340,12 @@ public class GamesheetView {
         String side = parts[0];
         int penaltyIndex = Integer.parseInt(parts[1]);
 
-        GamesheetPayload lastUpdatedGamesheet = gameController.fetchGamesheetPayload(gameId).getBody();
+        GamesheetPayload lastUpdatedGamesheet = gameController.fetchGamesheet(gameId).getBody();
 
         getTeamPenalties(lastUpdatedGamesheet, side).remove(penaltyIndex);
 
         addRostersToModel(model, lastUpdatedGamesheet.getHomeTeam(), lastUpdatedGamesheet.getAwayTeam(), lastUpdatedGamesheet.getSeasonYear());
-        gameController.updateGamesheetPayload(lastUpdatedGamesheet);
+        gameController.updateGamesheet(lastUpdatedGamesheet);
         model.addAttribute("gamesheet", lastUpdatedGamesheet);
         return "gamesheet";
     }
@@ -384,7 +385,7 @@ public class GamesheetView {
         }
 
         clearNextData(gamesheet);
-        gameController.updateGamesheetPayload(gamesheet);
+        gameController.updateGamesheet(gamesheet);
         return "gamesheet";
     }
 

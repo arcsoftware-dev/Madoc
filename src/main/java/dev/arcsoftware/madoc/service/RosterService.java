@@ -13,8 +13,6 @@ import dev.arcsoftware.madoc.util.FileUploadParser;
 import dev.arcsoftware.madoc.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static dev.arcsoftware.madoc.config.CacheConfig.CACHE_MANAGER;
-import static dev.arcsoftware.madoc.config.CacheConfig.ROSTER_TEAM_CACHE;
 
 @Slf4j
 @Service
@@ -49,7 +44,6 @@ public class RosterService {
     }
 
     @Transactional
-    @CacheEvict(cacheManager = CACHE_MANAGER, value = ROSTER_TEAM_CACHE)
     public RosterUploadResult assignRosters(UploadFileData uploadFileData) {
         List<RosterUploadRow> rosterUploadRows = fileUploadParser.parseRosterCsv(uploadFileData.getFileContent());
         log.info("Parsed rows from CSV {}", rosterUploadRows);
@@ -88,7 +82,6 @@ public class RosterService {
         );
     }
 
-    @Cacheable(cacheManager = CACHE_MANAGER, value = ROSTER_TEAM_CACHE)
     public List<RosterAssignmentDto> getAssignedRostersByYearAndTeam(int year, String teamName) {
         log.info("cache-miss for getAssignedRostersByYearAndTeam for year {} and team {}: calling repository", year, teamName);
         var assignments = rosterRepository.getAssignmentsByYearAndTeam(year, teamName);
@@ -150,7 +143,6 @@ public class RosterService {
         return rosterAssignments;
     }
 
-    @CacheEvict(cacheManager = CACHE_MANAGER, value = ROSTER_TEAM_CACHE)
     public void modifyRosters(List<RosterAssignmentDto> rosterAssignments) {
         for(RosterAssignment rosterAssignment : rosterAssignments) {
             rosterRepository.updateAssignment(rosterAssignment);
