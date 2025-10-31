@@ -151,7 +151,7 @@ public class StatsRepository {
                         .wins(rs.getInt("wins"))
                         .losses(rs.getInt("losses"))
                         .ties(rs.getInt("ties"))
-                        .shutouts(rs.getInt("ties"))
+                        .shutouts(rs.getInt("shutouts"))
                         .penaltyMinutes(rs.getInt("penalty_minutes"))
                         .goalsAgainst(rs.getInt("goals_against"))
                         .build())
