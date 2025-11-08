@@ -26,6 +26,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Controller
@@ -145,11 +146,19 @@ public class GamesheetView {
             if(goalPayload.getPeriod() == null || goalPayload.getPeriod() < 1 || goalPayload.getPeriod() > 4){
                 errors.add(new ObjectError(errorMessagePrefix, errorMessagePrefix+"Period Must Be Between 1 And 4 Inclusive"));
             }
-            LocalTime goalTime = null;
-            try{
-                goalTime = gameService.timeStringToLocalTime(goalPayload.getTime());
-            } catch(Exception ignored){}
-            if(goalTime == null){
+
+            Pattern timePattern = Pattern.compile("^[0-5]?\\d:[0-5]\\d$");
+            boolean validTimeFormat = timePattern.matcher(goalPayload.getTime()).matches();
+            if(validTimeFormat){
+                LocalTime goalTime = null;
+                try{
+                    goalTime = gameService.timeStringToLocalTime(goalPayload.getTime());
+                } catch(Exception ignored){}
+                if(goalTime == null){
+                    errors.add(new ObjectError(errorMessagePrefix, errorMessagePrefix+"Time Must Be Set in the format 'mm:ss'"));
+                }
+            }
+            else {
                 errors.add(new ObjectError(errorMessagePrefix, errorMessagePrefix+"Time Must Be Set in the format 'mm:ss'"));
             }
 
@@ -240,12 +249,20 @@ public class GamesheetView {
             if(penaltyPayload.getPeriod() == null || penaltyPayload.getPeriod() < 1 || penaltyPayload.getPeriod() > 4){
                 errors.add(new ObjectError(errorMessagePrefix, errorMessagePrefix + "Period Must Be Between 1 And 4 Inclusive"));
             }
-            LocalTime penaltyTime = null;
-            try{
-                penaltyTime = gameService.timeStringToLocalTime(penaltyPayload.getTime());
-            } catch(Exception ignored){}
-            if(penaltyTime == null){
-                errors.add(new ObjectError(errorMessagePrefix, errorMessagePrefix + "Time Must Be Set in the format 'mm:ss'"));
+
+            Pattern timePattern = Pattern.compile("^[0-5]?\\d:[0-5]\\d$");
+            boolean validTimeFormat = timePattern.matcher(penaltyPayload.getTime()).matches();
+            if(validTimeFormat){
+                LocalTime penaltyTime = null;
+                try{
+                    penaltyTime = gameService.timeStringToLocalTime(penaltyPayload.getTime());
+                } catch(Exception ignored){}
+                if(penaltyTime == null){
+                    errors.add(new ObjectError(errorMessagePrefix, errorMessagePrefix+"Time Must Be Set in the format 'mm:ss'"));
+                }
+            }
+            else {
+                errors.add(new ObjectError(errorMessagePrefix, errorMessagePrefix+"Time Must Be Set in the format 'mm:ss'"));
             }
         }
         return errors;

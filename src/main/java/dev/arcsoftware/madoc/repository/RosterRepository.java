@@ -125,7 +125,7 @@ public class RosterRepository {
 
     public int findRosterIdByJerseyNumberAndTeam(Integer jerseyNumber, int teamId) {
         return jdbcClient
-                .sql(RosterRepository.RostersSql.GET_ROSTER_ID_BY_JERSEY_AND_TEAM)
+                .sql(RosterRepository.RostersSql.GET_ACTIVE_ROSTER_ID_BY_JERSEY_AND_TEAM)
                 .param("team_id", teamId)
                 .param("jersey_number", jerseyNumber)
                 .query(Integer.class)
@@ -133,10 +133,11 @@ public class RosterRepository {
     }
 
     public static class RostersSql {
-        public static final String GET_ROSTER_ID_BY_JERSEY_AND_TEAM = """
+        public static final String GET_ACTIVE_ROSTER_ID_BY_JERSEY_AND_TEAM = """
         SELECT id from madoc.roster_assignments
         WHERE team_id = :team_id
         AND jersey_number = :jersey_number
+        AND is_active = true;
         """;
 
         public static final String GET_ASSIGNMENTS_BY_TEAM_AND_YEAR = """
