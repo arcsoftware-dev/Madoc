@@ -267,79 +267,107 @@ public class StatsRepository {
         """;
 
         public static final String GET_GOALIE_SEASON_TYPE_STATS_BY_YEAR = """
-        WITH attendance AS (
-            SELECT ra.id, count(*) AS games_played
+        
+                WITH attendance AS (
+            SELECT gm.id as game_id, ra.id as goalie_id, ra.team_id as team_id
             FROM madoc.attendance at
-                JOIN madoc.roster_assignments ra ON at.roster_assignment_id = ra.id
-                JOIN madoc.games gm ON at.game_id = gm.id
+                     JOIN madoc.roster_assignments ra ON at.roster_assignment_id = ra.id
+                     JOIN madoc.games gm ON at.game_id = gm.id
             WHERE gm.year = :year
-                AND gm.season_type = :season_type
-            GROUP BY ra.id, at.attended
-            HAVING at.attended = true
+              AND gm.season_type = :season_type
+              AND ra.position = 'GOALIE'
+              AND at.attended = true
         ),
         penalty_minutes AS (
-             SELECT roster_assignment_id, SUM(minutes) AS total_penalty_minutes
-             FROM madoc.penalties
-             GROUP BY roster_assignment_id
+            SELECT roster_assignment_id, SUM(minutes) AS total_penalty_minutes
+            FROM madoc.penalties
+            GROUP BY roster_assignment_id
         ),
-        game_scores AS (
+        game_results AS (
             SELECT
                 gm.id AS game_id,
                 gm.home_team,
                 gm.away_team,
-                SUM(CASE WHEN ra.team_id = gm.home_team THEN 1 ELSE 0 END) AS home_score,
-                SUM(CASE WHEN ra.team_id = gm.away_team THEN 1 ELSE 0 END) AS away_score
+                SUM(CASE WHEN ra.team_id = gm.home_team THEN 1 ELSE 0 END) AS away_goalie_goals_against,
+                SUM(CASE WHEN ra.team_id = gm.away_team THEN 1 ELSE 0 END) AS home_goalie_goals_against,
+                at.goalie_id as home_goalie_id,
+                at2.goalie_id as away_goalie_id,
+                CASE
+                    WHEN SUM(CASE WHEN ra.team_id = gm.home_team THEN 1 ELSE 0 END) >
+                        SUM(CASE WHEN ra.team_id = gm.away_team THEN 1 ELSE 0 END)
+                    THEN 'W'
+                    WHEN SUM(CASE WHEN ra.team_id = gm.home_team THEN 1 ELSE 0 END) <
+                        SUM(CASE WHEN ra.team_id = gm.away_team THEN 1 ELSE 0 END)
+                    THEN 'L'
+                    ELSE 'T'
+                END as home_goalie_result,
+                CASE
+                    WHEN SUM(CASE WHEN ra.team_id = gm.home_team THEN 1 ELSE 0 END) <
+                        SUM(CASE WHEN ra.team_id = gm.away_team THEN 1 ELSE 0 END)
+                    THEN 'W'
+                    WHEN SUM(CASE WHEN ra.team_id = gm.home_team THEN 1 ELSE 0 END) >
+                        SUM(CASE WHEN ra.team_id = gm.away_team THEN 1 ELSE 0 END)
+                    THEN 'L'
+                    ELSE 'T'
+                END as away_goalie_result
             FROM madoc.games gm
-                     LEFT JOIN madoc.goals g ON g.game_id = gm.id
-                     LEFT JOIN madoc.roster_assignments ra ON g.scorer_roster_assignment_id = ra.id AND ra.season_year = :year
+                LEFT JOIN madoc.goals g ON g.game_id = gm.id
+                LEFT JOIN madoc.roster_assignments ra ON g.scorer_roster_assignment_id = ra.id AND ra.season_year = :year
+                LEFT JOIN attendance at ON gm.id = at.game_id AND gm.home_team = at.team_id
+                LEFT JOIN attendance at2 ON gm.id = at2.game_id AND gm.away_team = at2.team_id
             WHERE gm.is_finalized = true
-              AND gm.season_type = :season_type
-              AND gm.year = :year
-            GROUP BY gm.id, gm.home_team, gm.away_team
+                AND gm.season_type = :season_type
+                AND gm.year = :year
+            GROUP BY gm.id, gm.home_team, gm.away_team, at.goalie_id, at2.goalie_id
         ),
-        team_standings AS (
+        game_stats AS (
             SELECT
-                t.id as team_id,
-                t.team_name,
-                COUNT(DISTINCT gs.game_id) AS games_played,
-                SUM(CASE
-                        WHEN (t.id = gs.home_team AND gs.home_score > gs.away_score)
-                            OR (t.id = gs.away_team AND gs.away_score > gs.home_score)
-                            THEN 1 ELSE 0 END) AS wins,
-                SUM(CASE
-                        WHEN (t.id = gs.home_team AND gs.home_score < gs.away_score)
-                            OR (t.id = gs.away_team AND gs.away_score < gs.home_score)
-                            THEN 1 ELSE 0 END) AS losses,
-                SUM(CASE WHEN gs.home_score = gs.away_score THEN 1 ELSE 0 END) AS ties,
-                SUM(CASE
-                        WHEN (t.id = gs.home_team AND gs.away_score = 0)
-                            OR (t.id = gs.away_team AND gs.home_score = 0)
-                            THEN 1 ELSE 0 END) AS shutouts,
-                SUM(CASE WHEN t.id = gs.home_team THEN gs.away_score
-                         WHEN t.id = gs.away_team THEN gs.home_score
-                         ELSE 0 END) AS goals_against
-            FROM madoc.teams t
-                     LEFT JOIN game_scores gs ON t.id = gs.home_team OR t.id = gs.away_team
-            GROUP BY t.id, t.team_name
+                goalie_id,
+                SUM(goals_against) AS total_goals_against,
+                SUM(CASE WHEN result = 'W' THEN 1 ELSE 0 END) AS wins,
+                SUM(CASE WHEN result = 'L' THEN 1 ELSE 0 END) AS losses,
+                SUM(CASE WHEN result = 'T' THEN 1 ELSE 0 END) AS ties,
+                SUM(CASE WHEN goals_against = 0 THEN 1 ELSE 0 END) AS shutouts
+            FROM (
+                     SELECT home_goalie_id AS goalie_id,
+                            home_goalie_goals_against AS goals_against,
+                            home_goalie_result AS result
+                     FROM game_results
+                     UNION ALL
+                     SELECT away_goalie_id AS goalie_id,
+                            away_goalie_goals_against AS goals_against,
+                            away_goalie_result AS result
+                     FROM game_results
+                 ) AS all_goalies
+            WHERE goalie_id IS NOT NULL
+            GROUP BY goalie_id
+        ),
+        games_played AS (
+            SELECT goalie_id, COUNT(*) AS games_played
+            FROM attendance
+            GROUP BY goalie_id
         )
         SELECT p.id AS player_id,
                ra.jersey_number AS jersey_number,
                CONCAT(p.first_name, ' ', p.last_name) AS player_name,
                t.team_name AS team_name,
-               COALESCE(attendance.games_played, 0) AS games_played,
-               ts.wins AS wins,
-               ts.losses  AS losses,
-               ts.ties  AS ties,
-               ts.shutouts  AS shutouts,
+               COALESCE(games_played.games_played, 0) AS games_played,
+               gs.wins AS wins,
+               gs.losses  AS losses,
+               gs.ties  AS ties,
+               gs.shutouts  AS shutouts,
                COALESCE(penalty_minutes.total_penalty_minutes, 0) AS penalty_minutes,
-               ts.goals_against  AS goals_against
+                gs.total_goals_against  AS goals_against
         FROM madoc.roster_assignments ra
                  LEFT JOIN madoc.players p ON ra.player_id = p.id
                  LEFT JOIN madoc.teams t ON ra.team_id = t.id
-                 LEFT JOIN attendance ON ra.id = attendance.id
+                 LEFT JOIN attendance ON ra.id = attendance.goalie_id
                  LEFT JOIN penalty_minutes ON ra.id = penalty_minutes.roster_assignment_id
-                 LEFT JOIN team_standings ts ON ra.team_id = ts.team_id
-        WHERE ra.position = 'GOALIE';
+                 LEFT JOIN game_stats gs ON ra.id = gs.goalie_id
+                 LEFT JOIN games_played ON ra.id = games_played.goalie_id
+        GROUP BY p.id, ra.jersey_number, p.first_name, p.last_name, t.team_name, penalty_minutes.total_penalty_minutes, ra.position, gs.wins, gs.losses, gs.ties, gs.shutouts, gs.total_goals_against, games_played.games_played
+        HAVING ra.position = 'GOALIE';
+        
         """;
     }
 }
