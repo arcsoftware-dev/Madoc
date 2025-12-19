@@ -5,6 +5,7 @@
     <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
     <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/styles/css/responsive.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/holiday.css}"/>
 </head>
 <body>
     <div th:replace="~{fragments/header.html :: header}"></div>
@@ -12,6 +13,13 @@
         <section class="hero">
             <h1>Welcome to the MADOC Hockey League!</h1>
             <p>Get the latest news, scores, and updates about your favorite teams.</p>
+        </section>
+        <section class="hero" id="christmas-news" th:style="|background-image: url('@{/assets/Christmas-HighRes.jpg}');|">
+            <h1>Christmas Raffle</h1>
+            <p>The annual Christmas raffle is here!</p>
+            <p>This year will have two draws.  The first prize is a $100 LCBO Gift Card, and the second is a Bottle (TBD)</p>
+            <p>Get your tickets at the rink on December 21st!</p>
+            <p>Tickets are 2 for $5 or 5 for $10</p>
         </section>
         <section class="feed">
             <div class="news-cards feed-item feed-item-news">

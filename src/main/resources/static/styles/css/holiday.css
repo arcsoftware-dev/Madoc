@@ -1,0 +1,55 @@
+#christmas-news {
+    position: relative;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: var(--accent);
+    font-weight: bold;    padding: 4rem 2rem;
+    min-height: 320px;
+
+    display: flex;
+    flex-direction: column;    /* stack children vertically */
+    align-items: center;       /* center horizontally */
+    justify-content: center;   /* center vertically */
+    text-align: center;
+    gap: 0.4rem;               /* vertical space between h2 and p elements */
+}
+
+/* subtle dark overlay for readability */
+#christmas-news::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 0;
+}
+
+/* ensure inner content sits above the overlay and limits width for better wrapping */
+#christmas-news > * {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 900px;
+}
+
+/* tighten paragraphs inside the section */
+#christmas-news p {
+    margin: 0.2rem 0;    /* reduce default vertical margins */
+    line-height: 1.25;   /* improve compactness/readability */
+}
+
+/* extra tweak when two \<p\>s are adjacent */
+#christmas-news p + p {
+    margin-top: 0.15rem;
+}
+
+/* move the H1 down slightly (adjust value as needed) */
+#christmas-news h1 {
+    margin-top: 0.8rem;
+}
+
+/* ensure spacing between H1 and the first paragraph if needed */
+#christmas-news > h1 + p {
+    margin-top: 0.6rem;
+}
