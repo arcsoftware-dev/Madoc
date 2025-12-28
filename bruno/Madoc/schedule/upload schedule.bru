@@ -11,7 +11,7 @@ post {
 }
 
 body:multipart-form {
-  file: @file()
+  file: @file(/home/jake/dev/projects/Madoc/src/main/resources/data/schedule/2025/2025RegularSeasonSchedule-Partial4-Final.csv)
   year: {{year}}
   season-type: {{seasonType}}
 }
@@ -23,4 +23,5 @@ vars:pre-request {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
