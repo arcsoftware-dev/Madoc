@@ -1,5 +1,5 @@
 <footer class="main-footer" th:fragment="footer" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
-    <p>&copy; 2025 Arc Software</p>
+    <p th:text="'&copy; ' + ${#dates.year(#dates.createNow())} + ' Arc Software'">&copy; 2025 Arc Software</p>
     <div sec:authorize="isAnonymous()">
         <a th:href="@{/login}">Login</a>
     </div>
