@@ -5,10 +5,31 @@
     <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
     <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/styles/css/responsive.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats.css}" />
 </head>
 <body>
     <div th:replace="~{fragments/header.html :: header}"></div>
     <main class="content">
+        <div class="stats-toggle-bar">
+            <div class="stats-toggle season-toggle">
+                <a th:href="@{/schedule(season-type='REGULAR_SEASON', year=${year})}"
+                   th:classappend="${seasonType.name() == 'REGULAR_SEASON'} ? 'active' : ''">Regular Season</a>
+                <a th:href="@{/schedule(season-type='PLAYOFFS', year=${year})}"
+                   th:classappend="${seasonType.name() == 'PLAYOFFS'} ? 'active' : ''">Playoffs</a>
+            </div>
+            <div class="stats-toggle">
+                <form th:action="@{/schedule(season-type=${seasonType.name()}, year=${year})}" method="get" class="year-filter-form" id="year-select-form">
+                    <input type="hidden" name="season-type" th:value="${seasonType.name()}" />
+                    <select name="year" id="year" required onchange="document.getElementById('year-select-form').submit();">>
+                        <option th:each="season_year : ${season_years}"
+                                th:value="${season_year}"
+                                th:text="${season_year}"
+                                th:selected="${season_year == year}">
+                        </option>
+                    </select>
+                </form>
+            </div>
+        </div>
         <section class="hero">
             <h1 th:text="${year + ' ' + seasonType.getLabel() + ' Schedule'}"></h1>
         </section>
