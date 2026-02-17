@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>MMHL</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/responsive.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/game.css}"/>
+</head>
+<body>
+    <div th:replace="~{fragments/header.html :: header}"></div>
+    <main class="content">
+        <section id="game_header" class="hero">
+            <h1 style="color: var(--text)" th:text="${game.homeTeam.teamName} + ' vs ' + ${game.awayTeam.teamName}">Home vs Away</h1>
+            <h4 th:text="${#temporals.format(game.gameTime, 'MMMM d, yyyy hh:mm a')} + ' at ' + ${game.venue.name()}">Date at Location</h4>
+        </section>
+        <section id="matchup">
+            <!-- Head-To-Head table -->
+            <div id="headToHead" style="margin-top:2rem; display:flex; justify-content:center;">
+                <div style="max-width:900px; width:100%;">
+                    <table class="stats-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem; table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:42%" />
+                            <col style="width:16%" />
+                            <col style="width:42%" />
+                        </colgroup>
+                        <thead>
+                            <tr style="background:transparent;">
+                                <th style="padding:0.5rem; text-align:center; background:transparent; border:none;">
+                                    <a th:href="@{/teams/{team}(team=${utils.stripSpaces(game.homeTeam.teamName)})}">
+                                        <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.homeTeam.teamName)} + '.svg'}" alt="Home Logo" class="team-logo" style="width:200px; height:200px; object-fit:contain; display:block; margin:0 auto;"/>
+                                    </a>
+                                </th>
+                                <th style="text-align:left; padding:0.5rem; background:transparent; border:none;"></th>
+                                <th style="padding:0.5rem; text-align:center; background:transparent; border:none;">
+                                    <a th:href="@{/teams/{team}(team=${utils.stripSpaces(game.awayTeam.teamName)})}">
+                                        <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.awayTeam.teamName)} + '.svg'}" alt="Away Logo" class="team-logo" style="width:200px; height:200px; object-fit:contain; display:block; margin:0 auto;"/>
+                                    </a>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" style="text-align:center; padding:0.5rem; background:var(--secondary); font-weight:600; color:var(--text);">Head-To-Head</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${regSeasonHeadToHead != null} ? ${regSeasonHeadToHead.getTeam1Record()} : '0-0-0'">0-0-0</td>
+                                <td style="padding:0.5rem;">Season</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${regSeasonHeadToHead != null} ? ${regSeasonHeadToHead.getTeam2Record()} : '0-0-0'">0-0-0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${regSeasonHeadToHead != null} ? ${regSeasonHeadToHead.getTeam1Goals()} : 0">0</td>
+                                <td style="padding:0.5rem;">GF</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${regSeasonHeadToHead != null} ? ${regSeasonHeadToHead.getTeam2Goals()} : 0">0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${regSeasonHeadToHead != null} ? ${regSeasonHeadToHead.getTeam1Pims()} : 0">0</td>
+                                <td style="padding:0.5rem;">PIMS</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${regSeasonHeadToHead != null} ? ${regSeasonHeadToHead.getTeam2Pims()} : 0">0</td>
+                            </tr>
+                            <tr th:if="${playoffHeadToHead != null}">
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffHeadToHead != null} ? ${playoffHeadToHead.getTeam1Record()} : '0-0-0'">0-0-0</td>
+                                <td style="padding:0.5rem;">Playoffs</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffHeadToHead != null} ? ${playoffHeadToHead.getTeam2Record()} : '0-0-0'">0-0-0</td>
+                            </tr>
+                            <tr th:if="${playoffHeadToHead != null}">
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffHeadToHead != null} ? ${playoffHeadToHead.getTeam1Goals()} : 0">0</td>
+                                <td style="padding:0.5rem;">GF</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffHeadToHead != null} ? ${playoffHeadToHead.getTeam2Goals()} : 0">0</td>
+                            </tr>
+                            <tr th:if="${playoffHeadToHead != null}">
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffHeadToHead != null} ? ${playoffHeadToHead.getTeam1Pims()} : 0">0</td>
+                                <td style="padding:0.5rem;">PIMS</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffHeadToHead != null} ? ${playoffHeadToHead.getTeam2Pims()} : 0">0</td>
+                            </tr>
+                            <tr>
+                                <th colspan="3" style="text-align:center; padding:0.5rem; background:var(--secondary); font-weight:600; color:var(--text);">Regular Season</th>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${seasonStandings != null} ? ${seasonStandings.get(game.homeTeam.teamName).getRecord()} : '0-0-0'">0-0-0</td>
+                                <td style="padding:0.5rem;">Record</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${seasonStandings != null} ? ${seasonStandings.get(game.awayTeam.teamName).getRecord()} : '0-0-0'">0-0-0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${seasonStandings != null} ? ${#numbers.formatDecimal(seasonStandings.get(game.homeTeam.teamName).getGoalsForPerGame(),1,2)} : 0">0</td>
+                                <td style="padding:0.5rem;">GF/G</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${seasonStandings != null} ? ${#numbers.formatDecimal(seasonStandings.get(game.awayTeam.teamName).getGoalsForPerGame,1,2)} : 0">0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${seasonStandings != null} ? ${#numbers.formatDecimal(seasonStandings.get(game.homeTeam.teamName).getGoalsAgainstPerGame(),1,2)} : 0">0</td>
+                                <td style="padding:0.5rem;">GA/G</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${seasonStandings != null} ? ${#numbers.formatDecimal(seasonStandings.get(game.awayTeam.teamName).getGoalsAgainstPerGame,1,2)} : 0">0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${seasonStandings != null} ? ${#numbers.formatDecimal(seasonStandings.get(game.homeTeam.teamName).getPenaltyMinutesPerGame(),1,2)} : 0">0</td>
+                                <td style="padding:0.5rem;">PM/G</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${seasonStandings != null} ? ${#numbers.formatDecimal(seasonStandings.get(game.awayTeam.teamName).getPenaltyMinutesPerGame(),1,2)} : 0">0</td>
+                            </tr>
+                            <tr>
+                                <th colspan="3" style="text-align:center; padding:0.5rem; background:var(--secondary); font-weight:600; color:var(--text);">Playoffs</th>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffStandings != null} ? ${playoffStandings.get(game.homeTeam.teamName).getRecord()} : '0-0-0'">0-0-0</td>
+                                <td style="padding:0.5rem;">Record</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffStandings != null} ? ${playoffStandings.get(game.awayTeam.teamName).getRecord()} : '0-0-0'">0-0-0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffStandings != null} ? ${#numbers.formatDecimal(playoffStandings.get(game.homeTeam.teamName).getGoalsForPerGame(),1,2)} : 0">0</td>
+                                <td style="padding:0.5rem;">GF/G</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffStandings != null} ? ${#numbers.formatDecimal(playoffStandings.get(game.awayTeam.teamName).getGoalsForPerGame,1,2)} : 0">0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffStandings != null} ? ${#numbers.formatDecimal(playoffStandings.get(game.homeTeam.teamName).getGoalsAgainstPerGame(),1,2)} : 0">0</td>
+                                <td style="padding:0.5rem;">GA/G</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffStandings != null} ? ${#numbers.formatDecimal(playoffStandings.get(game.awayTeam.teamName).getGoalsAgainstPerGame,1,2)} : 0">0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffStandings != null} ? ${#numbers.formatDecimal(playoffStandings.get(game.homeTeam.teamName).getPenaltyMinutesPerGame(),1,2)} : 0">0</td>
+                                <td style="padding:0.5rem;">PM/G</td>
+                                <td style="padding:0.5rem; text-align:center;" th:text="${playoffStandings != null} ? ${#numbers.formatDecimal(playoffStandings.get(game.awayTeam.teamName).getPenaltyMinutesPerGame(),1,2)} : 0">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <section id="previousGames" style="margin-top:2rem; display:flex; justify-content:center;">
+            <div style="max-width:900px; width:100%;">
+                <h3 style="text-align:center; color:var(--text);">Previous Games</h3>
+                <table class="stats-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem;">
+                    <thead>
+                        <tr style="background:var(--secondary);">
+                            <th style="padding:0.5rem; text-align:center;">Date</th>
+                            <th style="padding:0.5rem; text-align:center;">Type</th>
+                            <th style="padding:0.5rem; text-align:center;">Home</th>
+                            <th style="padding:0.5rem; text-align:center;">H</th>
+                            <th style="padding:0.5rem; text-align:center;">Away</th>
+                            <th style="padding:0.5rem; text-align:center;">A</th>
+                            <th style="padding:0.5rem; text-align:center;">H PIM</th>
+                            <th style="padding:0.5rem; text-align:center;">A PIM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="g : ${previousGames}">
+                            <td style="padding:0.5rem;" th:text="${#temporals.format(g.gameTime, 'MMM d, yyyy')}">Jan 1, 2000</td>
+                            <td style="padding:0.5rem;" th:text="${g.seasonType.getLabel()}">REG</td>
+                            <td style="padding:0.5rem;" th:text="${g.homeTeam}">Home Team</td>
+                            <td style="padding:0.5rem; text-align:center;" th:text="${g.homeTeamScore}">0</td>
+                            <td style="padding:0.5rem;" th:text="${g.awayTeam}">Away Team</td>
+                            <td style="padding:0.5rem; text-align:center;" th:text="${g.awayTeamScore}">0</td>
+                            <td style="padding:0.5rem; text-align:center;" th:text="${g.homeTeamPenaltyMinutes}">0</td>
+                            <td style="padding:0.5rem; text-align:center;" th:text="${g.awayTeamPenaltyMinutes}">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

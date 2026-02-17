@@ -2,7 +2,10 @@ package dev.arcsoftware.madoc.view;
 
 import dev.arcsoftware.madoc.controller.GameController;
 import dev.arcsoftware.madoc.controller.RosterController;
+import dev.arcsoftware.madoc.controller.StandingsController;
 import dev.arcsoftware.madoc.enums.GoalType;
+import dev.arcsoftware.madoc.enums.SeasonType;
+import dev.arcsoftware.madoc.model.entity.GameEntity;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import dev.arcsoftware.madoc.model.payload.*;
 import dev.arcsoftware.madoc.service.GameService;
@@ -11,6 +14,9 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
@@ -26,7 +32,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -36,12 +45,14 @@ public class GamesheetView {
     private final GameController gameController;
     private final RosterController rosterController;
     private final GameService gameService;
+    private final StandingsController standingsController;
 
     @Autowired
-    public GamesheetView(GameController gameController, RosterController rosterController, GameService gameService) {
+    public GamesheetView(GameController gameController, RosterController rosterController, GameService gameService, StandingsController standingsController) {
         this.gameController = gameController;
         this.rosterController = rosterController;
         this.gameService = gameService;
+        this.standingsController = standingsController;
     }
 
     @ModelAttribute("goalTypes")
@@ -63,6 +74,13 @@ public class GamesheetView {
         @PathVariable("gameId") int gameId,
             Model model
     ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            log.info("Unauthenticated user attempted to access gamesheet for game {}, redirecting to matchup view", gameId);
+            return "redirect:/games/matchup/" + gameId;
+        }
+
+        log.info("Fetching gamesheet for game {}", gameId);
         GamesheetPayload gamesheet = gameController.fetchGamesheet(gameId).getBody();
 
         model.addAttribute("gamesheet", gamesheet);
@@ -70,6 +88,61 @@ public class GamesheetView {
         addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
 
         return "gamesheet";
+    }
+
+    @GetMapping("/matchup/{gameId}")
+    public String getMatchup(
+            @PathVariable("gameId") int gameId,
+            Model model
+    ) {
+        GameEntity gameEntity = gameService.fetchGameEntityById(gameId);
+        model.addAttribute("game", gameEntity);
+        addRostersToModel(model, gameEntity.getHomeTeam().getTeamName(), gameEntity.getAwayTeam().getTeamName(), gameEntity.getYear());
+
+        List<GameSummary> previousGames = gameService.fetchPreviousGamesBetweenTeams(gameEntity.getHomeTeam().getTeamName(), gameEntity.getAwayTeam().getTeamName(), gameEntity.getYear());
+        model.addAttribute("previousGames", previousGames);
+
+        MatchupSummary regularSeasonMatchupSummary = gameService.createMatchupSummaryFromGames(previousGames, gameEntity.getHomeTeam().getTeamName(), gameEntity.getAwayTeam().getTeamName(), SeasonType.REGULAR_SEASON);
+        model.addAttribute("regSeasonHeadToHead", regularSeasonMatchupSummary);
+
+        MatchupSummary playoffMatchupSummary = gameService.createMatchupSummaryFromGames(previousGames, gameEntity.getHomeTeam().getTeamName(), gameEntity.getAwayTeam().getTeamName(), SeasonType.PLAYOFFS);
+        model.addAttribute("playoffHeadToHead", playoffMatchupSummary);
+
+        var seasonStandings = Objects.requireNonNull(standingsController.getStandings(gameEntity.getYear(), SeasonType.REGULAR_SEASON, null, null).getBody())
+                .stream()
+                .filter(teamStatsDto -> teamStatsDto.getTeamName().equals(gameEntity.getHomeTeam().getTeamName()) || teamStatsDto.getTeamName().equals(gameEntity.getAwayTeam().getTeamName()))
+                .map(dto -> StandingMatchupSummary.builder()
+                        .team(dto.getTeamName())
+                        .gamesPlayed(dto.getGamesPlayed())
+                        .wins(dto.getWins())
+                        .losses(dto.getLosses())
+                        .ties(dto.getTies())
+                        .goalsFor(dto.getGoalsFor())
+                        .goalsAgainst(dto.getGoalsAgainst())
+                        .penaltyMinutes(dto.getPenaltyMinutes())
+                        .build()
+                )
+                .collect(Collectors.toMap(StandingMatchupSummary::getTeam, Function.identity()));
+        model.addAttribute("seasonStandings", seasonStandings);
+
+        var playoffStandings = Objects.requireNonNull(standingsController.getStandings(gameEntity.getYear(), SeasonType.PLAYOFFS, null, null).getBody())
+                .stream()
+                .filter(teamStatsDto -> teamStatsDto.getTeamName().equals(gameEntity.getHomeTeam().getTeamName()) || teamStatsDto.getTeamName().equals(gameEntity.getAwayTeam().getTeamName()))
+                .map(dto -> StandingMatchupSummary.builder()
+                        .team(dto.getTeamName())
+                        .gamesPlayed(dto.getGamesPlayed())
+                        .wins(dto.getWins())
+                        .losses(dto.getLosses())
+                        .ties(dto.getTies())
+                        .goalsFor(dto.getGoalsFor())
+                        .goalsAgainst(dto.getGoalsAgainst())
+                        .penaltyMinutes(dto.getPenaltyMinutes())
+                        .build()
+                )
+                .collect(Collectors.toMap(StandingMatchupSummary::getTeam, Function.identity()));
+        model.addAttribute("playoffStandings", playoffStandings);
+
+        return "matchup";
     }
 
     @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")

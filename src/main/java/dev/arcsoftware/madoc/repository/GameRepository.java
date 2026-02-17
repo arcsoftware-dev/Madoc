@@ -7,6 +7,7 @@ import dev.arcsoftware.madoc.model.entity.GameEntity;
 import dev.arcsoftware.madoc.model.entity.GameUploadData;
 import dev.arcsoftware.madoc.model.entity.TeamEntity;
 import dev.arcsoftware.madoc.model.entity.UploadFileData;
+import dev.arcsoftware.madoc.model.payload.GameSummary;
 import dev.arcsoftware.madoc.model.payload.GamesheetPayload;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
 import lombok.extern.slf4j.Slf4j;
@@ -225,6 +226,18 @@ public class GameRepository {
         }
     }
 
+    public List<GamesheetPayload> fetchPreviousGamesBetweenTeams(String teamName1, String teamName2, int year) {
+        return jdbcClient
+                .sql(GameSql.FETCH_TEAM_VERSUS_HISTORY_BY_YEAR)
+                .param("teamName1", teamName1)
+                .param("teamName2", teamName2)
+                .param("year", year)
+                .query((rs, num) -> {
+                    return deserializeGamesheetPayload(rs.getString("json_string"));
+                })
+                .list();
+    }
+
     public static class GameSql {
         public static final String GET_SCHEDULE_BY_TYPE_AND_YEAR = """
         SELECT
@@ -324,6 +337,23 @@ public class GameRepository {
         public static final String UPDATE_GAMESHEET_PAYLOAD = """
         UPDATE madoc.gamesheets SET json_string = :json_string::jsonb
         WHERE game_id = :game_id;
+        """;
+
+        public static final String FETCH_TEAM_VERSUS_HISTORY_BY_YEAR = """
+        SELECT g.id, gs.json_string AS json_string
+            FROM "madoc".games g
+            JOIN "madoc".gamesheets as gs ON gs.game_id = g.id
+        WHERE g.year = :year
+        AND g.is_finalized = true
+        AND ((
+                g.home_team = (SELECT id FROM madoc.teams WHERE team_name = :teamName1 AND year = :year)
+                AND g.away_team = (SELECT id FROM madoc.teams WHERE team_name = :teamName2 AND year = :year)
+            )
+            OR
+            (
+                g.home_team = (SELECT id FROM madoc.teams WHERE team_name = :teamName2 AND year = :year)
+                AND g.away_team = (SELECT id FROM madoc.teams WHERE team_name = :teamName1 AND year = :year)
+            ))
         """;
     }
 }

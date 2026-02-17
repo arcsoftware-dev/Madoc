@@ -1,5 +1,6 @@
 package dev.arcsoftware.madoc.service;
 
+import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.entity.*;
 import dev.arcsoftware.madoc.model.payload.*;
 import dev.arcsoftware.madoc.repository.*;
@@ -30,6 +31,11 @@ public class GameService {
         this.gameRepository = gameRepository;
         this.attendanceRepository = attendanceRepository;
         this.rosterRepository = rosterRepository;
+    }
+
+    public GameEntity fetchGameEntityById(int gameId) {
+        log.info("Fetching game entity for game id {}", gameId);
+        return gameRepository.findById(gameId).orElseThrow();
     }
 
     private GameEntity validateGamesheetGameEntity(GamesheetPayload gamesheet) {
@@ -363,5 +369,56 @@ public class GameService {
         //Clear attendance table
         attendanceRepository.clearByGameId(gameId);
         return gamesheet;
+    }
+
+    public List<GameSummary> fetchPreviousGamesBetweenTeams(String teamName1, String teamName2, int year) {
+        List<GamesheetPayload> gamesheets = gameRepository.fetchPreviousGamesBetweenTeams(teamName1, teamName2, year);
+        log.info("Found {} previous games between {} and {} in year {}", gamesheets.size(), teamName1, teamName2, year);
+        return gamesheets.stream()
+                .map(this::convertGamesheetToGameSummary)
+                .sorted((g1, g2) -> g2.gameTime().compareTo(g1.gameTime())) //sort by game time desc
+                .toList();
+    }
+
+    public MatchupSummary createMatchupSummaryFromGames(List<GameSummary> games, String teamName1, String teamName2, SeasonType seasonType) {
+        MatchupSummary matchupSummary = new MatchupSummary(teamName1, teamName2);
+
+        Optional.ofNullable(games).orElse(Collections.emptyList()).forEach(game -> {
+            if(game.seasonType() != seasonType){
+                return; //skip games that dont match the season type
+            }
+            matchupSummary.addGoals(game.homeTeam(), game.homeTeamScore());
+            matchupSummary.addPims(game.homeTeam(), game.homeTeamPenaltyMinutes());
+            matchupSummary.addGoals(game.awayTeam(), game.awayTeamScore());
+            matchupSummary.addPims(game.awayTeam(), game.awayTeamPenaltyMinutes());
+            if(game.homeTeamScore() > game.awayTeamScore()){
+                matchupSummary.addWin(game.homeTeam());
+            }
+            else if(game.homeTeamScore() < game.awayTeamScore()){
+                matchupSummary.addWin(game.awayTeam());
+            }
+            else{
+                matchupSummary.addTie();
+            }
+        });
+        if(matchupSummary.getTeam1Record().equals("0-0-0")) return null;
+        return matchupSummary;
+    }
+
+    private GameSummary convertGamesheetToGameSummary(GamesheetPayload gamesheet){
+        return new GameSummary(
+                String.valueOf(gamesheet.getGameId()),
+                gamesheet.getGameTime(),
+                gamesheet.getSeasonYear(),
+                gamesheet.getSeasonType(),
+                gamesheet.getHomeTeam(),
+                Optional.ofNullable(gamesheet.getHomeGoals()).map(List::size).orElse(0),
+                Optional.ofNullable(gamesheet.getHomePenalties()).orElse(new ArrayList<>())
+                        .stream().mapToInt(PenaltyPayload::getMinutes).sum(),
+                gamesheet.getAwayTeam(),
+                Optional.ofNullable(gamesheet.getAwayGoals()).map(List::size).orElse(0),
+                Optional.ofNullable(gamesheet.getAwayPenalties()).orElse(new ArrayList<>())
+                        .stream().mapToInt(PenaltyPayload::getMinutes).sum()
+        );
     }
 }
