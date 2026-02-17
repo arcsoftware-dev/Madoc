@@ -97,7 +97,6 @@ public class GamesheetView {
     ) {
         GameEntity gameEntity = gameService.fetchGameEntityById(gameId);
         model.addAttribute("game", gameEntity);
-        addRostersToModel(model, gameEntity.getHomeTeam().getTeamName(), gameEntity.getAwayTeam().getTeamName(), gameEntity.getYear());
 
         List<GameSummary> previousGames = gameService.fetchPreviousGamesBetweenTeams(gameEntity.getHomeTeam().getTeamName(), gameEntity.getAwayTeam().getTeamName(), gameEntity.getYear());
         model.addAttribute("previousGames", previousGames);
