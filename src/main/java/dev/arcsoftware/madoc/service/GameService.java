@@ -421,4 +421,13 @@ public class GameService {
                         .stream().mapToInt(PenaltyPayload::getMinutes).sum()
         );
     }
+
+    public GameEntity updateVideoId(int gameId, String videoId) {
+        GameEntity game = gameRepository.findById(gameId).orElseThrow();
+        game.setVideoId(videoId);
+        log.info("Updating video id for game {} to {}", gameId, videoId);
+        gameRepository.updateGame(game);
+        log.info("Successfully updated video id for game {}", gameId);
+        return game;
+    }
 }

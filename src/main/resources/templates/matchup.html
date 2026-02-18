@@ -156,6 +156,9 @@
                 </table>
             </div>
         </section>
+<!--        <section id="gamefootage" style="margin-top:2rem; display:flex; justify-content:center;" th:if="${utils.isNotNullOrEmpty(game.videoId)}">-->
+<!--            <iframe width="1280" height="720" th:src="'https://www.youtube.com/embed/'+${game.videoId}" th:frameborder="0" title="Game Footage" allow="encrypted-media; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>-->
+<!--        </section>-->
     </main>
     <div th:replace="~{fragments/footer.html :: footer}"></div>
 </body>

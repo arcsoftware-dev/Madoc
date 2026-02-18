@@ -1,5 +1,6 @@
 package dev.arcsoftware.madoc.controller;
 
+import dev.arcsoftware.madoc.model.entity.GameEntity;
 import dev.arcsoftware.madoc.model.payload.GamesheetPayload;
 import dev.arcsoftware.madoc.model.payload.GamesheetSummary;
 import dev.arcsoftware.madoc.service.GameService;
@@ -10,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Controller
@@ -81,5 +85,36 @@ public class GameController {
         GamesheetPayload unlockedGamesheet = gameService.unlockGamesheet(gameId);
 
         return ResponseEntity.ok(unlockedGamesheet);
+    }
+
+    @PreAuthorize("hasRole('ROLE_[ADMIN]')")
+    @PatchMapping(value = "/{id}/{videoId}")
+    public ResponseEntity<GameEntity> updateGameVideoId(
+            @PathVariable(value="id", required = true) int gameId,
+            @PathVariable(value="videoId", required = true) String videoId
+    ){
+        log.info("Received update video id ({}) request for game: {}", videoId, gameId);
+
+        GameEntity updatedGame = gameService.updateVideoId(gameId, videoId);
+
+        return ResponseEntity.ok(updatedGame);
+    }
+
+    @PreAuthorize("hasRole('ROLE_[ADMIN]')")
+    @PatchMapping(value = "/bulk")
+    public ResponseEntity<List<GameEntity>> updateBulkGameVideoId(
+            @RequestBody Map<Integer, String> bulkUpdateRequest
+    ){
+        log.info("Received bulk update video id request: {}", bulkUpdateRequest);
+
+        List<GameEntity> updatedGames = bulkUpdateRequest.entrySet().stream()
+                .map(entry -> {
+                    int gameId = entry.getKey();
+                    String videoId = entry.getValue();
+                    return gameService.updateVideoId(gameId, videoId);
+                })
+                .toList();
+
+        return ResponseEntity.ok(updatedGames);
     }
 }

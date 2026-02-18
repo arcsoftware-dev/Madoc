@@ -1,0 +1,27 @@
+meta {
+  name: Bulk Update Game Video ID
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{host}}/api/game/bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "58": "09d9oyG5dzQ"
+  }
+}
+
+vars:pre-request {
+  gameId: 58
+  videoId: 09d9oyG5dzQ
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

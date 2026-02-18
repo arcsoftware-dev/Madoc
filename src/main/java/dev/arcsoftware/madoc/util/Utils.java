@@ -81,4 +81,12 @@ public class Utils {
         return sb.toString().trim();
     }
 
+    public static boolean isNullOrEmpty(String s){
+        return s == null || s.isBlank();
+    }
+
+    public static boolean isNotNullOrEmpty(String s){
+        return !isNullOrEmpty(s);
+    }
+
 }
