@@ -9,6 +9,7 @@ import dev.arcsoftware.madoc.model.entity.GameEntity;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import dev.arcsoftware.madoc.model.payload.*;
 import dev.arcsoftware.madoc.service.GameService;
+import dev.arcsoftware.madoc.util.Utils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,31 +63,31 @@ public class GamesheetView {
     }
 
     private void addRostersToModel(Model model, String homeTeam, String awayTeam, int year) {
-        var homeRoster = rosterController.getRosterAssignmentsByTeam(year, homeTeam).getBody().stream().filter(RosterAssignment::isActive).toList();
-        var awayRoster = rosterController.getRosterAssignmentsByTeam(year, awayTeam).getBody().stream().filter(RosterAssignment::isActive).toList();
+        var homeRoster = Objects.requireNonNull(rosterController.getRosterAssignmentsByTeam(year, homeTeam).getBody()).stream().filter(RosterAssignment::isActive).toList();
+        var awayRoster = Objects.requireNonNull(rosterController.getRosterAssignmentsByTeam(year, awayTeam).getBody()).stream().filter(RosterAssignment::isActive).toList();
         model.addAttribute("homeTeamPlayers", homeRoster);
         model.addAttribute("awayTeamPlayers", awayRoster);
     }
 
     @GetMapping("/{gameId}")
     public String getGamesheet(
-        @PathVariable("gameId") int gameId,
+            @PathVariable("gameId") int gameId,
             Model model
     ) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            log.info("Unauthenticated user attempted to access gamesheet for game {}, redirecting to matchup view", gameId);
+            log.info("Unauthenticated user attempted to access gameSheet for game {}, redirecting to matchup view", gameId);
             return "redirect:/games/matchup/" + gameId;
         }
 
-        log.info("Fetching gamesheet for game {}", gameId);
-        GamesheetPayload gamesheet = gameController.fetchGamesheet(gameId).getBody();
+        log.info("Fetching gameSheet for game {}", gameId);
+        GamesheetPayload gameSheet = gameController.fetchGamesheet(gameId).getBody();
 
-        model.addAttribute("gamesheet", gamesheet);
-        assert gamesheet != null;
-        addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
+        model.addAttribute("gameSheet", gameSheet);
+        assert gameSheet != null;
+        addRostersToModel(model, gameSheet.getHomeTeam(), gameSheet.getAwayTeam(), gameSheet.getSeasonYear());
 
-        return "gamesheet";
+        return "gameSheet";
     }
 
     @GetMapping("/matchup/{gameId}")
@@ -148,36 +148,36 @@ public class GamesheetView {
     @RequestMapping(value="/{gameId}", params={"addGoal"})
     public String addGoal(
             @PathVariable("gameId") int gameId,
-            @ModelAttribute("gamesheet") GamesheetPayload gamesheet,
+            @ModelAttribute("gameSheet") GamesheetPayload gameSheet,
             final BindingResult bindingResult,
             Model model) {
-        log.info("Adding {} goal to gamesheet {}", gamesheet.getNextGoal().getTeam(), gameId);
-        addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
+        log.info("Adding {} goal to gameSheet {}", gameSheet.getNextGoal().getTeam(), gameId);
+        addRostersToModel(model, gameSheet.getHomeTeam(), gameSheet.getAwayTeam(), gameSheet.getSeasonYear());
 
-        var errors = getNextGoalErrors(gamesheet.getNextGoal(),
-                gamesheet.getNextGoal().getTeam().equals(gamesheet.getHomeTeam())
-                        ? gamesheet.getHomeAttendanceByPlayerId()
-                        : gamesheet.getAwayAttendanceByPlayerId()
+        var errors = getNextGoalErrors(gameSheet.getNextGoal(),
+                gameSheet.getNextGoal().getTeam().equals(gameSheet.getHomeTeam())
+                        ? gameSheet.getHomeAttendanceByPlayerId()
+                        : gameSheet.getAwayAttendanceByPlayerId()
         );
 
         if(!errors.isEmpty()){
             for(ObjectError error : errors){
                 bindingResult.addError(error);
             }
-            return "gamesheet";
+            return "gameSheet";
         }
 
-        if(gamesheet.getNextGoal().getTeam().equals(gamesheet.getHomeTeam())){
-            gamesheet.addHomeGoal(gamesheet.getNextGoal().getGoal());
+        if(gameSheet.getNextGoal().getTeam().equals(gameSheet.getHomeTeam())){
+            gameSheet.addHomeGoal(gameSheet.getNextGoal().getGoal());
         }
         else{
-            gamesheet.addAwayGoal(gamesheet.getNextGoal().getGoal());
+            gameSheet.addAwayGoal(gameSheet.getNextGoal().getGoal());
         }
 
-        clearNextData(gamesheet);
+        clearNextData(gameSheet, false);
 
-        gameController.updateGamesheet(gamesheet);
-        return "gamesheet";
+        gameController.updateGamesheet(gameSheet);
+        return "gameSheet";
     }
 
     private List<ObjectError> getNextGoalErrors(NextGoalPayload nextGoal, List<AttendancePayload> attendance) {
@@ -186,7 +186,7 @@ public class GamesheetView {
             errors.add(new ObjectError("Add Goal", "Next Goal: Data is Null"));
             return errors;
         }
-        if(StringUtils.isEmpty(nextGoal.getTeam())){
+        if(Utils.isNullOrEmpty(nextGoal.getTeam())){
             errors.add(new ObjectError("Add Goal", "Next Goal: Team is Empty"));
         }
 
@@ -280,7 +280,7 @@ public class GamesheetView {
             errors.add(new ObjectError("Add Penalty", "Next Penalty: Data is Null"));
             return errors;
         }
-        if(StringUtils.isEmpty(nextPenalty.getTeam())){
+        if(Utils.isNullOrEmpty(nextPenalty.getTeam())){
             errors.add(new ObjectError("Add Penalty", "Next Penalty: Team is Empty"));
         }
 
@@ -340,16 +340,22 @@ public class GamesheetView {
         return errors;
     }
 
-    private void clearNextData(GamesheetPayload gamesheet) {
-        gamesheet.setNextGoal(null);
-        gamesheet.setNextPenalty(null);
+    private void clearNextData(GamesheetPayload gameSheet, boolean fullClear) {
+        if(fullClear) {
+            gameSheet.setNextGoal(null);
+            gameSheet.setNextPenalty(null);
+        }
+        else {
+            if (gameSheet.getNextGoal() != null) gameSheet.getNextGoal().setGoal(null);
+            if (gameSheet.getNextPenalty() != null) gameSheet.getNextPenalty().setPenalty(null);
+        }
     }
 
     @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
     @RequestMapping(value="/{gameId}", params={"removeGoal"})
     public String removeGoal(
             @PathVariable("gameId") int gameId,
-            @ModelAttribute("gamesheet") GamesheetPayload gamesheet,
+            @ModelAttribute("gameSheet") GamesheetPayload gameSheet,
             final BindingResult bindingResult,
             Model model,
             final HttpServletRequest req) {
@@ -360,27 +366,28 @@ public class GamesheetView {
 
         GamesheetPayload lastUpdatedGamesheet = gameController.fetchGamesheet(gameId).getBody();
 
-        log.info("Removing {} goal {} from gamesheet {}", side, goalIndex, gameId);
+        log.info("Removing {} goal {} from gameSheet {}", side, goalIndex, gameId);
         getTeamGoals(lastUpdatedGamesheet, side).remove(goalIndex);
 
+        assert lastUpdatedGamesheet != null;
         addRostersToModel(model, lastUpdatedGamesheet.getHomeTeam(), lastUpdatedGamesheet.getAwayTeam(), lastUpdatedGamesheet.getSeasonYear());
         gameController.updateGamesheet(lastUpdatedGamesheet);
-        model.addAttribute("gamesheet", lastUpdatedGamesheet);
-        return "gamesheet";
+        model.addAttribute("gameSheet", lastUpdatedGamesheet);
+        return "gameSheet";
     }
 
-    private List<GoalPayload> getTeamGoals(GamesheetPayload gamesheet, String side) {
+    private List<GoalPayload> getTeamGoals(GamesheetPayload gameSheet, String side) {
         List<GoalPayload> goals;
         if(side.equals("home")){
-            if(CollectionUtils.isEmpty(gamesheet.getHomeGoals())){
-                gamesheet.setHomeGoals(new ArrayList<>());
+            if(CollectionUtils.isEmpty(gameSheet.getHomeGoals())){
+                gameSheet.setHomeGoals(new ArrayList<>());
             }
-            goals = gamesheet.getHomeGoals();
+            goals = gameSheet.getHomeGoals();
         } else {
-            if(CollectionUtils.isEmpty(gamesheet.getAwayGoals())){
-                gamesheet.setAwayGoals(new ArrayList<>());
+            if(CollectionUtils.isEmpty(gameSheet.getAwayGoals())){
+                gameSheet.setAwayGoals(new ArrayList<>());
             }
-            goals = gamesheet.getAwayGoals();
+            goals = gameSheet.getAwayGoals();
         }
         return goals;
     }
@@ -389,38 +396,38 @@ public class GamesheetView {
     @RequestMapping(value="/{gameId}", params={"addPenalty"})
     public String addPenalty(
             @PathVariable("gameId") int gameId,
-            @ModelAttribute("gamesheet") GamesheetPayload gamesheet,
+            @ModelAttribute("gameSheet") GamesheetPayload gameSheet,
             final BindingResult bindingResult,
             Model model) {
-        log.info("Adding {} penalty to gamesheet {}", gamesheet.getNextPenalty().getTeam(), gameId);
-        addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
+        log.info("Adding {} penalty to gameSheet {}", gameSheet.getNextPenalty().getTeam(), gameId);
+        addRostersToModel(model, gameSheet.getHomeTeam(), gameSheet.getAwayTeam(), gameSheet.getSeasonYear());
 
-        var errors = getNextPenaltyErrors(gamesheet.getNextPenalty());
+        var errors = getNextPenaltyErrors(gameSheet.getNextPenalty());
         if(!errors.isEmpty()){
             for(ObjectError error : errors){
                 bindingResult.addError(error);
             }
-            return "gamesheet";
+            return "gameSheet";
         }
 
-        if(gamesheet.getNextPenalty().getTeam().equals(gamesheet.getHomeTeam())){
-            gamesheet.addHomePenalty(gamesheet.getNextPenalty().getPenalty());
+        if(gameSheet.getNextPenalty().getTeam().equals(gameSheet.getHomeTeam())){
+            gameSheet.addHomePenalty(gameSheet.getNextPenalty().getPenalty());
         }
         else{
-            gamesheet.addAwayPenalty(gamesheet.getNextPenalty().getPenalty());
+            gameSheet.addAwayPenalty(gameSheet.getNextPenalty().getPenalty());
         }
 
-        clearNextData(gamesheet);
+        clearNextData(gameSheet, false);
 
-        gameController.updateGamesheet(gamesheet);
-        return "gamesheet";
+        gameController.updateGamesheet(gameSheet);
+        return "gameSheet";
     }
 
     @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
     @RequestMapping(value="/{gameId}", params={"removePenalty"})
     public String removePenalty(
             @PathVariable("gameId") int gameId,
-            @ModelAttribute("gamesheet") GamesheetPayload gamesheet,
+            @ModelAttribute("gameSheet") GamesheetPayload gameSheet,
             final BindingResult bindingResult,
             Model model,
             final HttpServletRequest req) {
@@ -433,24 +440,25 @@ public class GamesheetView {
 
         getTeamPenalties(lastUpdatedGamesheet, side).remove(penaltyIndex);
 
+        assert lastUpdatedGamesheet != null;
         addRostersToModel(model, lastUpdatedGamesheet.getHomeTeam(), lastUpdatedGamesheet.getAwayTeam(), lastUpdatedGamesheet.getSeasonYear());
         gameController.updateGamesheet(lastUpdatedGamesheet);
-        model.addAttribute("gamesheet", lastUpdatedGamesheet);
-        return "gamesheet";
+        model.addAttribute("gameSheet", lastUpdatedGamesheet);
+        return "gameSheet";
     }
 
-    private List<PenaltyPayload> getTeamPenalties(GamesheetPayload gamesheet, String side) {
+    private List<PenaltyPayload> getTeamPenalties(GamesheetPayload gameSheet, String side) {
         List<PenaltyPayload> penalties;
         if(side.equals("home")){
-            if(CollectionUtils.isEmpty(gamesheet.getHomePenalties())){
-                gamesheet.setHomePenalties(new ArrayList<>());
+            if(CollectionUtils.isEmpty(gameSheet.getHomePenalties())){
+                gameSheet.setHomePenalties(new ArrayList<>());
             }
-            penalties = gamesheet.getHomePenalties();
+            penalties = gameSheet.getHomePenalties();
         } else {
-            if(CollectionUtils.isEmpty(gamesheet.getAwayPenalties())){
-                gamesheet.setAwayPenalties(new ArrayList<>());
+            if(CollectionUtils.isEmpty(gameSheet.getAwayPenalties())){
+                gameSheet.setAwayPenalties(new ArrayList<>());
             }
-            penalties = gamesheet.getAwayPenalties();
+            penalties = gameSheet.getAwayPenalties();
         }
         return penalties;
     }
@@ -459,88 +467,88 @@ public class GamesheetView {
     @RequestMapping(value = "/{gameId}", params = {"save"})
     public String saveGamesheet(
             @PathVariable("gameId") int gameId,
-            @ModelAttribute("gamesheet") GamesheetPayload gamesheet,
+            @ModelAttribute("gameSheet") GamesheetPayload gameSheet,
             BindingResult bindingResult,
             Model model
     ) {
-        log.info("Saving gamesheet {}", gameId);
-        addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
-        var errors = getGoalAndPenaltyErrors(gamesheet);
+        log.info("Saving gameSheet {}", gameId);
+        addRostersToModel(model, gameSheet.getHomeTeam(), gameSheet.getAwayTeam(), gameSheet.getSeasonYear());
+        var errors = getGoalAndPenaltyErrors(gameSheet);
         if(!errors.isEmpty()){
             for(ObjectError error : errors){
                 bindingResult.addError(error);
             }
-            return "gamesheet";
+            return "gameSheet";
         }
 
-        clearNextData(gamesheet);
-        gameController.updateGamesheet(gamesheet);
-        return "gamesheet";
+        clearNextData(gameSheet, false);
+        gameController.updateGamesheet(gameSheet);
+        return "gameSheet";
     }
 
     @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
     @RequestMapping(value = "/{gameId}", params = {"finalize"})
     public String finalizeGamesheet(
             @PathVariable("gameId") int gameId,
-            @ModelAttribute("gamesheet") @Valid GamesheetPayload gamesheet,
+            @ModelAttribute("gameSheet") @Valid GamesheetPayload gameSheet,
             BindingResult bindingResult,
             Model model
     ) {
-        log.info("Finalizing gamesheet: {}", gameId);
-        addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
-        var errors = getGoalAndPenaltyErrors(gamesheet);
+        log.info("Finalizing gameSheet: {}", gameId);
+        addRostersToModel(model, gameSheet.getHomeTeam(), gameSheet.getAwayTeam(), gameSheet.getSeasonYear());
+        var errors = getGoalAndPenaltyErrors(gameSheet);
         if(!errors.isEmpty()){
             for(ObjectError error : errors){
                 bindingResult.addError(error);
             }
-            return "gamesheet";
+            return "gameSheet";
         }
 
-        clearNextData(gamesheet);
-        gameController.postGamesheet(gamesheet, true, false);
-        return "gamesheet";
+        clearNextData(gameSheet, true);
+        gameController.postGamesheet(gameSheet, true, false);
+        return "gameSheet";
     }
 
     @PreAuthorize("hasRole('ROLE_[ADMIN]')")
     @RequestMapping(value = "/{gameId}", params = {"clear"})
     public String clearGamesheet(
             @PathVariable("gameId") int gameId,
-            @ModelAttribute("gamesheet") @Valid GamesheetPayload gamesheet,
+            @ModelAttribute("gameSheet") @Valid GamesheetPayload gameSheet,
             BindingResult bindingResult,
             Model model
     ) {
-        log.info("Resetting gamesheet: {}", gameId);
+        log.info("Resetting gameSheet: {}", gameId);
 
-        GamesheetPayload clearedGamesheet = gameController.clearGamesheet(gamesheet.getFinalized(), gameId).getBody();
-        clearNextData(clearedGamesheet);
-        addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
-        model.addAttribute("gamesheet", clearedGamesheet);
-        return "gamesheet";
+        GamesheetPayload clearedGamesheet = gameController.clearGamesheet(gameSheet.getFinalized(), gameId).getBody();
+        clearNextData(gameSheet, true);
+        addRostersToModel(model, gameSheet.getHomeTeam(), gameSheet.getAwayTeam(), gameSheet.getSeasonYear());
+        model.addAttribute("gameSheet", clearedGamesheet);
+        return "gameSheet";
     }
 
     @PreAuthorize("hasRole('ROLE_[ADMIN]')")
     @RequestMapping(value = "/{gameId}", params = {"unlock"})
     public String unlockGamesheet(
             @PathVariable("gameId") int gameId,
-            @ModelAttribute("gamesheet") @Valid GamesheetPayload gamesheet,
+            @ModelAttribute("gameSheet") @Valid GamesheetPayload gameSheet,
             BindingResult bindingResult,
             Model model
     ) {
-        log.info("Unlocking gamesheet: {}", gameId);
-        clearNextData(gamesheet);
+        log.info("Unlocking gameSheet: {}", gameId);
+        clearNextData(gameSheet, true);
 
         GamesheetPayload unlockedGamesheet = gameController.unlockGamesheet(gameId).getBody();
-        addRostersToModel(model, gamesheet.getHomeTeam(), gamesheet.getAwayTeam(), gamesheet.getSeasonYear());
-        model.addAttribute("gamesheet", unlockedGamesheet);
-        return "gamesheet";
+        addRostersToModel(model, gameSheet.getHomeTeam(), gameSheet.getAwayTeam(), gameSheet.getSeasonYear());
+        model.addAttribute("gameSheet", unlockedGamesheet);
+        return "gameSheet";
     }
 
-    private List<ObjectError> getGoalAndPenaltyErrors(GamesheetPayload gamesheet) {
+    private List<ObjectError> getGoalAndPenaltyErrors(GamesheetPayload gameSheet) {
         List<ObjectError> allErrors = new ArrayList<>();
-        allErrors.addAll(getGoalPayloadErrors(gamesheet.getHomeGoals(), gamesheet.getHomeAttendanceByPlayerId(), gamesheet.getHomeTeam(), false));
-        allErrors.addAll(getGoalPayloadErrors(gamesheet.getAwayGoals(), gamesheet.getAwayAttendanceByPlayerId(), gamesheet.getAwayTeam(), false));
-        allErrors.addAll(getPenaltyPayloadErrors(gamesheet.getHomePenalties(), gamesheet.getHomeTeam(), false));
-        allErrors.addAll(getPenaltyPayloadErrors(gamesheet.getAwayPenalties(), gamesheet.getAwayTeam(), false));
+        allErrors.addAll(getGoalPayloadErrors(gameSheet.getHomeGoals(), gameSheet.getHomeAttendanceByPlayerId(), gameSheet.getHomeTeam(), false));
+        allErrors.addAll(getGoalPayloadErrors(gameSheet.getAwayGoals(), gameSheet.getAwayAttendanceByPlayerId(), gameSheet.getAwayTeam(), false));
+        allErrors.addAll(getPenaltyPayloadErrors(gameSheet.getHomePenalties(), gameSheet.getHomeTeam(), false));
+        allErrors.addAll(getPenaltyPayloadErrors(gameSheet.getAwayPenalties(), gameSheet.getAwayTeam(), false));
         return allErrors;
     }
 }
