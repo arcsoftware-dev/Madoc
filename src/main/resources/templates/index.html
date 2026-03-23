@@ -17,6 +17,9 @@
         <div th:if="${enableChristmasRaffleBanner}">
             <div th:replace="~{fragments/banner :: christmas-raffle-banner}"></div>
         </div>
+        <div th:if="${enableFinalsWeekendBanner}">
+            <div th:replace="~{fragments/banner :: finals-weekend-banner}"></div>
+        </div>
         <section class="feed">
             <div class="news-cards feed-item feed-item-news">
                 <h2 class="card-title">Latest News</h2>
@@ -30,6 +33,7 @@
                 <h2 class="card-title">Upcoming Games</h2>
                 <div class="upcoming-card" th:each="upcomingGame : ${upcomingMatches}">
                     <div class="game-time" th:text="${#temporals.format(upcomingGame.startTime, 'MMMM dd yyyy hh:mm a')}"></div>
+                    <div class="game-time" th:text="${upcomingGame.arena.getArenaName()}"></div>
                     <div class="teams">
                         <div class="team">
                             <a th:href="@{/teams/{team}(team=${utils.stripSpaces(upcomingGame.homeTeam)})}">

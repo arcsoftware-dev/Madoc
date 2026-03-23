@@ -46,7 +46,8 @@ public class GameRepository {
                         rs.getString("home_team"),
                         rs.getString("away_team"),
                         rs.getString("home_score"),
-                        rs.getString("away_score")
+                        rs.getString("away_score"),
+                        Arena.valueOf(rs.getString("venue"))
                 ))
                 .list();
     }
@@ -248,7 +249,8 @@ public class GameRepository {
             ht.team_name AS home_team,
             at.team_name AS away_team,
             CASE WHEN g.is_finalized THEN COALESCE(hs.home_score, 0) END AS home_score,
-            CASE WHEN g.is_finalized THEN COALESCE(ascore.away_score, 0) END AS away_score
+            CASE WHEN g.is_finalized THEN COALESCE(ascore.away_score, 0) END AS away_score,
+            g.venue
         FROM madoc.games g
                  JOIN madoc.teams AS ht ON g.home_team = ht.id AND g.year = ht.year
                  JOIN madoc.teams AS at ON g.away_team = at.id AND g.year = at.year

@@ -1,5 +1,6 @@
 package dev.arcsoftware.madoc.service;
 
+import dev.arcsoftware.madoc.enums.Arena;
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.csv.ScheduleUploadRow;
 import dev.arcsoftware.madoc.model.entity.GameEntity;
@@ -18,10 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,7 +85,8 @@ public class ScheduleService {
                         game.getHomeTeam().getTeamName(),
                         game.getAwayTeam().getTeamName(),
                         null,
-                        null
+                        null,
+                        game.getVenue()
                 ))
                 .toList();
 
@@ -126,7 +125,11 @@ public class ScheduleService {
         return scheduleItemDtos.stream()
                 .collect(Collectors.groupingBy(item -> item.getStartTime().toLocalDate()))
                 .entrySet().stream()
-                .map(entry -> new GroupedScheduleDto(entry.getKey(), entry.getValue()))
+                .map(entry -> new GroupedScheduleDto(
+                        entry.getKey(),
+                        Optional.ofNullable(entry.getValue()).orElse(Collections.emptyList()).stream().findFirst().map(ScheduleItemDto::getArena).orElse(Arena.CENTURY),
+                        entry.getValue())
+                )
                 .sorted(java.util.Comparator.comparing(GroupedScheduleDto::getDate))
                 .toList();
     }

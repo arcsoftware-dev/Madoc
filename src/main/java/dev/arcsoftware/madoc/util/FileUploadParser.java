@@ -49,7 +49,7 @@ public class FileUploadParser {
     public List<ScheduleUploadRow> parseScheduleCsv(byte[] csvFileBytes) {
         List<ScheduleUploadRow> rows = new ArrayList<>();
 
-        final String[] HEADERS = {"Datetime", "Home Team", "Away Team"};
+        final String[] HEADERS = {"Datetime", "Home Team", "Away Team", "Arena"};
         try(Reader reader = new InputStreamReader(new ByteArrayInputStream(csvFileBytes))) {
             CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
                     .setHeader(HEADERS)
@@ -61,7 +61,8 @@ public class FileUploadParser {
                 ScheduleUploadRow scheduleUploadRow = new ScheduleUploadRow(
                         LocalDateTime.parse(record.get("Datetime")),
                         Utils.toCamelCase(record.get("Home Team")),
-                        Utils.toCamelCase(record.get("Away Team"))
+                        Utils.toCamelCase(record.get("Away Team")),
+                        record.get("Arena")
                 );
                 rows.add(scheduleUploadRow);
             }

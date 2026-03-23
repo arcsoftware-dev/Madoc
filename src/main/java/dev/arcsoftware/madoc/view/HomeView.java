@@ -38,6 +38,12 @@ public class HomeView {
         return false;
     }
 
+    @ModelAttribute("enableFinalsWeekendBanner")
+    public Boolean enableFinalsWeekendBanner() {
+        return true;
+    }
+
+
     @GetMapping("/")
     public String home(Model model) {
         log.info("Fetching news articles");

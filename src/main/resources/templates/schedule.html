@@ -47,6 +47,7 @@
         <section>
             <div class="upcoming-card spaced-card" th:each="gameDay : ${groupedSchedule}">
                 <h2 class="game-date" th:text="${#temporals.format(gameDay.date, 'MMMM dd yyyy')}"></h2>
+                <div class="game-date" th:text="${gameDay.arena.getArenaName()}"></div>
                 <div class="schedule-card">
                     <div class="schedule-group" th:each="game : ${gameDay.games}">
                         <div class="schedule-game-time" th:text="${#temporals.format(game.startTime, 'hh:mm a')}"></div>

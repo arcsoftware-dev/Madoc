@@ -1,5 +1,6 @@
 package dev.arcsoftware.madoc.model.payload;
 
+import dev.arcsoftware.madoc.enums.Arena;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -14,4 +15,5 @@ public class ScheduleItemDto {
     private String awayTeam;
     private String homeScore;
     private String awayScore;
+    private Arena arena;
 }

@@ -16,9 +16,10 @@ public class ScheduleUploadRow {
     private String awayTeam;
     private Arena arena = Arena.CENTURY;
 
-    public ScheduleUploadRow(LocalDateTime gameTime, String homeTeam, String awayTeam) {
+    public ScheduleUploadRow(LocalDateTime gameTime, String homeTeam, String awayTeam, String arena) {
         this.gameTime = gameTime;
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
+        this.arena = Arena.valueOf(arena.toUpperCase());
     }
 }
