@@ -1,5 +1,5 @@
-# Use a base image with OpenJDK 21
-FROM openjdk:21-jdk-slim
+# Use a base image with JDK 21
+FROM amazoncorretto:21-alpine
 
 WORKDIR /deployments/app/
 
