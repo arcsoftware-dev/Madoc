@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>MMHL</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/responsive.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/constitution.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="container">
+        <h1>News Management</h1>
+        
+        <div class="news-form-container">
+            <form action="#" th:action="@{/news/create}" th:object="${newsArticle}" method="post" class="centered">
+                <div class="form-group">
+                    <label for="title">Title:</label>
+                    <input type="text" th:field="*{title}" id="title" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="summary">Summary:</label>
+                    <textarea id="summary" name="summary" rows="4"></textarea>
+                </div>
+                <button type="submit" name="createNews">Save Article</button>
+            </form>
+        </div>
+
+        <div class="news-list-container">
+            <h2>Existing News Articles</h2>
+            <table id="newsTable">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Created Date</th>
+                    </tr>
+                    <tr th:each="article : ${allNews}">
+                        <td th:text="${article.title}"></td>
+                        <td th:text="${article.author}"></td>
+                        <td th:text="${#temporals.format(article.createdAt, 'MMM dd YYYY hh:mm a')}"></td>
+                    </tr>
+                </thead>
+                <tbody id="newsTableBody">
+                    <!-- News articles will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

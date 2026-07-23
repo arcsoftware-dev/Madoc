@@ -1,10 +1,10 @@
 package dev.arcsoftware.madoc.model.entity;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Data
