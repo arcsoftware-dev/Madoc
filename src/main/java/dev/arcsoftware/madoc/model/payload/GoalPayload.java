@@ -2,7 +2,6 @@ package dev.arcsoftware.madoc.model.payload;
 
 import dev.arcsoftware.madoc.enums.GoalType;
 import lombok.Data;
-import org.springframework.util.StringUtils;
 
 
 @Data
@@ -15,7 +14,7 @@ public class GoalPayload {
     private GoalType goalType;
 
     public void setGoalTypeFromCode(String code) {
-        if(StringUtils.isEmpty(code)) {
+        if(code == null || "".equals(code)) {
             this.goalType = GoalType.REGULAR;
         }
         else{

@@ -1,14 +1,11 @@
 package dev.arcsoftware.madoc.view;
 
-import dev.arcsoftware.madoc.controller.GameController;
-import dev.arcsoftware.madoc.controller.RosterController;
-import dev.arcsoftware.madoc.enums.GoalType;
-import dev.arcsoftware.madoc.model.entity.RosterAssignment;
-import dev.arcsoftware.madoc.model.payload.*;
-import dev.arcsoftware.madoc.service.GameService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -22,11 +19,20 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
+import dev.arcsoftware.madoc.controller.GameController;
+import dev.arcsoftware.madoc.controller.RosterController;
+import dev.arcsoftware.madoc.enums.GoalType;
+import dev.arcsoftware.madoc.model.entity.RosterAssignment;
+import dev.arcsoftware.madoc.model.payload.AttendancePayload;
+import dev.arcsoftware.madoc.model.payload.GamesheetPayload;
+import dev.arcsoftware.madoc.model.payload.GoalPayload;
+import dev.arcsoftware.madoc.model.payload.NextGoalPayload;
+import dev.arcsoftware.madoc.model.payload.NextPenaltyPayload;
+import dev.arcsoftware.madoc.model.payload.PenaltyPayload;
+import dev.arcsoftware.madoc.service.GameService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Controller
