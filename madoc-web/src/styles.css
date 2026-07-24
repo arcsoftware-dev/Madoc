@@ -1,1 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+    --secondary: Black;
+    --primary: #333333;
+    --accent: #CC1919;
+    --text: #f3f4f6;
+    --nav-hover: #CC1919;
+    --card-bg: #B0B0B0;
+    --card-border: #e0e0e0;
+}
+
+body {
+    margin: 0;
+    font-family: anton, sans-serif;
+    background: var(--primary);
+    color: var(--text);
+}

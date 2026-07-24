@@ -1,0 +1,44 @@
+.main-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--secondary);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    font-family: anton, sans-serif;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: WHITE;
+    letter-spacing: 2px;
+}
+
+.nav-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--secondary);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: var(--nav-hover);
+}
