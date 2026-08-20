@@ -11,14 +11,15 @@ post {
 }
 
 body:multipart-form {
-  file: @file()
+  file: @file(/home/jake/dev/projects/Madoc/src/main/resources/data/rosters/2026.csv)
   year: {{year}}
 }
 
 vars:pre-request {
-  year: 2025
+  year: 2026
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

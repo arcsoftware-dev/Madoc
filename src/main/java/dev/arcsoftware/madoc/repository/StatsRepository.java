@@ -254,7 +254,8 @@ public class StatsRepository {
                  LEFT JOIN attendance ON ra.id = attendance.id
                  LEFT JOIN goals ON ra.id = goals.id
                  LEFT JOIN assists ON ra.id = assists.id
-                 LEFT JOIN penalty_minutes ON ra.id = penalty_minutes.roster_assignment_id;
+                 LEFT JOIN penalty_minutes ON ra.id = penalty_minutes.roster_assignment_id
+       WHERE ra.season_year = :year;
         """;
 
         public static final String CLEAR_GOALS_BY_GAME_ID = """
@@ -365,6 +366,7 @@ public class StatsRepository {
                  LEFT JOIN penalty_minutes ON ra.id = penalty_minutes.roster_assignment_id
                  LEFT JOIN game_stats gs ON ra.id = gs.goalie_id
                  LEFT JOIN games_played ON ra.id = games_played.goalie_id
+        WHERE ra.season_year = :year
         GROUP BY p.id, ra.jersey_number, p.first_name, p.last_name, t.team_name, penalty_minutes.total_penalty_minutes, ra.position, gs.wins, gs.losses, gs.ties, gs.shutouts, gs.total_goals_against, games_played.games_played
         HAVING ra.position = 'GOALIE';
         
