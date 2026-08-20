@@ -171,6 +171,7 @@ public class StandingsRepository {
             FROM madoc.teams t
                      LEFT JOIN game_scores gs ON t.id = gs.home_team OR t.id = gs.away_team
                      LEFT JOIN team_penalties tp ON t.id = tp.team_id
+            WHERE t.year = :year
             GROUP BY t.id, t.team_name, tp.total_penalty_minutes
             ORDER BY points DESC, games_played ASC;
         """;
