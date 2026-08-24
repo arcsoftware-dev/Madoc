@@ -4,7 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum Arena {
-    CENTURY("Century Gardens", "340 Vodden St E, Brampton, ON L6V 2N2");
+    CENTURY("Century Gardens", "340 Vodden St E, Brampton, ON L6V 2N2"),
+    EARNSCLIFFE("Earnscliffe Arena", "44 Eastbourne Dr, Brampton, ON L6T 2B2");
 
     private final String arenaName;
     private final String address;
