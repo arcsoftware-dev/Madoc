@@ -3,7 +3,12 @@ package dev.arcsoftware.madoc.view;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import dev.arcsoftware.madoc.enums.DraftRank;
+import dev.arcsoftware.madoc.enums.Position;
+import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -98,6 +103,7 @@ public class TeamsView {
         assert rosters != null;
         List<TeamDataDto> teams = new ArrayList<>();
         for(var r : rosters){
+            normalizeTeamDataDtoForMissingRanks(r);
             r.sort(Comparator.comparingInt(a -> a.getDraftPosition().getRank()));
             teams.add(TeamDataDto.builder()
                     .teamName(r.getFirst().getTeamName())
@@ -107,5 +113,25 @@ public class TeamsView {
 
         model.addAttribute("teams", teams);
         return "teams";
+    }
+
+    private void normalizeTeamDataDtoForMissingRanks(List<RosterAssignmentDto> roster){
+        log.info("Normalizing Roster For Missing Ranks");
+        Set<DraftRank> activeRanks = roster
+                .stream()
+                .filter(RosterAssignment::isActive)
+                .map(RosterAssignment::getDraftPosition)
+                .collect(Collectors.toSet());
+
+        for(DraftRank rank : DraftRank.values()){
+            if(!activeRanks.contains(rank)){
+                RosterAssignmentDto dummyDto = new RosterAssignmentDto();
+                dummyDto.setFullName("Vacant");
+                dummyDto.setDraftPosition(rank);
+                dummyDto.setPosition(Position.fromDraftRank(rank));
+                dummyDto.setActive(true);
+                roster.add(dummyDto);
+            }
+        }
     }
 }
