@@ -20,7 +20,7 @@ public enum DraftRank {
     D_B1(12),
     D_B2(13),
     D_C1(14),
-    D_C2(15),
+//    D_C2(15),  The league no longer uses a C2 defenceman, No rosters since 2024 have had one so it is safe to comment out for now
     G(16);
 
     private final int rank;
