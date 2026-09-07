@@ -11,14 +11,14 @@ post {
 }
 
 body:multipart-form {
-  file: @file(/home/jake/dev/projects/Madoc/src/main/resources/data/schedule/2025/2025RegularSeasonSchedule-Partial4-Final.csv)
+  file: @file(/home/jake/dev/projects/Madoc/src/main/resources/data/schedule/2026/Madoc2026RegularSeasonSchedule.csv) @contentType(text/csv; charset=utf-8)
   year: {{year}}
   season-type: {{seasonType}}
 }
 
 vars:pre-request {
-  year: 2025
-  seasonType: PLAYOFFS
+  year: 2026
+  seasonType: REGULAR_SEASON
 }
 
 settings {

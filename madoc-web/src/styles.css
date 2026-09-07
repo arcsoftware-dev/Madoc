@@ -9,14 +9,18 @@
     --card-border: #e0e0e0;
 }
 
+html {
+  height: 100%;
+}
+
 body {
-    margin: 0;
-    font-family: anton, sans-serif;
-    background: var(--primary);
-    color: var(--text);
-    flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
+  min-height: 100%;
+  margin: 0;
+  font-family: anton, sans-serif;
+  background: var(--primary);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
 }
 
 a {
