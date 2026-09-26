@@ -1,0 +1,22 @@
+meta {
+  name: Untitled
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/api/gamesheet/{{gameId}}
+  body: none
+  auth: inherit
+}
+
+vars:pre-request {
+  @number
+  gameId: 1
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  forwardAuthorizationHeader: false
+}

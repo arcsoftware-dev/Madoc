@@ -120,6 +120,13 @@
             <scope>runtime</scope>
         </dependency>
 
+<!--        Open Document Sheet Manipulation-->
+        <dependency>
+            <groupId>org.odftoolkit</groupId>
+            <artifactId>odfdom-java</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+
 <!--        Test-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
