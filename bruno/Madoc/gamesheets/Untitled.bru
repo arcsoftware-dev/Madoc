@@ -1,21 +1,22 @@
 meta {
-  name: get rosters by team
+  name: Untitled
   type: http
-  seq: 4
+  seq: 1
 }
 
 get {
-  url: {{host}}/api/roster/{{year}}/{{team}}
+  url: {{host}}/api/gamesheet/{{gameId}}
   body: none
   auth: inherit
 }
 
 vars:pre-request {
-  year: 2026
-  team: Flames
+  @number
+  gameId: 1
 }
 
 settings {
   encodeUrl: true
   timeout: 0
+  forwardAuthorizationHeader: false
 }

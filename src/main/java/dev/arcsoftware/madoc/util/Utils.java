@@ -81,4 +81,17 @@ public class Utils {
         return sb.toString().trim();
     }
 
+    public static String normalizeTeamName(String teamName) {
+        StringBuilder normalizedTeamName = new StringBuilder();
+        char[] chars = teamName.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+            if (i > 0 && Character.isUpperCase(c)) {
+                normalizedTeamName.append(" ");
+            }
+            normalizedTeamName.append(c);
+        }
+        return normalizedTeamName.toString();
+    }
+
 }
