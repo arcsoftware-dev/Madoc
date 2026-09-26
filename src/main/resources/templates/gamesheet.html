@@ -84,7 +84,6 @@
                         </div>
                     </div>
 
-
                     <div id="update_buttons" th:if="${!gamesheet.finalized}">
                         <button type="submit" name="save">Save</button>
                         <button type="submit" name="finalize" onclick="return confirm('Are you sure you want to finalize the Gamesheet?  This cannot be undone');">Finalize</button>
@@ -92,6 +91,12 @@
                     <div sec:authorize="hasRole('ROLE_[ADMIN]')" style="margin-bottom: 2em; margin-top: 1em;">
                         <button type="submit" name="clear" onclick="return confirm('Are you sure you want to reset the Gamesheet?  This cannot be undone');">Reset Gamesheet</button>
                         <button th:if="${gamesheet.getFinalized()}" type="submit" name="unlock" onclick="return confirm('Are you sure you want to unlock the Gamesheet?  This cannot be undone');">Unlock Gamesheet</button>
+                    </div>
+
+                    <div id="download_buttons">
+                        <a th:href="@{/api/documents/signin/{id}/{team}(id=${gamesheet.getGameId()}, team=${utils.stripSpaces(gamesheet.getHomeTeam())})}" class="downloadable">Empty Sign-In Sheet Home</a>
+                        <a th:href="@{/api/documents/signin/{id}/{team}(id=${gamesheet.getGameId()}, team=${utils.stripSpaces(gamesheet.getAwayTeam())})}" class="downloadable">Empty Sign-In Sheet Away</a>
+                        <a th:href="@{/api/documents/gamesheet/{id}(id=${gamesheet.getGameId()})}" class="downloadable">Empty Gamesheet</a>
                     </div>
 
                     <div id="addGoal" class="game-feed-item table-container" th:if="${!gamesheet.finalized}">

@@ -67,3 +67,34 @@ input {
     overflow-x: auto;
     width: 100%;
 }
+.downloadable {
+    /* 1. Structure & Layout */
+    display: inline-block;       /* Allows setting padding/height while keeping it inline with text */
+    padding: 12px 24px;          /* Vertical and horizontal spacing inside the button */
+
+    /* 2. Text Styling */
+    text-decoration: none;       /* Removes the default underline */
+    color: var(--text);              /* Sets text color to white */
+    font-family: sans-serif;     /* Sets a clean, standard font */
+    font-weight: 600;            /* Makes the text slightly bold */
+    text-align: center;          /* Centers text if width is explicitly changed */
+
+    /* 3. Button Appearance */
+    background-color: var(--accent);   /* Sets the main button color (blue) */
+    border: 1px solid var(--accent);   /* Adds a matching solid border */
+    border-radius: 4px;          /* Rounds the corners slightly */
+    cursor: pointer;             /* Ensures the hand cursor shows up on hover */
+
+    /* 4. Animation (Optional) */
+    transition: background-color 0.2s ease; /* Smooths the hover effect transition */
+}
+
+/* 5. Hover and Active States */
+.downloadable:hover {
+    background-color: #880808;   /* Darkens the button color on hover */
+    border-color: #880808;       /* Matches the darkened border */
+}
+
+.downloadable:active {
+    background-color: #660606;   /* Darkens it even further when clicked */
+}
