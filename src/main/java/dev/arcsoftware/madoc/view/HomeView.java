@@ -5,6 +5,7 @@ import dev.arcsoftware.madoc.controller.NewsController;
 import dev.arcsoftware.madoc.controller.ScheduleController;
 import dev.arcsoftware.madoc.model.entity.NewsArticleEntity;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
+import dev.arcsoftware.madoc.repository.HomeViewCountRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,19 +24,27 @@ public class HomeView {
     private final AuthorizationController authorizationController;
     private final NewsController newsController;
     private final ScheduleController scheduleController;
+    private final HomeViewCountRepository homeViewCountRepository;
 
     @Autowired
     public HomeView(AuthorizationController authorizationController,
                     NewsController newsController,
-                    ScheduleController scheduleController) {
+                    ScheduleController scheduleController,
+                    HomeViewCountRepository homeViewCountRepository) {
         this.authorizationController = authorizationController;
         this.newsController = newsController;
         this.scheduleController = scheduleController;
+        this.homeViewCountRepository = homeViewCountRepository;
     }
 
     @ModelAttribute("enableChristmasRaffleBanner")
     public Boolean enableChristmasRaffleBanner() {
         return false;
+    }
+
+    @ModelAttribute("viewCount")
+    public long viewCount(){
+        return homeViewCountRepository.getCurrentViewCount();
     }
 
     @GetMapping("/")

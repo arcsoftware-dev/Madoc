@@ -1,0 +1,1 @@
+CREATE SEQUENCE madoc.home_view_count_sequence;
