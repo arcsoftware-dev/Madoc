@@ -3,6 +3,7 @@ package dev.arcsoftware.madoc.view;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import dev.arcsoftware.madoc.enums.DraftRank;
 import dev.arcsoftware.madoc.enums.Position;
 import dev.arcsoftware.madoc.model.entity.RosterAssignment;
 import dev.arcsoftware.madoc.util.Utils;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,22 +59,38 @@ public class TeamsView {
             @PathVariable("teamName") String teamName,
             @RequestParam(value = "year", required = false) Integer year,
             @RequestParam(value = "season-type", required = false) SeasonType seasonType,
-            Model model
+            Model model,
+            HttpServletResponse response
     ) {
         log.info("Fetching data for team with ID: {}", teamName);
         Pair<Integer, SeasonType> normalizedRequest = seasonMetadataService.normalizeSeasonData(year, seasonType);
+        int resolvedYear = normalizedRequest.left();
+        SeasonType resolvedSeasonType = normalizedRequest.right();
 
         //We need to normalize the team name to match how it's stored.  Teams like the 'Red Wings' will come in as 'RedWings', and db lookup will fail otherwise
         String normalizedTeamName = Utils.normalizeTeamName(teamName);
 
-        List<RosterAssignmentDto> roster = rosterController.getRosterAssignmentsByTeam(normalizedRequest.left(), normalizedTeamName).getBody();
+        List<RosterAssignmentDto> roster = rosterController.getRosterAssignmentsByTeam(resolvedYear, normalizedTeamName).getBody();
 
-        TeamDataDto teamData = teamsService.getTeamData(roster, normalizedRequest.left(), normalizedRequest.right());
+        Optional<TeamDataDto> teamDataOpt = teamsService.getTeamData(normalizedTeamName, roster, resolvedYear, resolvedSeasonType);
+        if (teamDataOpt.isEmpty()) {
+            log.warn("Team '{}' not found for season {}", normalizedTeamName, resolvedYear);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            List<Integer> availableYears = teamsService.findSeasonsForTeam(normalizedTeamName, seasonMetadataService.getAllSeasonYears())
+                    .stream()
+                    .filter(y -> y != resolvedYear)
+                    .toList();
+            model.addAttribute("teamName", teamName);
+            model.addAttribute("displayTeamName", normalizedTeamName);
+            model.addAttribute("year", resolvedYear);
+            model.addAttribute("availableYears", availableYears);
+            return "team-not-found-modern";
+        }
 
         model.addAttribute("teamName", teamName);
-        model.addAttribute("year", normalizedRequest.left());
-        model.addAttribute("seasonType", normalizedRequest.right());
-        model.addAttribute("teamData", teamData);
+        model.addAttribute("year", resolvedYear);
+        model.addAttribute("seasonType", resolvedSeasonType);
+        model.addAttribute("teamData", teamDataOpt.get());
         return "team-details-modern";
     }
 
@@ -88,15 +106,20 @@ public class TeamsView {
         var rosters = rosterController.getRostersByYear(normalizedRequest.left()).getBody();
 
         //convert to TeamDataDto
-        assert rosters != null;
         List<TeamDataDto> teams = new ArrayList<>();
-        for(var r : rosters){
-            normalizeTeamDataDtoForMissingRanks(r);
-            r.sort(Comparator.comparingInt(a -> a.getDraftPosition().getRank()));
-            teams.add(TeamDataDto.builder()
-                    .teamName(r.getFirst().getTeamName())
-                    .roster(r)
-                    .build());
+        if (rosters != null) {
+            for (var r : rosters) {
+                if (r == null || r.isEmpty()) {
+                    continue;
+                }
+                String resolvedTeamName = r.getFirst().getTeamName();
+                normalizeTeamDataDtoForMissingRanks(r);
+                r.sort(Comparator.comparingInt(a -> a.getDraftPosition().getRank()));
+                teams.add(TeamDataDto.builder()
+                        .teamName(resolvedTeamName)
+                        .roster(r)
+                        .build());
+            }
         }
 
         model.addAttribute("year", normalizedRequest.left());

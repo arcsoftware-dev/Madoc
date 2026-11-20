@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL — Team Not Found</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/teams-modern.css}" />
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page">
+        <section class="ms-card ms-notfound-card">
+            <img class="ms-notfound-logo"
+                 th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(displayTeamName)} + '.svg'}"
+                 th:alt="${displayTeamName}"
+                 onerror="this.hidden=true;" />
+
+            <span class="ms-notfound-badge">404 &middot; Team Not Found</span>
+            <h1 class="ms-title" th:text="|${displayTeamName} Not Found|">Team Not Found</h1>
+
+            <p class="ms-notfound-msg"
+               th:text="|We couldn't find any team named &quot;${displayTeamName}&quot; in the ${year} season.|">
+                We couldn't find that team in this season.
+            </p>
+
+            <div class="ms-notfound-seasons" th:if="${!#lists.isEmpty(availableYears)}">
+                <span class="ms-notfound-seasons-label"
+                      th:text="|${displayTeamName} played in other seasons|">Available in other seasons</span>
+                <div class="ms-notfound-actions" style="margin-top: 0.5rem;">
+                    <a class="ms-notfound-btn primary"
+                       th:each="yr : ${availableYears}"
+                       th:href="@{/teams/{team}(team=${teamName}, year=${yr})}"
+                       th:text="|View ${displayTeamName} (${yr}) →|">
+                        View Season &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <div class="ms-notfound-actions">
+                <a class="ms-notfound-btn"
+                   th:classappend="${#lists.isEmpty(availableYears) ? 'primary' : ''}"
+                   th:href="@{/teams(year=${year})}"
+                   th:text="|View All ${year} Teams|">View All Teams</a>
+                <a class="ms-notfound-btn"
+                   th:href="@{/standings(year=${year})}">View Standings</a>
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>
