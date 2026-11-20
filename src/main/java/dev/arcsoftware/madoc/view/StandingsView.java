@@ -54,6 +54,6 @@ public class StandingsView {
 
         model.addAttribute("request", request);
         model.addAttribute("teamStats", teamStats);
-        return "standings";
+        return "standings-modern";
     }
 }

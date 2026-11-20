@@ -52,6 +52,7 @@ auth:
   cookie:
     name: jwt-auth
     expiry_seconds: 36000
+    secure: true
   jwt:
     secret: ${JWT_SIGNING_SECRET}
     expiry_seconds: 36000

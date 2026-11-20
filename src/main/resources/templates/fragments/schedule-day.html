@@ -1,0 +1,35 @@
+<!-- One day of games, used by schedule-modern.html -->
+<article class="ms-card ms-day" th:fragment="dayCard(gameDay, yr)">
+    <header class="ms-day-head">
+        <h2 class="ms-day-title">
+            <small th:text="${#temporals.format(gameDay.date, 'EEEE')}">Friday</small>
+            <span th:text="${#temporals.format(gameDay.date, 'MMMM dd yyyy')}">November 20 2025</span>
+        </h2>
+        <span class="ms-day-count"
+              th:text="|${#lists.size(gameDay.games)} ${#lists.size(gameDay.games) == 1 ? 'game' : 'games'}|">1 game</span>
+    </header>
+
+    <div class="ms-sched-game" th:each="game : ${gameDay.games}">
+        <span class="ms-sched-time" th:text="${#temporals.format(game.startTime, 'hh:mm a')}">08:00 PM</span>
+
+        <a class="ms-sched-team home"
+           th:href="@{/teams/{team}(team=${utils.stripSpaces(game.homeTeam)}, year=${yr})}">
+            <img class="ms-sched-logo"
+                 th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.homeTeam)} + '.svg'}"
+                 th:alt="${game.homeTeam}" onerror="this.hidden=true;" />
+            <span class="ms-sched-name" th:text="${game.homeTeam}">Home</span>
+            <span class="ms-sched-score" th:if="${!#strings.isEmpty(game.homeScore)}" th:text="${game.homeScore}">0</span>
+        </a>
+
+        <a class="ms-sched-vs" th:href="@{|/games/${game.gameId}|}" title="View game">VS</a>
+
+        <a class="ms-sched-team away"
+           th:href="@{/teams/{team}(team=${utils.stripSpaces(game.awayTeam)}, year=${yr})}">
+            <img class="ms-sched-logo"
+                 th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(game.awayTeam)} + '.svg'}"
+                 th:alt="${game.awayTeam}" onerror="this.hidden=true;" />
+            <span class="ms-sched-name" th:text="${game.awayTeam}">Away</span>
+            <span class="ms-sched-score" th:if="${!#strings.isEmpty(game.awayScore)}" th:text="${game.awayScore}">0</span>
+        </a>
+    </div>
+</article>

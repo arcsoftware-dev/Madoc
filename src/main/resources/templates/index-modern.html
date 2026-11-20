@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/holiday.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/home-modern.css}"/>
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page">
+
+        <!-- Hero -->
+        <section class="ms-home-hero">
+            <span class="ms-eyebrow">Madoc Mens Hockey League</span>
+            <h1 class="ms-title">Welcome to the MADOC Hockey League!</h1>
+            <p>Get the latest news, scores, and updates about your favorite teams.</p>
+        </section>
+
+        <!-- Seasonal banner (toggled from HomeView) -->
+        <div th:if="${enableChristmasRaffleBanner}">
+            <div th:replace="~{fragments/banner :: christmas-raffle-banner}"></div>
+        </div>
+
+        <div class="ms-home-grid">
+            <!-- Latest news -->
+            <section class="ms-home-news">
+                <h2 class="ms-panel-title">Latest News</h2>
+                <div class="ms-stack">
+                    <article class="ms-news-card" th:each="article : ${newsArticles}">
+                        <span class="ms-news-date" th:text="${#temporals.format(article.createdAt, 'MMMM dd yyyy')}">November 20 2025</span>
+                        <h3 th:text="${article.title}">Article Title</h3>
+                        <p class="ms-news-summary" th:text="${article.summary}">Summary</p>
+                    </article>
+                    <div class="ms-home-empty" th:if="${#lists.isEmpty(newsArticles)}">No news yet. Check back soon!</div>
+                </div>
+            </section>
+
+            <!-- Upcoming games -->
+            <section class="ms-home-games">
+                <h2 class="ms-panel-title">Upcoming Games</h2>
+                <div class="ms-stack">
+                    <article class="ms-game" th:each="upcomingGame : ${upcomingMatches}">
+                        <div class="ms-game-when">
+                            <span class="ms-game-date" th:text="${#temporals.format(upcomingGame.startTime, 'MMM dd yyyy')}">Nov 20 2025</span>
+                            <span class="ms-game-time" th:text="${#temporals.format(upcomingGame.startTime, 'hh:mm a')}">08:00 PM</span>
+                        </div>
+                        <div class="ms-game-teams">
+                            <a class="ms-game-team" th:href="@{/teams/{team}(team=${utils.stripSpaces(upcomingGame.homeTeam)})}">
+                                <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(upcomingGame.homeTeam)} + '.svg'}"
+                                     th:alt="${upcomingGame.homeTeam}" onerror="this.hidden=true;" />
+                                <span th:text="${upcomingGame.homeTeam}">Home</span>
+                            </a>
+                            <a class="ms-game-vs" th:href="@{|/games/${upcomingGame.gameId}|}" title="View game">VS</a>
+                            <a class="ms-game-team" th:href="@{/teams/{team}(team=${utils.stripSpaces(upcomingGame.awayTeam)})}">
+                                <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(upcomingGame.awayTeam)} + '.svg'}"
+                                     th:alt="${upcomingGame.awayTeam}" onerror="this.hidden=true;" />
+                                <span th:text="${upcomingGame.awayTeam}">Away</span>
+                            </a>
+                        </div>
+                    </article>
+                    <div class="ms-home-empty" th:if="${#lists.isEmpty(upcomingMatches)}">No upcoming games scheduled.</div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

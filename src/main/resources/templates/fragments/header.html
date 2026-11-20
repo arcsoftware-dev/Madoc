@@ -1,20 +1,33 @@
-<div th:fragment="header">
+<th:block th:fragment="header">
     <header class="main-header">
-        <h2 class="logo">Madoc Mens</h2>
-        <a th:href="@{/}" class="logo-link">
-            <img th:src="@{/assets/mmhl.svg}" alt="MMHL Logo" width="400"/>
-        </a>
-        <h2 class="logo">Hockey League</h2>
+        <div class="header-inner">
+            <a th:href="@{/}" class="header-brand" aria-label="Madoc Mens Hockey League Home">
+                <span class="logo">Madoc Mens</span>
+                <img th:src="@{/assets/mmhl.svg}" alt="MMHL Logo" class="header-logo"/>
+                <span class="logo">Hockey League</span>
+            </a>
+        </div>
     </header>
-    <header class="nav-header">
-        <nav>
+    <nav class="nav-header" aria-label="Main navigation">
+        <div class="nav-inner">
             <ul class="nav-links">
-                <li><a th:href="@{/teams}">Teams</a></li>
-                <li><a th:href="@{/schedule}">Schedule</a></li>
-                <li><a th:href="@{/standings}">Standings</a></li>
-                <li><a th:href="@{/stats/SKATERS}">Stats</a></li>
-                <li><a th:href="@{/constitution}">Constitution</a></li>
+                <li><a th:href="@{/teams}" data-section="teams">Teams</a></li>
+                <li><a th:href="@{/schedule}" data-section="schedule">Schedule</a></li>
+                <li><a th:href="@{/standings}" data-section="standings">Standings</a></li>
+                <li><a th:href="@{/stats/SKATERS}" data-section="stats">Stats</a></li>
+                <li><a th:href="@{/constitution}" data-section="constitution">Constitution</a></li>
             </ul>
-        </nav>
-    </header>
-</div>
+        </div>
+    </nav>
+    <script>
+        (function () {
+            var path = window.location.pathname;
+            document.querySelectorAll('.nav-links a[data-section]').forEach(function (link) {
+                if (path.indexOf('/' + link.dataset.section) !== -1) {
+                    link.classList.add('active');
+                    link.setAttribute('aria-current', 'page');
+                }
+            });
+        })();
+    </script>
+</th:block>

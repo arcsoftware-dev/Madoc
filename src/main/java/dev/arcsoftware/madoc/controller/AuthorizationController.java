@@ -25,6 +25,9 @@ public class AuthorizationController {
     @Value("${auth.cookie.name}")
     private String cookieName;
 
+    @Value("${auth.cookie.secure:true}")
+    private boolean cookieSecure;
+
     private final AuthenticationService authenticationService;
 
     @Autowired
@@ -90,7 +93,7 @@ public class AuthorizationController {
         Cookie authCookie = new Cookie(cookieName, token.jwt());
         authCookie.setMaxAge(token.expiryInSeconds());
         authCookie.setPath(token.validityPath());
-        authCookie.setSecure(true);
+        authCookie.setSecure(cookieSecure);
         authCookie.setHttpOnly(true);
         // Add the cookie to the response
         response.addCookie(authCookie);

@@ -53,6 +53,6 @@ public class StatsView {
         StatsRequest request = new StatsRequest(playerType, seasonData.left(), seasonData.right(), sortField, sortOrder);
         model.addAttribute("request", request);
         model.addAttribute("playerStats", playerStats);
-        return "stats";
+        return "stats-modern";
     }
 }

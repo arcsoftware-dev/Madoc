@@ -1,0 +1,524 @@
+/* Modern stats page. Uses the palette variables defined in main.css. */
+
+.ms-page {
+    /* body is a flex column (main.css): auto margins alone would size <main>
+       to its content (the table) instead of the viewport, so be explicit. */
+    width: 100%;
+    flex: 1 0 auto; /* fill remaining height so the footer sits at the bottom */
+    min-width: 0;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.25rem 1rem;
+}
+
+/* ---------- Page heading ---------- */
+.ms-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.ms-eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
+}
+.ms-title {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    color: var(--text);
+}
+.ms-title::after {
+    content: "";
+    display: block;
+    width: 64px;
+    height: 4px;
+    margin-top: 0.6rem;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+/* ---------- Summary tiles ---------- */
+.ms-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.ms-tile {
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+    padding: 1.1rem 1.25rem;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+.ms-tile::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--accent);
+}
+.ms-tile-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.6);
+}
+.ms-tile-value {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 1.6rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ms-tile-sub {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    color: var(--accent);
+}
+
+.ms-tile-team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    margin-top: 0.35rem;
+}
+.ms-tile-team span {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ms-tile-leader {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.ms-tile-leader span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ms-logo.ms-logo-sm {
+    flex: 0 0 auto;
+    width: 1.75rem;
+    height: 1.5rem;
+}
+.ms-tile-leader-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.ms-tile-leader-info {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.ms-tile-leader-card .ms-tile-value,
+.ms-tile-leader-card .ms-tile-leader span {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    line-height: 1.15;
+}
+.ms-leader-stat {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 4.25rem;
+    padding: 0.5rem 0.85rem;
+    background: rgba(204, 25, 25, 0.14);
+    border: 1px solid rgba(204, 25, 25, 0.45);
+    border-radius: 12px;
+    font-variant-numeric: tabular-nums;
+}
+.ms-leader-stat-val {
+    font-size: 1.85rem;
+    line-height: 1;
+    color: var(--text);
+}
+.ms-leader-stat-lbl {
+    margin-top: 0.2rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+/* ---------- Toolbar (segmented controls + select) ---------- */
+.ms-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+.ms-toolbar .ms-spacer {
+    flex: 1 1 auto;
+}
+.ms-segmented {
+    display: inline-flex;
+    padding: 4px;
+    gap: 4px;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+}
+.ms-segmented a {
+    padding: 0.5rem 1.15rem;
+    border-radius: 999px;
+    color: rgba(243, 244, 246, 0.7);
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.ms-segmented a:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+}
+.ms-segmented a.active {
+    background: var(--accent);
+    color: var(--text);
+    box-shadow: 0 2px 10px rgba(204, 25, 25, 0.45);
+}
+.ms-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0.6rem 2.4rem 0.6rem 1.15rem;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--text);
+    cursor: pointer;
+    background-color: var(--secondary);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23f3f4f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    transition: border-color 0.2s;
+}
+.ms-select:hover,
+.ms-select:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+/* ---------- Search bar ---------- */
+.ms-search-bar {
+    margin-bottom: 1rem;
+}
+.ms-search-wrap {
+    position: relative;
+    width: 100%;
+}
+.ms-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.05rem;
+    height: 1.05rem;
+    color: rgba(243, 244, 246, 0.5);
+    pointer-events: none;
+}
+.ms-search-input {
+    width: 100%;
+    padding: 0.65rem 2.5rem 0.65rem 2.65rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    transition: border-color 0.2s;
+}
+.ms-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+.ms-search-input::placeholder {
+    color: rgba(243, 244, 246, 0.45);
+}
+.ms-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+.ms-search-clear {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: rgba(243, 244, 246, 0.65);
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+}
+.ms-search-clear:hover {
+    color: #fff;
+    background: var(--accent);
+}
+
+/* ---------- Table card ---------- */
+.ms-card {
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+}
+.ms-scroll {
+    overflow-x: auto;
+    max-height: 75vh;
+}
+.ms-table {
+    width: 100%;
+    min-width: max-content; /* columns keep their natural width; card scrolls */
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+}
+.ms-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 0.9rem 1rem;
+    background: #111;
+    color: rgba(243, 244, 246, 0.65);
+    font-size: 0.8rem;
+    font-weight: normal;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: right;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--accent);
+}
+.ms-table thead th.ms-left { text-align: left; }
+.ms-table thead th.is-sorted { color: var(--text); }
+
+.ms-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: inherit;
+    transition: color 0.2s;
+}
+.ms-sort:hover { color: var(--accent); }
+.ms-sort-icon {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+}
+.ms-sort-icon.asc  { border-bottom: 7px solid var(--accent); }
+.ms-sort-icon.desc { border-top: 7px solid var(--accent); }
+
+.ms-table tbody td {
+    padding: 0.8rem 1rem;
+    text-align: right;
+    font-size: 1.05rem;
+    color: var(--text);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+.ms-table tbody td.ms-left { text-align: left; }
+.ms-table tbody tr:last-child td { border-bottom: none; }
+.ms-table tbody tr:nth-child(even) td { background: rgba(255, 255, 255, 0.025); }
+.ms-table tbody tr:hover td { background: rgba(204, 25, 25, 0.14); }
+.ms-table tbody td.is-sorted {
+    color: #fff;
+    background: rgba(204, 25, 25, 0.10);
+    box-shadow: inset 0 0 0 9999px rgba(204, 25, 25, 0.06);
+}
+
+/* Rank badge */
+.ms-rank-col { width: 1%; text-align: center !important; }
+.ms-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.4rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    color: rgba(243, 244, 246, 0.7);
+}
+.ms-rank.podium {
+    color: #fff;
+    background: var(--accent);
+    box-shadow: 0 2px 10px rgba(204, 25, 25, 0.45);
+}
+.ms-rank.podium-2 { background: rgba(204, 25, 25, 0.7); }
+.ms-rank.podium-3 { background: rgba(204, 25, 25, 0.45); }
+
+.ms-player {
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+.ms-body [hidden] { display: none !important; }
+.ms-logo {
+    display: block;
+    width: 2.25rem;
+    height: 1.75rem;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* Team column: logo centered by default (phones / when the table scrolls) */
+.ms-table thead th.ms-team-col,
+.ms-table tbody td.ms-team-col { text-align: center; }
+.ms-team-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+}
+.ms-team-name {
+    display: none;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+}
+
+/* Wide screens: add the team name beside the logo, but only once the whole
+   table fits without sideways scrolling (goalies have more columns). */
+@media (min-width: 1000px) {
+    .ms-skaters thead th.ms-team-col,
+    .ms-skaters tbody td.ms-team-col { text-align: left; }
+    .ms-skaters .ms-team-cell { justify-content: flex-start; }
+    .ms-skaters .ms-team-name { display: inline; }
+}
+@media (min-width: 1200px) {
+    .ms-goalies thead th.ms-team-col,
+    .ms-goalies tbody td.ms-team-col,
+    .ms-standings thead th.ms-team-col,
+    .ms-standings tbody td.ms-team-col { text-align: left; }
+    .ms-goalies .ms-team-cell,
+    .ms-standings .ms-team-cell { justify-content: flex-start; }
+    .ms-goalies .ms-team-name,
+    .ms-standings .ms-team-name { display: inline; }
+}
+.ms-team {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+}
+
+.ms-empty {
+    padding: 3rem 1rem !important;
+    text-align: center !important;
+    color: rgba(243, 244, 246, 0.6) !important;
+}
+
+/* ---------- Responsive ---------- */
+/* Padding/borders count toward widths, so width:100% controls can't overflow */
+.ms-body *,
+.ms-body *::before,
+.ms-body *::after {
+    box-sizing: border-box;
+}
+
+.ms-scroll {
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 700px) {
+    /* Page layout */
+    .ms-page { padding: 0 0.75rem 1rem; margin-top: 1rem; }
+    .ms-heading { margin-bottom: 1rem; }
+    .ms-summary { gap: 0.6rem; margin-bottom: 1rem; }
+    .ms-summary:has(.ms-tile-leader-card) { grid-template-columns: 1fr; }
+    .ms-tile { padding: 0.8rem 1rem; }
+    .ms-tile-value { font-size: 1.3rem; }
+    .ms-leader-stat { min-width: 3.75rem; padding: 0.4rem 0.7rem; }
+    .ms-leader-stat-val { font-size: 1.55rem; }
+
+    /* Toolbar: full-width controls */
+    .ms-toolbar { gap: 0.6rem; }
+    .ms-toolbar .ms-spacer { display: none; }
+    .ms-toolbar form { width: 100%; }
+    .ms-select { width: 100%; }
+    .ms-segmented { width: 100%; box-sizing: border-box; }
+    .ms-segmented a {
+        flex: 1 1 0;
+        text-align: center;
+        padding: 0.5rem 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    /* Table: compact so most columns fit; the rest scrolls inside the card */
+    .ms-table thead th {
+        padding: 0.6rem 0.5rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.06em;
+    }
+    .ms-table tbody td {
+        padding: 0.55rem 0.5rem;
+        font-size: 0.9rem;
+    }
+    .ms-player { font-size: 0.95rem; }
+    .ms-team { padding: 0.15rem 0.45rem; font-size: 0.7rem; }
+    .ms-logo { width: 1.75rem; height: 1.4rem; }
+    .ms-rank { min-width: 1.6rem; height: 1.6rem; font-size: 0.8rem; }
+
+    /* Keep rank + player visible while scrolling sideways */
+    .ms-table th:nth-child(2),
+    .ms-table td:nth-child(2) {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: #111;
+    }
+    .ms-table thead th:nth-child(2) { z-index: 3; }
+    .ms-table tbody tr:hover td:nth-child(2),
+    .ms-table tbody tr:nth-child(even) td:nth-child(2) { background: #161616; }
+}
+
+/* ---------- Larger logos on desktop ---------- */
+@media (min-width: 1000px) {
+    .ms-logo {
+        width: 3.25rem;
+        height: 2.5rem;
+    }
+    .ms-logo.ms-logo-sm {
+        width: 3rem;
+        height: 2.5rem;
+    }
+    .ms-team-cell { gap: 0.9rem; }
+    .ms-tile-team,
+    .ms-tile-leader { gap: 0.75rem; }
+}

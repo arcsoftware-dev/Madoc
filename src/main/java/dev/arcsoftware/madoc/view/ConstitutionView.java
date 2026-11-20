@@ -35,7 +35,7 @@ public class ConstitutionView {
 
     @GetMapping("")
     public String getConstitution(Model model) {
-        return "constitution";
+        return "constitution-modern";
     }
 
     @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]')")

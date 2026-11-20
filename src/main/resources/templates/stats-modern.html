@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL Stats</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}" />
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page"
+          th:with="pt=${request.playerType().name()},
+                   st=${request.seasonType().name()},
+                   yr=${request.year()},
+                   so=${request.sortOrder().toString()},
+                   sf=${request.sortCategory().toString()}">
+
+        <!-- Heading -->
+        <section class="ms-heading">
+            <div>
+                <span class="ms-eyebrow"
+                      th:text="|${yr} ${st == 'PLAYOFFS' ? 'Playoffs' : 'Regular Season'}|">2025 Regular Season</span>
+                <h1 class="ms-title"
+                    th:text="${pt == 'SKATERS'} ? 'Skater Statistics' : 'Goalie Statistics'">Player Statistics</h1>
+            </div>
+        </section>
+
+        <!-- Summary tiles -->
+        <section class="ms-summary" th:if="${!#lists.isEmpty(playerStats)}">
+            <div class="ms-tile ms-tile-leader-card" th:with="leader=${playerStats[0]}">
+                <div class="ms-tile-leader-info">
+                    <span class="ms-tile-label">Current Leader</span>
+                    <span class="ms-tile-value" th:text="${leader.playerName}">Player Name</span>
+                    <span class="ms-tile-sub ms-tile-team">
+                        <img class="ms-logo ms-logo-sm"
+                             th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(leader.teamName)} + '.svg'}"
+                             th:alt="${leader.teamName}"
+                             onerror="this.hidden=true;" />
+                        <span th:text="${leader.teamName}">Team Name</span>
+                    </span>
+                </div>
+                <div class="ms-leader-stat" th:switch="${sf}">
+                    <th:block th:case="'GAMES_PLAYED'">
+                        <span class="ms-leader-stat-val" th:text="${leader.gamesPlayed}">0</span>
+                        <span class="ms-leader-stat-lbl">GP</span>
+                    </th:block>
+                    <th:block th:case="'GOALS'">
+                        <span class="ms-leader-stat-val" th:text="${leader.goals}">0</span>
+                        <span class="ms-leader-stat-lbl">G</span>
+                    </th:block>
+                    <th:block th:case="'ASSISTS'">
+                        <span class="ms-leader-stat-val" th:text="${leader.assists}">0</span>
+                        <span class="ms-leader-stat-lbl">A</span>
+                    </th:block>
+                    <th:block th:case="'POINTS'">
+                        <span class="ms-leader-stat-val" th:text="${leader.points}">0</span>
+                        <span class="ms-leader-stat-lbl">P</span>
+                    </th:block>
+                    <th:block th:case="'POINTS_PER_GAME'">
+                        <span class="ms-leader-stat-val"
+                              th:text="${leader.gamesPlayed > 0} ? ${#numbers.formatDecimal(leader.points * 1.0 / leader.gamesPlayed, 1, 2)} : '0.00'">0.00</span>
+                        <span class="ms-leader-stat-lbl">PPG</span>
+                    </th:block>
+                    <th:block th:case="'PENALTY_MINUTES'">
+                        <span class="ms-leader-stat-val" th:text="${leader.penaltyMinutes}">0</span>
+                        <span class="ms-leader-stat-lbl">PIM</span>
+                    </th:block>
+                    <th:block th:case="'WINS'">
+                        <span class="ms-leader-stat-val" th:text="${leader.wins}">0</span>
+                        <span class="ms-leader-stat-lbl">W</span>
+                    </th:block>
+                    <th:block th:case="'LOSSES'">
+                        <span class="ms-leader-stat-val" th:text="${leader.losses}">0</span>
+                        <span class="ms-leader-stat-lbl">L</span>
+                    </th:block>
+                    <th:block th:case="'TIES'">
+                        <span class="ms-leader-stat-val" th:text="${leader.ties}">0</span>
+                        <span class="ms-leader-stat-lbl">T</span>
+                    </th:block>
+                    <th:block th:case="'SHUTOUTS'">
+                        <span class="ms-leader-stat-val" th:text="${leader.shutouts}">0</span>
+                        <span class="ms-leader-stat-lbl">SO</span>
+                    </th:block>
+                    <th:block th:case="'GOALS_AGAINST'">
+                        <span class="ms-leader-stat-val" th:text="${leader.goalsAgainst}">0</span>
+                        <span class="ms-leader-stat-lbl">GA</span>
+                    </th:block>
+                    <th:block th:case="'GOALS_AGAINST_AVERAGE'">
+                        <span class="ms-leader-stat-val"
+                              th:text="${leader.gamesPlayed > 0} ? ${#numbers.formatDecimal(leader.goalsAgainst * 1.0 / leader.gamesPlayed, 1, 3)} : 'N/A'">0.000</span>
+                        <span class="ms-leader-stat-lbl">GAA</span>
+                    </th:block>
+                </div>
+            </div>
+            <div class="ms-tile">
+                <span class="ms-tile-label">Sorted By</span>
+                <span class="ms-tile-value" th:text="${#strings.capitalizeWords(#strings.toLowerCase(#strings.replace(sf, '_', ' ')))}">Points</span>
+                <span class="ms-tile-sub" th:text="${so == 'ASC'} ? 'Ascending' : 'Descending'">Descending</span>
+            </div>
+        </section>
+
+        <!-- Toolbar -->
+        <section class="ms-toolbar">
+            <div class="ms-segmented">
+                <a th:href="@{/stats/{playerType}(playerType='SKATERS', season-type=${st}, year=${yr})}"
+                   th:classappend="${pt == 'SKATERS'} ? 'active' : ''">Skaters</a>
+                <a th:href="@{/stats/{playerType}(playerType='GOALIES', season-type=${st}, year=${yr})}"
+                   th:classappend="${pt == 'GOALIES'} ? 'active' : ''">Goalies</a>
+            </div>
+
+            <div class="ms-segmented">
+                <a th:href="@{/stats/{playerType}(playerType=${pt}, season-type='REGULAR_SEASON', year=${yr})}"
+                   th:classappend="${st == 'REGULAR_SEASON'} ? 'active' : ''">Regular Season</a>
+                <a th:href="@{/stats/{playerType}(playerType=${pt}, season-type='PLAYOFFS', year=${yr})}"
+                   th:classappend="${st == 'PLAYOFFS'} ? 'active' : ''">Playoffs</a>
+            </div>
+
+            <span class="ms-spacer"></span>
+
+            <form th:action="@{/stats/{playerType}(playerType=${pt})}" method="get" id="year-select-form">
+                <input type="hidden" name="season-type" th:value="${st}" />
+                <select name="year" id="year" class="ms-select" aria-label="Season year" required
+                        onchange="document.getElementById('year-select-form').submit();">
+                    <option th:each="season_year : ${season_years}"
+                            th:value="${season_year}"
+                            th:text="${season_year}"
+                            th:selected="${season_year == yr}">
+                    </option>
+                </select>
+            </form>
+        </section>
+
+        <!-- Player search -->
+        <section class="ms-search-bar" th:if="${!#lists.isEmpty(playerStats)}">
+            <div class="ms-search-wrap">
+                <svg class="ms-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="search"
+                       id="player-search"
+                       class="ms-search-input"
+                       th:placeholder="${pt == 'GOALIES'} ? 'Search goalies...' : 'Search players...'"
+                       aria-label="Search players"
+                       autocomplete="off" />
+                <button type="button"
+                        id="player-search-clear"
+                        class="ms-search-clear"
+                        aria-label="Clear search"
+                        hidden>&times;</button>
+            </div>
+        </section>
+
+        <!-- Skaters table -->
+        <section class="ms-card" th:if="${pt == 'SKATERS'}">
+            <div class="ms-scroll">
+                <table class="ms-table ms-skaters">
+                    <thead>
+                    <tr>
+                        <th class="ms-rank-col" aria-label="Rank">#</th>
+                        <th class="ms-left">Player</th>
+                        <th class="ms-left ms-team-col">Team</th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('GP', 'Games Played', ${pt}, 'GAMES_PLAYED', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('G', 'Goals', ${pt}, 'GOALS', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('A', 'Assists', ${pt}, 'ASSISTS', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('P', 'Points', ${pt}, 'POINTS', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('PPG', 'Points Per Game', ${pt}, 'POINTS_PER_GAME', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('PIM', 'Penalty Minutes', ${pt}, 'PENALTY_MINUTES', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="stat : ${playerStats}" data-stat-row>
+                        <td class="ms-rank-col">
+                            <span class="ms-rank"
+                                  th:classappend="${stat.rank == 1} ? 'podium podium-1' : (${stat.rank == 2} ? 'podium podium-2' : (${stat.rank == 3} ? 'podium podium-3' : ''))"
+                                  th:text="${stat.rank}">1</span>
+                        </td>
+                        <td class="ms-left ms-player" th:text="${stat.playerName}">Player Name</td>
+                        <td class="ms-left ms-team-col">
+                            <div class="ms-team-cell">
+                                <img class="ms-logo"
+                                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(stat.teamName)} + '.svg'}"
+                                     th:alt="${stat.teamName}" th:title="${stat.teamName}"
+                                     onerror="this.hidden=true;this.nextElementSibling.hidden=false;" />
+                                <!-- fallback if a team has no logo file -->
+                                <span class="ms-team" hidden th:text="${utils.abbreviateTeamName(stat.teamName)}">TEAM</span>
+                                <!-- full name: only shown on screens wide enough (see stats-modern.css) -->
+                                <span class="ms-team-name" th:text="${stat.teamName}">Team Name</span>
+                            </div>
+                        </td>
+                        <td th:classappend="${sf == 'GAMES_PLAYED'} ? 'is-sorted'" th:text="${stat.gamesPlayed}">0</td>
+                        <td th:classappend="${sf == 'GOALS'} ? 'is-sorted'" th:text="${stat.goals}">0</td>
+                        <td th:classappend="${sf == 'ASSISTS'} ? 'is-sorted'" th:text="${stat.assists}">0</td>
+                        <td th:classappend="${sf == 'POINTS'} ? 'is-sorted'" th:text="${stat.points}">0</td>
+                        <td th:classappend="${sf == 'POINTS_PER_GAME'} ? 'is-sorted'"
+                            th:text="${stat.gamesPlayed > 0} ? ${#numbers.formatDecimal(stat.points * 1.0 / stat.gamesPlayed, 1, 2)} : '0.00'">0.00</td>
+                        <td th:classappend="${sf == 'PENALTY_MINUTES'} ? 'is-sorted'" th:text="${stat.penaltyMinutes}">0</td>
+                    </tr>
+                    <tr id="stats-no-match" hidden th:if="${!#lists.isEmpty(playerStats)}">
+                        <td colspan="9" class="ms-empty">No players match your search.</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(playerStats)}">
+                        <td colspan="9" class="ms-empty">No stats available for this season yet.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Goalies table -->
+        <section class="ms-card" th:if="${pt == 'GOALIES'}">
+            <div class="ms-scroll">
+                <table class="ms-table ms-goalies">
+                    <thead>
+                    <tr>
+                        <th class="ms-rank-col" aria-label="Rank">#</th>
+                        <th class="ms-left">Player</th>
+                        <th class="ms-left ms-team-col">Team</th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('GP', 'Games Played', ${pt}, 'GAMES_PLAYED', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('W', 'Wins', ${pt}, 'WINS', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('L', 'Losses', ${pt}, 'LOSSES', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('T', 'Ties', ${pt}, 'TIES', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('GA', 'Goals Against', ${pt}, 'GOALS_AGAINST', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('GAA', 'Goals Against Average', ${pt}, 'GOALS_AGAINST_AVERAGE', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('SO', 'Shutouts', ${pt}, 'SHUTOUTS', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                        <th th:replace="~{fragments/modern-sort-header :: sortHeader('PIM', 'Penalty Minutes', ${pt}, 'PENALTY_MINUTES', ${so}, ${sf}, ${st}, ${yr})}"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="stat : ${playerStats}" data-stat-row>
+                        <td class="ms-rank-col">
+                            <span class="ms-rank"
+                                  th:classappend="${stat.rank == 1} ? 'podium podium-1' : (${stat.rank == 2} ? 'podium podium-2' : (${stat.rank == 3} ? 'podium podium-3' : ''))"
+                                  th:text="${stat.rank}">1</span>
+                        </td>
+                        <td class="ms-left ms-player" th:text="${stat.playerName}">Player Name</td>
+                        <td class="ms-left ms-team-col">
+                            <div class="ms-team-cell">
+                                <img class="ms-logo"
+                                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(stat.teamName)} + '.svg'}"
+                                     th:alt="${stat.teamName}" th:title="${stat.teamName}"
+                                     onerror="this.hidden=true;this.nextElementSibling.hidden=false;" />
+                                <!-- fallback if a team has no logo file -->
+                                <span class="ms-team" hidden th:text="${utils.abbreviateTeamName(stat.teamName)}">TEAM</span>
+                                <!-- full name: only shown on screens wide enough (see stats-modern.css) -->
+                                <span class="ms-team-name" th:text="${stat.teamName}">Team Name</span>
+                            </div>
+                        </td>
+                        <td th:classappend="${sf == 'GAMES_PLAYED'} ? 'is-sorted'" th:text="${stat.gamesPlayed}">0</td>
+                        <td th:classappend="${sf == 'WINS'} ? 'is-sorted'" th:text="${stat.wins}">0</td>
+                        <td th:classappend="${sf == 'LOSSES'} ? 'is-sorted'" th:text="${stat.losses}">0</td>
+                        <td th:classappend="${sf == 'TIES'} ? 'is-sorted'" th:text="${stat.ties}">0</td>
+                        <td th:classappend="${sf == 'GOALS_AGAINST'} ? 'is-sorted'" th:text="${stat.goalsAgainst}">0</td>
+                        <td th:classappend="${sf == 'GOALS_AGAINST_AVERAGE'} ? 'is-sorted'"
+                            th:text="${stat.gamesPlayed > 0} ? ${#numbers.formatDecimal(stat.goalsAgainst * 1.0 / stat.gamesPlayed, 1, 3)} : 'N/A'">0.000</td>
+                        <td th:classappend="${sf == 'SHUTOUTS'} ? 'is-sorted'" th:text="${stat.shutouts}">0</td>
+                        <td th:classappend="${sf == 'PENALTY_MINUTES'} ? 'is-sorted'" th:text="${stat.penaltyMinutes}">0</td>
+                    </tr>
+                    <tr id="stats-no-match" hidden th:if="${!#lists.isEmpty(playerStats)}">
+                        <td colspan="11" class="ms-empty">No goalies match your search.</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(playerStats)}">
+                        <td colspan="11" class="ms-empty">No stats available for this season yet.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+
+    <script th:if="${!#lists.isEmpty(playerStats)}">
+        (function () {
+            var input = document.getElementById('player-search');
+            var clearBtn = document.getElementById('player-search-clear');
+            var rows = document.querySelectorAll('tr[data-stat-row]');
+            var noMatch = document.getElementById('stats-no-match');
+            if (!input) return;
+
+            function filter() {
+                var q = input.value.trim().toLowerCase();
+                if (clearBtn) clearBtn.hidden = input.value.length === 0;
+                var visible = 0;
+                rows.forEach(function (row) {
+                    var playerCell = row.querySelector('.ms-player');
+                    var name = playerCell ? playerCell.textContent.toLowerCase() : '';
+                    var match = !q || name.indexOf(q) !== -1;
+                    row.hidden = !match;
+                    if (match) visible++;
+                });
+                if (noMatch) noMatch.hidden = visible > 0;
+            }
+
+            input.addEventListener('input', filter);
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    input.value = '';
+                    filter();
+                    input.focus();
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
