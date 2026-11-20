@@ -1,0 +1,445 @@
+/* Modern player profile page. Builds on stats-modern.css (ms-* classes) and the main.css palette. */
+
+/* ---------- Top navigation bar ---------- */
+.mp-top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+}
+
+.mp-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.78);
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+
+.mp-nav-link:hover,
+.mp-nav-link:focus-visible {
+    color: #fff;
+    border-color: var(--accent);
+    background: rgba(204, 25, 25, 0.14);
+    outline: none;
+}
+
+/* ---------- Player Hero ---------- */
+.mp-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem 1.75rem;
+    background:
+        radial-gradient(circle at 12% 20%, rgba(204, 25, 25, 0.26), transparent 55%),
+        var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 3px solid var(--accent);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.mp-hero-emblem {
+    position: relative;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 7.25rem;
+    height: 7.25rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+}
+
+.mp-hero-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.mp-hero-jersey-fallback {
+    font-size: 2.6rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: var(--text);
+}
+
+.mp-hero-jersey-badge {
+    position: absolute;
+    right: -0.45rem;
+    bottom: -0.45rem;
+    min-width: 2.4rem;
+    padding: 0.22rem 0.55rem;
+    font-size: 1.05rem;
+    line-height: 1.1;
+    letter-spacing: 0.04em;
+    text-align: center;
+    color: #fff;
+    background: var(--accent);
+    border: 2px solid var(--secondary);
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(204, 25, 25, 0.45);
+    font-variant-numeric: tabular-nums;
+}
+
+.mp-hero-body {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.mp-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.35rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.mp-hero-eyebrow a {
+    color: inherit;
+    transition: color 0.15s;
+}
+
+.mp-hero-eyebrow a:hover {
+    color: var(--text);
+}
+
+.mp-hero .ms-title {
+    overflow-wrap: anywhere;
+}
+
+.mp-meta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+}
+
+.mp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.28rem 0.72rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: rgba(243, 244, 246, 0.88);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+}
+
+.mp-chip.accent {
+    color: #fff;
+    background: rgba(204, 25, 25, 0.22);
+    border-color: rgba(204, 25, 25, 0.55);
+}
+
+/* ---------- Sections & Cards ---------- */
+.mp-section {
+    margin-top: 1.75rem;
+}
+
+.mp-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+}
+
+.mp-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0;
+    font-size: 1.35rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+}
+
+.mp-section-title::before {
+    content: "";
+    width: 4px;
+    height: 1.35rem;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.mp-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+}
+
+.mp-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1.25rem;
+    background: #111;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mp-card-title {
+    margin: 0;
+    font-size: 1.08rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+}
+
+.mp-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.65rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.78);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.mp-pill.accent {
+    color: #fff;
+    background: rgba(204, 25, 25, 0.22);
+    border-color: rgba(204, 25, 25, 0.55);
+}
+
+.mp-card .ms-scroll {
+    max-height: none;
+}
+
+/* ---------- Player Stat & History Tables ---------- */
+.mp-table thead th.mp-season-col,
+.mp-table tbody td.mp-season-col,
+.mp-table tfoot td.mp-season-col {
+    text-align: left;
+    width: 1%;
+}
+
+.mp-table tbody td.mp-season-col {
+    color: rgba(243, 244, 246, 0.85);
+    letter-spacing: 0.04em;
+}
+
+.mp-table tbody td.mp-highlight {
+    color: #fff;
+    background: rgba(204, 25, 25, 0.08);
+}
+
+.mp-table tfoot tr.mp-totals td {
+    padding: 0.85rem 1rem;
+    text-align: right;
+    font-size: 1.05rem;
+    color: #fff;
+    background: rgba(204, 25, 25, 0.16);
+    border-top: 2px solid var(--accent);
+    white-space: nowrap;
+}
+
+.mp-table tfoot tr.mp-totals td.ms-left,
+.mp-table tfoot tr.mp-totals td.mp-season-col {
+    text-align: left;
+}
+
+.mp-totals-label {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.mp-team-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text);
+    transition: color 0.15s ease;
+}
+
+.mp-team-link:hover,
+.mp-team-link:focus-visible {
+    color: var(--accent);
+    outline: none;
+}
+
+.mp-team-link img {
+    flex: 0 0 auto;
+    width: 1.9rem;
+    height: 1.5rem;
+    object-fit: contain;
+}
+
+/* Roster history chips */
+.mp-pos-pill {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+}
+
+.mp-rookie-badge {
+    display: inline-block;
+    margin-left: 0.45rem;
+    padding: 0.06rem 0.4rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 800;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #fff;
+    vertical-align: middle;
+}
+
+.mp-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.58rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 999px;
+}
+
+.mp-status.active {
+    color: #86efac;
+    background: rgba(34, 197, 94, 0.14);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.mp-status.inactive {
+    color: rgba(243, 244, 246, 0.55);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mp-empty-card {
+    padding: 2.25rem 1.25rem;
+    text-align: center;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.95rem;
+    color: rgba(243, 244, 246, 0.62);
+}
+
+/* ---------- Mobile overrides ---------- */
+@media (max-width: 700px) {
+    .mp-hero {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+        padding: 1.25rem 1rem;
+    }
+
+    .mp-hero-emblem {
+        width: 5.75rem;
+        height: 5.75rem;
+    }
+
+    .mp-hero .ms-title::after {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .mp-meta-chips {
+        justify-content: center;
+    }
+
+    .mp-section {
+        margin-top: 1.35rem;
+    }
+
+    .mp-section-title {
+        font-size: 1.15rem;
+    }
+
+    .mp-card-head {
+        padding: 0.75rem 1rem;
+    }
+
+    .mp-table tfoot tr.mp-totals td {
+        padding: 0.65rem 0.5rem;
+        font-size: 0.92rem;
+    }
+
+    /* Override stats-modern.css sticky column 2: pin Season (col 1) instead of Team (col 2) */
+    .mp-table th:nth-child(2),
+    .mp-table td:nth-child(2) {
+        position: static;
+        left: auto;
+        z-index: auto;
+        background: transparent;
+    }
+
+    .mp-table tbody tr:nth-child(even) td:nth-child(2) {
+        background: rgba(255, 255, 255, 0.025);
+    }
+
+    .mp-table tbody tr:hover td:nth-child(2) {
+        background: rgba(204, 25, 25, 0.14);
+    }
+
+    .mp-table tfoot tr.mp-totals td:nth-child(2) {
+        background: rgba(204, 25, 25, 0.16);
+    }
+
+    .mp-table th:nth-child(1),
+    .mp-table td:nth-child(1) {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: #111;
+    }
+
+    .mp-table thead th:nth-child(1) {
+        z-index: 3;
+    }
+
+    .mp-table tbody tr:nth-child(even) td:nth-child(1),
+    .mp-table tbody tr:hover td:nth-child(1) {
+        background: #161616;
+    }
+
+    .mp-table tfoot tr.mp-totals td:nth-child(1) {
+        background: #220b0b;
+    }
+}

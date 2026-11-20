@@ -123,6 +123,30 @@ public class RosterRepository {
                 .list();
     }
 
+    public List<RosterAssignmentDto> getAssignmentsByPlayerId(int playerId) {
+        return jdbcClient
+                .sql(RostersSql.GET_ASSIGNMENTS_BY_PLAYER_ID)
+                .param("player_id", playerId)
+                .query((rs, num) -> {
+                    RosterAssignmentDto rosterAssignment = new RosterAssignmentDto();
+                    rosterAssignment.setId(rs.getInt("id"));
+                    rosterAssignment.setPlayerId(rs.getInt("player_id"));
+                    rosterAssignment.setTeamId(rs.getInt("team_id"));
+                    rosterAssignment.setSeasonYear(rs.getInt("season_year"));
+                    rosterAssignment.setDraftPosition(DraftRank.valueOf(rs.getString("draft_position")));
+                    rosterAssignment.setPosition(Position.valueOf(rs.getString("position")));
+                    rosterAssignment.setJerseyNumber(rs.getObject("jersey_number", Integer.class));
+                    rosterAssignment.setRookie(rs.getBoolean("is_rookie"));
+                    rosterAssignment.setFullName(rs.getString("full_name"));
+                    rosterAssignment.setTeamName(rs.getString("team_name"));
+                    rosterAssignment.setFirstName(rs.getString("first_name"));
+                    rosterAssignment.setLastName(rs.getString("last_name"));
+                    rosterAssignment.setActive(rs.getBoolean("is_active"));
+                    return rosterAssignment;
+                })
+                .list();
+    }
+
     public int findRosterIdByJerseyNumberAndTeam(Integer jerseyNumber, int teamId) {
         return jdbcClient
                 .sql(RosterRepository.RostersSql.GET_ACTIVE_ROSTER_ID_BY_JERSEY_AND_TEAM)
@@ -155,6 +179,15 @@ public class RosterRepository {
             JOIN madoc.players p ON ra.player_id = p.id
             JOIN madoc.teams t ON ra.team_id = t.id
         WHERE ra.season_year = :season_year
+        """;
+
+        public static final String GET_ASSIGNMENTS_BY_PLAYER_ID = """
+        SELECT ra.id, ra.team_id, ra.player_id, ra.season_year, ra.draft_position, ra.position, ra.jersey_number, ra.is_rookie, CONCAT(p.first_name, ' ', p.last_name) as "full_name", p.first_name, p.last_name, t.team_name, ra.is_active
+            FROM madoc.roster_assignments ra
+            JOIN madoc.players p ON ra.player_id = p.id
+            JOIN madoc.teams t ON ra.team_id = t.id
+        WHERE ra.player_id = :player_id
+        ORDER BY ra.season_year DESC, ra.is_active DESC, ra.id DESC
         """;
 
         public static final String INSERT_ROSTER_ASSIGNMENT = """

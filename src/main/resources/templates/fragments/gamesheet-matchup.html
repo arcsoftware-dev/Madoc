@@ -37,12 +37,30 @@
                             </span>
                         </td>
                         <td>
-                            <strong th:text="${g.scorer}">#19 Player</strong>
+                            <strong>
+                                <a class="ms-player-link"
+                                   th:if="${g.scorer.playerId != null}"
+                                   th:href="@{/players/{id}(id=${g.scorer.playerId})}"
+                                   th:text="${g.scorer.label}">#19 Player</a>
+                                <span th:if="${g.scorer.playerId == null}"
+                                      th:text="${g.scorer.label}">#19 Player</span>
+                            </strong>
                             <span class="mg-goal-badge"
                                   th:if="${!#strings.isEmpty(g.goalTypeBadge)}"
                                   th:text="${g.goalTypeBadge}">PP</span>
                         </td>
-                        <td class="mg-wrap mg-assists-text" th:text="${g.assists}">Unassisted</td>
+                        <td class="mg-wrap mg-assists-text">
+                            <span th:if="${#lists.isEmpty(g.assistPlayers)}">Unassisted</span>
+                            <th:block th:each="assist, assistStat : ${g.assistPlayers}">
+                                <a class="ms-player-link"
+                                   th:if="${assist.playerId != null}"
+                                   th:href="@{/players/{id}(id=${assist.playerId})}"
+                                   th:text="${assist.label}">#7 Player</a>
+                                <span th:if="${assist.playerId == null}"
+                                      th:text="${assist.label}">#7 Player</span>
+                                <span th:if="${!assistStat.last}">, </span>
+                            </th:block>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -85,7 +103,14 @@
                                 <span th:text="${p.teamName}">Team</span>
                             </span>
                         </td>
-                        <td th:text="${p.player}">#7 Player</td>
+                        <td>
+                            <a class="ms-player-link"
+                               th:if="${p.player.playerId != null}"
+                               th:href="@{/players/{id}(id=${p.player.playerId})}"
+                               th:text="${p.player.label}">#7 Player</a>
+                            <span th:if="${p.player.playerId == null}"
+                                  th:text="${p.player.label}">#7 Player</span>
+                        </td>
                         <td class="mg-wrap" th:text="${p.infraction}">Tripping</td>
                         <td><span class="mg-pim-badge" th:text="${p.minutes + 'm'}">2m</span></td>
                     </tr>
@@ -300,7 +325,14 @@
                     <tbody>
                     <tr th:each="player : ${homeTeamPlayers}">
                         <td class="mg-jersey" th:text="${player.jerseyNumber != null ? player.jerseyNumber : '—'}">19</td>
-                        <td th:text="${player.fullName}">Player Name</td>
+                        <td>
+                            <a class="ms-player-link"
+                               th:if="${player.playerId != null and player.fullName != 'Vacant'}"
+                               th:href="@{/players/{id}(id=${player.playerId})}"
+                               th:text="${player.fullName}">Player Name</a>
+                            <span th:if="${player.playerId == null or player.fullName == 'Vacant'}"
+                                  th:text="${player.fullName}">Player Name</span>
+                        </td>
                         <td>
                             <span class="mg-pos-chip"
                                   th:if="${player.position != null}"
@@ -337,7 +369,14 @@
                     <tbody>
                     <tr th:each="player : ${awayTeamPlayers}">
                         <td class="mg-jersey" th:text="${player.jerseyNumber != null ? player.jerseyNumber : '—'}">19</td>
-                        <td th:text="${player.fullName}">Player Name</td>
+                        <td>
+                            <a class="ms-player-link"
+                               th:if="${player.playerId != null and player.fullName != 'Vacant'}"
+                               th:href="@{/players/{id}(id=${player.playerId})}"
+                               th:text="${player.fullName}">Player Name</a>
+                            <span th:if="${player.playerId == null or player.fullName == 'Vacant'}"
+                                  th:text="${player.fullName}">Player Name</span>
+                        </td>
                         <td>
                             <span class="mg-pos-chip"
                                   th:if="${player.position != null}"

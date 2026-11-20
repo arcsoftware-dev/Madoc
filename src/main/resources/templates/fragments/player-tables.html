@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+
+<!-- Skater stats section (Regular Season + Playoffs) -->
+<section class="mp-section"
+         th:fragment="skaterSection"
+         th:if="${!#lists.isEmpty(player.skaterRegularStats) or !#lists.isEmpty(player.skaterPlayoffStats)}">
+    <div class="mp-section-head">
+        <h2 class="mp-section-title">Skater Statistics</h2>
+    </div>
+    <div class="mp-stack">
+        <th:block th:if="${!#lists.isEmpty(player.skaterRegularStats)}">
+            <div th:replace="~{fragments/player-tables :: skaterCard('Regular Season', ${player.skaterRegularStats}, ${player.skaterRegularTotals}, false)}"></div>
+        </th:block>
+        <th:block th:if="${!#lists.isEmpty(player.skaterPlayoffStats)}">
+            <div th:replace="~{fragments/player-tables :: skaterCard('Playoffs', ${player.skaterPlayoffStats}, ${player.skaterPlayoffTotals}, true)}"></div>
+        </th:block>
+    </div>
+</section>
+
+<!-- Single Skater table card -->
+<div class="ms-card mp-card"
+     th:fragment="skaterCard(title, rows, totals, isPlayoffs)">
+    <header class="mp-card-head">
+        <h3 class="mp-card-title" th:text="${title}">Regular Season</h3>
+        <span class="mp-pill"
+              th:classappend="${isPlayoffs ? 'accent' : ''}"
+              th:text="${#lists.size(rows) + (#lists.size(rows) == 1 ? ' Season' : ' Seasons')}">1 Season</span>
+    </header>
+    <div class="ms-scroll">
+        <table class="ms-table mp-table">
+            <thead>
+            <tr>
+                <th class="mp-season-col">Season</th>
+                <th class="ms-left">Team</th>
+                <th title="Games Played">GP</th>
+                <th title="Goals">G</th>
+                <th title="Assists">A</th>
+                <th title="Points">P</th>
+                <th title="Points Per Game">PPG</th>
+                <th title="Penalty Minutes">PIM</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${rows}">
+                <td class="mp-season-col" th:text="${row.year}">2025</td>
+                <td class="ms-left">
+                    <a class="mp-team-link"
+                       th:if="${!#strings.isEmpty(row.teamName)}"
+                       th:href="@{/teams/{team}(team=${utils.stripSpaces(row.teamName)}, year=${row.year}, season-type=${isPlayoffs ? 'PLAYOFFS' : 'REGULAR_SEASON'})}">
+                        <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(row.teamName)} + '.svg'}"
+                             th:alt="${row.teamName}"
+                             onerror="this.hidden=true;" />
+                        <span th:text="${row.teamName}">Team Name</span>
+                    </a>
+                    <span th:if="${#strings.isEmpty(row.teamName)}">—</span>
+                </td>
+                <td th:text="${row.gamesPlayed}">0</td>
+                <td th:text="${row.goals}">0</td>
+                <td th:text="${row.assists}">0</td>
+                <td class="mp-highlight" th:text="${row.points}">0</td>
+                <td th:text="${row.gamesPlayed > 0 ? #numbers.formatDecimal(row.points * 1.0 / row.gamesPlayed, 1, 2) : '0.00'}">0.00</td>
+                <td th:text="${row.penaltyMinutes}">0</td>
+            </tr>
+            </tbody>
+            <tfoot th:if="${totals != null}">
+            <tr class="mp-totals">
+                <td class="mp-season-col"><span class="mp-totals-label">Career</span></td>
+                <td class="ms-left">
+                    <span th:text="${#lists.size(rows) + (#lists.size(rows) == 1 ? ' Season' : ' Seasons')}">1 Season</span>
+                </td>
+                <td th:text="${totals.gamesPlayed}">0</td>
+                <td th:text="${totals.goals}">0</td>
+                <td th:text="${totals.assists}">0</td>
+                <td th:text="${totals.points}">0</td>
+                <td th:text="${totals.gamesPlayed > 0 ? #numbers.formatDecimal(totals.points * 1.0 / totals.gamesPlayed, 1, 2) : '0.00'}">0.00</td>
+                <td th:text="${totals.penaltyMinutes}">0</td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Goalie stats section (Regular Season + Playoffs) -->
+<section class="mp-section"
+         th:fragment="goalieSection"
+         th:if="${!#lists.isEmpty(player.goalieRegularStats) or !#lists.isEmpty(player.goaliePlayoffStats)}">
+    <div class="mp-section-head">
+        <h2 class="mp-section-title">Goalie Statistics</h2>
+    </div>
+    <div class="mp-stack">
+        <th:block th:if="${!#lists.isEmpty(player.goalieRegularStats)}">
+            <div th:replace="~{fragments/player-tables :: goalieCard('Regular Season', ${player.goalieRegularStats}, ${player.goalieRegularTotals}, false)}"></div>
+        </th:block>
+        <th:block th:if="${!#lists.isEmpty(player.goaliePlayoffStats)}">
+            <div th:replace="~{fragments/player-tables :: goalieCard('Playoffs', ${player.goaliePlayoffStats}, ${player.goaliePlayoffTotals}, true)}"></div>
+        </th:block>
+    </div>
+</section>
+
+<!-- Single Goalie table card -->
+<div class="ms-card mp-card"
+     th:fragment="goalieCard(title, rows, totals, isPlayoffs)">
+    <header class="mp-card-head">
+        <h3 class="mp-card-title" th:text="${title}">Regular Season</h3>
+        <span class="mp-pill"
+              th:classappend="${isPlayoffs ? 'accent' : ''}"
+              th:text="${#lists.size(rows) + (#lists.size(rows) == 1 ? ' Season' : ' Seasons')}">1 Season</span>
+    </header>
+    <div class="ms-scroll">
+        <table class="ms-table mp-table">
+            <thead>
+            <tr>
+                <th class="mp-season-col">Season</th>
+                <th class="ms-left">Team</th>
+                <th title="Games Played">GP</th>
+                <th title="Wins">W</th>
+                <th title="Losses">L</th>
+                <th title="Ties">T</th>
+                <th title="Goals Against">GA</th>
+                <th title="Goals Against Average">GAA</th>
+                <th title="Shutouts">SO</th>
+                <th title="Penalty Minutes">PIM</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${rows}">
+                <td class="mp-season-col" th:text="${row.year}">2025</td>
+                <td class="ms-left">
+                    <a class="mp-team-link"
+                       th:if="${!#strings.isEmpty(row.teamName)}"
+                       th:href="@{/teams/{team}(team=${utils.stripSpaces(row.teamName)}, year=${row.year}, season-type=${isPlayoffs ? 'PLAYOFFS' : 'REGULAR_SEASON'})}">
+                        <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(row.teamName)} + '.svg'}"
+                             th:alt="${row.teamName}"
+                             onerror="this.hidden=true;" />
+                        <span th:text="${row.teamName}">Team Name</span>
+                    </a>
+                    <span th:if="${#strings.isEmpty(row.teamName)}">—</span>
+                </td>
+                <td th:text="${row.gamesPlayed}">0</td>
+                <td class="mp-highlight" th:text="${row.wins}">0</td>
+                <td th:text="${row.losses}">0</td>
+                <td th:text="${row.ties}">0</td>
+                <td th:text="${row.goalsAgainst}">0</td>
+                <td th:text="${row.gamesPlayed > 0 ? #numbers.formatDecimal(row.goalsAgainst * 1.0 / row.gamesPlayed, 1, 3) : 'N/A'}">0.000</td>
+                <td th:text="${row.shutouts}">0</td>
+                <td th:text="${row.penaltyMinutes}">0</td>
+            </tr>
+            </tbody>
+            <tfoot th:if="${totals != null}">
+            <tr class="mp-totals">
+                <td class="mp-season-col"><span class="mp-totals-label">Career</span></td>
+                <td class="ms-left">
+                    <span th:text="${#lists.size(rows) + (#lists.size(rows) == 1 ? ' Season' : ' Seasons')}">1 Season</span>
+                </td>
+                <td th:text="${totals.gamesPlayed}">0</td>
+                <td th:text="${totals.wins}">0</td>
+                <td th:text="${totals.losses}">0</td>
+                <td th:text="${totals.ties}">0</td>
+                <td th:text="${totals.goalsAgainst}">0</td>
+                <td th:text="${totals.gamesPlayed > 0 ? #numbers.formatDecimal(totals.goalsAgainst * 1.0 / totals.gamesPlayed, 1, 3) : 'N/A'}">0.000</td>
+                <td th:text="${totals.shutouts}">0</td>
+                <td th:text="${totals.penaltyMinutes}">0</td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

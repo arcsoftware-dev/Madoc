@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class PlayerRepository {
@@ -24,6 +25,24 @@ public class PlayerRepository {
                 .list();
     }
 
+    public Optional<PlayerEntity> findById(int playerId) {
+        return jdbcClient
+                .sql(PlayersSql.GET_PLAYER_BY_ID)
+                .param("player_id", playerId)
+                .query(PlayerEntity.class)
+                .optional();
+    }
+
+    public Optional<PlayerEntity> findByFullNameIgnoreCase(String fullName) {
+        return jdbcClient
+                .sql(PlayersSql.GET_PLAYER_BY_FULL_NAME)
+                .param("full_name", fullName)
+                .query(PlayerEntity.class)
+                .list()
+                .stream()
+                .findFirst();
+    }
+
     public boolean playerExistsById(Integer playerId) {
         String sql = "SELECT COUNT(*) FROM madoc.players WHERE id = :player_id";
         Integer count = jdbcClient
@@ -38,6 +57,19 @@ public class PlayerRepository {
         public static final String GET_ALL_PLAYERS = """
         SELECT id, first_name, last_name, email, phone_number, created_at
             FROM madoc.players
+            ORDER BY id ASC
+        """;
+
+        public static final String GET_PLAYER_BY_ID = """
+        SELECT id, first_name, last_name, email, phone_number, created_at
+            FROM madoc.players
+            WHERE id = :player_id
+        """;
+
+        public static final String GET_PLAYER_BY_FULL_NAME = """
+        SELECT id, first_name, last_name, email, phone_number, created_at
+            FROM madoc.players
+            WHERE LOWER(TRIM(CONCAT(first_name, ' ', last_name))) = LOWER(TRIM(:full_name))
             ORDER BY id ASC
         """;
     }

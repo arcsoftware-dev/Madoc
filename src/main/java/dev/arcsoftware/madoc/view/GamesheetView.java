@@ -93,13 +93,20 @@ public class GamesheetView {
 
     @Getter
     @AllArgsConstructor
+    public static class BoxscorePlayer {
+        private final Integer playerId;
+        private final String label;
+    }
+
+    @Getter
+    @AllArgsConstructor
     public static class BoxscoreGoal {
         private final int period;
         private final String time;
         private final String teamName;
         private final boolean home;
-        private final String scorer;
-        private final String assists;
+        private final BoxscorePlayer scorer;
+        private final List<BoxscorePlayer> assistPlayers;
         private final String goalTypeBadge;
     }
 
@@ -110,7 +117,7 @@ public class GamesheetView {
         private final String time;
         private final String teamName;
         private final boolean home;
-        private final String player;
+        private final BoxscorePlayer player;
         private final String infraction;
         private final int minutes;
     }
@@ -138,29 +145,32 @@ public class GamesheetView {
         model.addAttribute("homeTeamPlayers", homeRoster);
         model.addAttribute("awayTeamPlayers", awayRoster);
 
-        Map<Integer, String> homePlayerNames = buildPlayerNameMap(allHomeRoster, gamesheet.getHomeAttendanceByPlayerId());
-        Map<Integer, String> awayPlayerNames = buildPlayerNameMap(allAwayRoster, gamesheet.getAwayAttendanceByPlayerId());
+        Map<Integer, BoxscorePlayer> homePlayers = buildPlayerMap(allHomeRoster, gamesheet.getHomeAttendanceByPlayerId());
+        Map<Integer, BoxscorePlayer> awayPlayers = buildPlayerMap(allAwayRoster, gamesheet.getAwayAttendanceByPlayerId());
 
         addStandingsToModel(model, homeTeam, awayTeam, year, seasonType);
         addSeasonHistoryToModel(model, gamesheet, year, seasonType);
-        addBoxscoreToModel(model, gamesheet, homePlayerNames, awayPlayerNames);
+        addBoxscoreToModel(model, gamesheet, homePlayers, awayPlayers);
     }
 
-    private Map<Integer, String> buildPlayerNameMap(List<RosterAssignmentDto> roster, List<AttendancePayload> attendance) {
-        Map<Integer, String> names = new HashMap<>();
+    private Map<Integer, BoxscorePlayer> buildPlayerMap(List<RosterAssignmentDto> roster, List<AttendancePayload> attendance) {
+        Map<Integer, BoxscorePlayer> players = new HashMap<>();
         for (RosterAssignmentDto player : roster) {
             if (player.getJerseyNumber() != null && player.getFullName() != null) {
-                names.putIfAbsent(player.getJerseyNumber(), player.getFullName());
+                Integer pid = "Vacant".equalsIgnoreCase(player.getFullName()) ? null : player.getPlayerId();
+                players.putIfAbsent(player.getJerseyNumber(),
+                        new BoxscorePlayer(pid, "#" + player.getJerseyNumber() + " " + player.getFullName()));
             }
         }
         if (attendance != null) {
             for (AttendancePayload att : attendance) {
                 if (att.getJerseyNumber() != null && att.getPlayerName() != null) {
-                    names.putIfAbsent(att.getJerseyNumber(), att.getPlayerName());
+                    players.putIfAbsent(att.getJerseyNumber(),
+                            new BoxscorePlayer(null, "#" + att.getJerseyNumber() + " " + att.getPlayerName()));
                 }
             }
         }
-        return names;
+        return players;
     }
 
     private void addStandingsToModel(Model model, String homeTeam, String awayTeam, int year, SeasonType seasonType) {
@@ -301,8 +311,8 @@ public class GamesheetView {
 
     private void addBoxscoreToModel(Model model,
                                     GamesheetPayload gamesheet,
-                                    Map<Integer, String> homePlayerNames,
-                                    Map<Integer, String> awayPlayerNames) {
+                                    Map<Integer, BoxscorePlayer> homePlayers,
+                                    Map<Integer, BoxscorePlayer> awayPlayers) {
         int[] homePeriodGoals = new int[4];
         int[] awayPeriodGoals = new int[4];
         List<BoxscoreGoal> goals = new ArrayList<>();
@@ -313,7 +323,7 @@ public class GamesheetView {
                 if (p >= 1 && p <= 4) {
                     homePeriodGoals[p - 1]++;
                 }
-                goals.add(toBoxscoreGoal(g, gamesheet.getHomeTeam(), true, homePlayerNames));
+                goals.add(toBoxscoreGoal(g, gamesheet.getHomeTeam(), true, homePlayers));
             }
         }
         if (gamesheet.getAwayGoals() != null) {
@@ -322,7 +332,7 @@ public class GamesheetView {
                 if (p >= 1 && p <= 4) {
                     awayPeriodGoals[p - 1]++;
                 }
-                goals.add(toBoxscoreGoal(g, gamesheet.getAwayTeam(), false, awayPlayerNames));
+                goals.add(toBoxscoreGoal(g, gamesheet.getAwayTeam(), false, awayPlayers));
             }
         }
         goals.sort(Comparator.comparingInt(BoxscoreGoal::getPeriod)
@@ -331,12 +341,12 @@ public class GamesheetView {
         List<BoxscorePenalty> penalties = new ArrayList<>();
         if (gamesheet.getHomePenalties() != null) {
             for (PenaltyPayload p : gamesheet.getHomePenalties()) {
-                penalties.add(toBoxscorePenalty(p, gamesheet.getHomeTeam(), true, homePlayerNames));
+                penalties.add(toBoxscorePenalty(p, gamesheet.getHomeTeam(), true, homePlayers));
             }
         }
         if (gamesheet.getAwayPenalties() != null) {
             for (PenaltyPayload p : gamesheet.getAwayPenalties()) {
-                penalties.add(toBoxscorePenalty(p, gamesheet.getAwayTeam(), false, awayPlayerNames));
+                penalties.add(toBoxscorePenalty(p, gamesheet.getAwayTeam(), false, awayPlayers));
             }
         }
         penalties.sort(Comparator.comparingInt(BoxscorePenalty::getPeriod)
@@ -349,45 +359,44 @@ public class GamesheetView {
         model.addAttribute("boxscorePenalties", penalties);
     }
 
-    private BoxscoreGoal toBoxscoreGoal(GoalPayload g, String teamName, boolean isHome, Map<Integer, String> playerNames) {
-        String scorer = formatPlayer(g.getScorer(), playerNames);
-        List<String> assistList = new ArrayList<>();
+    private BoxscoreGoal toBoxscoreGoal(GoalPayload g, String teamName, boolean isHome, Map<Integer, BoxscorePlayer> players) {
+        BoxscorePlayer scorer = resolvePlayer(g.getScorer(), players);
+        List<BoxscorePlayer> assistList = new ArrayList<>();
         if (g.getAssist1() != null) {
-            assistList.add(formatPlayer(g.getAssist1(), playerNames));
+            assistList.add(resolvePlayer(g.getAssist1(), players));
         }
         if (g.getAssist2() != null) {
-            assistList.add(formatPlayer(g.getAssist2(), playerNames));
+            assistList.add(resolvePlayer(g.getAssist2(), players));
         }
-        String assists = assistList.isEmpty() ? "Unassisted" : String.join(", ", assistList);
         return new BoxscoreGoal(
                 g.getPeriod() != null ? g.getPeriod() : 0,
                 g.getTime() != null ? g.getTime() : "",
                 teamName,
                 isHome,
                 scorer,
-                assists,
+                assistList,
                 goalTypeBadge(g.getGoalType())
         );
     }
 
-    private BoxscorePenalty toBoxscorePenalty(PenaltyPayload p, String teamName, boolean isHome, Map<Integer, String> playerNames) {
+    private BoxscorePenalty toBoxscorePenalty(PenaltyPayload p, String teamName, boolean isHome, Map<Integer, BoxscorePlayer> players) {
         return new BoxscorePenalty(
                 p.getPeriod() != null ? p.getPeriod() : 0,
                 p.getTime() != null ? p.getTime() : "",
                 teamName,
                 isHome,
-                formatPlayer(p.getJerseyNumber(), playerNames),
+                resolvePlayer(p.getJerseyNumber(), players),
                 p.getInfraction() != null ? p.getInfraction() : "",
                 p.getMinutes() != null ? p.getMinutes() : 0
         );
     }
 
-    private String formatPlayer(Integer jerseyNumber, Map<Integer, String> playerNames) {
+    private BoxscorePlayer resolvePlayer(Integer jerseyNumber, Map<Integer, BoxscorePlayer> players) {
         if (jerseyNumber == null) {
-            return "—";
+            return new BoxscorePlayer(null, "—");
         }
-        String name = playerNames.get(jerseyNumber);
-        return name != null ? "#" + jerseyNumber + " " + name : "#" + jerseyNumber;
+        BoxscorePlayer player = players.get(jerseyNumber);
+        return player != null ? player : new BoxscorePlayer(null, "#" + jerseyNumber);
     }
 
     private String goalTypeBadge(GoalType type) {

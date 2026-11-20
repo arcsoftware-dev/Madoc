@@ -84,7 +84,14 @@
                             th:if="${player.isActive()}"
                             th:classappend="${player.fullName == 'Vacant'} ? 'is-vacant' : ''">
                             <td class="ms-num" th:text="${player.jerseyNumber ?: '–'}">0</td>
-                            <td class="ms-player" th:text="${player.fullName}">Player Name</td>
+                            <td class="ms-player">
+                                <a class="ms-player-link"
+                                   th:if="${player.playerId != null and player.fullName != 'Vacant'}"
+                                   th:href="@{/players/{id}(id=${player.playerId})}"
+                                   th:text="${player.fullName}">Player Name</a>
+                                <span th:if="${player.playerId == null or player.fullName == 'Vacant'}"
+                                      th:text="${player.fullName}">Player Name</span>
+                            </td>
                             <td><span class="ms-pos" th:text="${player.position.getLabel()}">Position</span></td>
                             <td>
                                 <span th:text="${player.draftPosition}">Rank</span>

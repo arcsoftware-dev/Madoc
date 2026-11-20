@@ -33,7 +33,16 @@
             <div class="ms-tile ms-tile-leader-card" th:with="leader=${playerStats[0]}">
                 <div class="ms-tile-leader-info">
                     <span class="ms-tile-label">Current Leader</span>
-                    <span class="ms-tile-value" th:text="${leader.playerName}">Player Name</span>
+                    <span class="ms-tile-value">
+                        <a class="ms-player-link"
+                           th:if="${leader.playerId != null}"
+                           th:href="@{/players/{id}(id=${leader.playerId})}"
+                           th:text="${leader.playerName}">Player Name</a>
+                        <a class="ms-player-link"
+                           th:if="${leader.playerId == null}"
+                           th:href="@{/players/lookup(name=${leader.playerName})}"
+                           th:text="${leader.playerName}">Player Name</a>
+                    </span>
                     <span class="ms-tile-sub ms-tile-team">
                         <img class="ms-logo ms-logo-sm"
                              th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(leader.teamName)} + '.svg'}"
@@ -178,7 +187,16 @@
                                   th:classappend="${stat.rank == 1} ? 'podium podium-1' : (${stat.rank == 2} ? 'podium podium-2' : (${stat.rank == 3} ? 'podium podium-3' : ''))"
                                   th:text="${stat.rank}">1</span>
                         </td>
-                        <td class="ms-left ms-player" th:text="${stat.playerName}">Player Name</td>
+                        <td class="ms-left ms-player">
+                            <a class="ms-player-link"
+                               th:if="${stat.playerId != null}"
+                               th:href="@{/players/{id}(id=${stat.playerId})}"
+                               th:text="${stat.playerName}">Player Name</a>
+                            <a class="ms-player-link"
+                               th:if="${stat.playerId == null}"
+                               th:href="@{/players/lookup(name=${stat.playerName})}"
+                               th:text="${stat.playerName}">Player Name</a>
+                        </td>
                         <td class="ms-left ms-team-col">
                             <div class="ms-team-cell">
                                 <img class="ms-logo"
@@ -236,7 +254,16 @@
                                   th:classappend="${stat.rank == 1} ? 'podium podium-1' : (${stat.rank == 2} ? 'podium podium-2' : (${stat.rank == 3} ? 'podium podium-3' : ''))"
                                   th:text="${stat.rank}">1</span>
                         </td>
-                        <td class="ms-left ms-player" th:text="${stat.playerName}">Player Name</td>
+                        <td class="ms-left ms-player">
+                            <a class="ms-player-link"
+                               th:if="${stat.playerId != null}"
+                               th:href="@{/players/{id}(id=${stat.playerId})}"
+                               th:text="${stat.playerName}">Player Name</a>
+                            <a class="ms-player-link"
+                               th:if="${stat.playerId == null}"
+                               th:href="@{/players/lookup(name=${stat.playerName})}"
+                               th:text="${stat.playerName}">Player Name</a>
+                        </td>
                         <td class="ms-left ms-team-col">
                             <div class="ms-team-cell">
                                 <img class="ms-logo"

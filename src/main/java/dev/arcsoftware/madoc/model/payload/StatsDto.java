@@ -8,6 +8,7 @@ import lombok.Setter;
 @Builder
 public class StatsDto {
     //Shared fields
+    private Integer playerId;
     private String playerName;
     private String teamName;
     private int gamesPlayed;

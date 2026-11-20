@@ -100,7 +100,14 @@
                         <tr th:each="player : ${teamData.roster}"
                             th:classappend="${!player.isActive()} ? 'is-inactive' : ''">
                             <td class="ms-num" th:text="${player.jerseyNumber ?: '–'}">0</td>
-                            <td class="ms-player" th:text="${player.fullName}">Player Name</td>
+                            <td class="ms-player">
+                                <a class="ms-player-link"
+                                   th:if="${player.playerId != null and player.fullName != 'Vacant'}"
+                                   th:href="@{/players/{id}(id=${player.playerId})}"
+                                   th:text="${player.fullName}">Player Name</a>
+                                <span th:if="${player.playerId == null or player.fullName == 'Vacant'}"
+                                      th:text="${player.fullName}">Player Name</span>
+                            </td>
                             <td><span class="ms-pos" th:text="${player.position.getLabel()}">Position</span></td>
                             <td>
                                 <span th:text="${player.draftPosition}">Rank</span>
@@ -141,7 +148,16 @@
                                       th:classappend="${stat.rank == 1} ? 'podium podium-1' : (${stat.rank == 2} ? 'podium podium-2' : (${stat.rank == 3} ? 'podium podium-3' : ''))"
                                       th:text="${stat.rank}">1</span>
                             </td>
-                            <td class="ms-left ms-player" th:text="${stat.playerName}">Player Name</td>
+                            <td class="ms-left ms-player">
+                                <a class="ms-player-link"
+                                   th:if="${stat.playerId != null}"
+                                   th:href="@{/players/{id}(id=${stat.playerId})}"
+                                   th:text="${stat.playerName}">Player Name</a>
+                                <a class="ms-player-link"
+                                   th:if="${stat.playerId == null}"
+                                   th:href="@{/players/lookup(name=${stat.playerName})}"
+                                   th:text="${stat.playerName}">Player Name</a>
+                            </td>
                             <td th:text="${stat.gamesPlayed}">0</td>
                             <td th:text="${stat.goals}">0</td>
                             <td th:text="${stat.assists}">0</td>
@@ -185,7 +201,16 @@
                                       th:classappend="${stat.rank == 1} ? 'podium podium-1' : (${stat.rank == 2} ? 'podium podium-2' : (${stat.rank == 3} ? 'podium podium-3' : ''))"
                                       th:text="${stat.rank}">1</span>
                             </td>
-                            <td class="ms-left ms-player" th:text="${stat.playerName}">Player Name</td>
+                            <td class="ms-left ms-player">
+                                <a class="ms-player-link"
+                                   th:if="${stat.playerId != null}"
+                                   th:href="@{/players/{id}(id=${stat.playerId})}"
+                                   th:text="${stat.playerName}">Player Name</a>
+                                <a class="ms-player-link"
+                                   th:if="${stat.playerId == null}"
+                                   th:href="@{/players/lookup(name=${stat.playerName})}"
+                                   th:text="${stat.playerName}">Player Name</a>
+                            </td>
                             <td th:text="${stat.gamesPlayed}">0</td>
                             <td class="is-sorted" th:text="${stat.wins}">0</td>
                             <td th:text="${stat.losses}">0</td>

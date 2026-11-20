@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="|MMHL — ${player.fullName}|">MMHL Player</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/player-modern.css}" />
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page"
+          th:with="hasSkaterReg=${!#lists.isEmpty(player.skaterRegularStats)},
+                   hasSkaterPO=${!#lists.isEmpty(player.skaterPlayoffStats)},
+                   hasGoalieReg=${!#lists.isEmpty(player.goalieRegularStats)},
+                   hasGoaliePO=${!#lists.isEmpty(player.goaliePlayoffStats)},
+                   hasAnyStats=${hasSkaterReg or hasSkaterPO or hasGoalieReg or hasGoaliePO}">
+
+        <!-- Top navigation -->
+        <nav class="mp-top-bar" aria-label="Player navigation">
+            <a class="mp-nav-link"
+               th:href="@{/stats/{type}(type=${player.primaryGoalie ? 'GOALIES' : 'SKATERS'})}">
+                &larr; Back to Stats
+            </a>
+            <a class="mp-nav-link"
+               th:if="${!#strings.isEmpty(player.currentTeam)}"
+               th:href="@{/teams/{team}(team=${utils.stripSpaces(player.currentTeam)}, year=${player.currentSeasonYear})}"
+               th:text="|View ${player.currentTeam} →|">
+                View Team &rarr;
+            </a>
+        </nav>
+
+        <!-- Player Hero -->
+        <section class="mp-hero">
+            <div class="mp-hero-emblem">
+                <img class="mp-hero-logo"
+                     th:if="${!#strings.isEmpty(player.currentTeam)}"
+                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(player.currentTeam)} + '.svg'}"
+                     th:alt="${player.currentTeam}"
+                     onerror="this.hidden=true;" />
+                <span class="mp-hero-jersey-fallback"
+                      th:if="${#strings.isEmpty(player.currentTeam)}"
+                      th:text="${player.currentJerseyNumber != null ? ('#' + player.currentJerseyNumber) : 'MMHL'}">#0</span>
+                <span class="mp-hero-jersey-badge"
+                      th:if="${!#strings.isEmpty(player.currentTeam) and player.currentJerseyNumber != null}"
+                      th:text="|#${player.currentJerseyNumber}|">#19</span>
+            </div>
+
+            <div class="mp-hero-body">
+                <div class="mp-hero-eyebrow">
+                    <span th:if="${player.currentSeasonYear != null}" th:text="${player.currentSeasonYear}">2025</span>
+                    <span th:if="${player.currentSeasonYear != null and !#strings.isEmpty(player.currentTeam)}" aria-hidden="true">&middot;</span>
+                    <a th:if="${!#strings.isEmpty(player.currentTeam)}"
+                       th:href="@{/teams/{team}(team=${utils.stripSpaces(player.currentTeam)}, year=${player.currentSeasonYear})}"
+                       th:text="${player.currentTeam}">Team Name</a>
+                    <span th:if="${#strings.isEmpty(player.currentTeam)}">MMHL Player</span>
+                </div>
+
+                <h1 class="ms-title" th:text="${player.fullName}">Player Name</h1>
+
+                <div class="mp-meta-chips">
+                    <span class="mp-chip"
+                          th:if="${player.currentPosition != null}"
+                          th:text="${player.currentPosition.label}">Forward</span>
+                    <span class="mp-chip"
+                          th:if="${player.seasonsPlayed > 0}"
+                          th:text="${player.seasonsPlayed + (player.seasonsPlayed == 1 ? ' Season' : ' Seasons')}">1 Season</span>
+                    <span class="mp-chip"
+                          th:if="${player.currentDraftPosition != null}"
+                          th:text="|Draft: ${player.currentDraftPosition}|">Draft: F_A1</span>
+                    <span class="mp-chip accent"
+                          th:if="${player.currentRookie}">Rookie</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Career Summary Tiles: Primary Goalie -->
+        <section class="ms-summary"
+                 th:if="${player.primaryGoalie and hasGoalieReg}"
+                 th:with="tot=${player.goalieRegularTotals}, po=${player.goaliePlayoffTotals}">
+            <div class="ms-tile">
+                <span class="ms-tile-label">Career Record</span>
+                <span class="ms-tile-value"
+                      th:text="|${tot.wins}-${tot.losses}-${tot.ties}|">0-0-0</span>
+                <span class="ms-tile-sub"
+                      th:text="${tot.gamesPlayed + (tot.gamesPlayed == 1 ? ' game played' : ' games played')}">0 games played</span>
+            </div>
+            <div class="ms-tile">
+                <span class="ms-tile-label">Career GAA</span>
+                <span class="ms-tile-value"
+                      th:text="${tot.gamesPlayed > 0 ? #numbers.formatDecimal(tot.goalsAgainst * 1.0 / tot.gamesPlayed, 1, 3) : 'N/A'}">0.000</span>
+                <span class="ms-tile-sub"
+                      th:text="|${tot.goalsAgainst} goals against|">0 goals against</span>
+            </div>
+            <div class="ms-tile">
+                <span class="ms-tile-label">Career Shutouts</span>
+                <span class="ms-tile-value" th:text="${tot.shutouts}">0</span>
+                <span class="ms-tile-sub"
+                      th:text="${hasGoaliePO ? ('Playoffs: ' + po.wins + '-' + po.losses + '-' + po.ties + ' (' + po.shutouts + ' SO)') : 'Regular Season'}">Regular Season</span>
+            </div>
+            <div class="ms-tile">
+                <span class="ms-tile-label">Seasons</span>
+                <span class="ms-tile-value" th:text="${player.seasonsPlayed}">1</span>
+                <span class="ms-tile-sub"
+                      th:text="|${tot.penaltyMinutes} career PIM|">0 career PIM</span>
+            </div>
+        </section>
+
+        <!-- Career Summary Tiles: Skater -->
+        <section class="ms-summary"
+                 th:if="${!player.primaryGoalie and hasSkaterReg}"
+                 th:with="tot=${player.skaterRegularTotals}, po=${player.skaterPlayoffTotals}">
+            <div class="ms-tile">
+                <span class="ms-tile-label">Career Points</span>
+                <span class="ms-tile-value" th:text="${tot.points}">0</span>
+                <span class="ms-tile-sub"
+                      th:text="${tot.gamesPlayed > 0 ? (#numbers.formatDecimal(tot.points * 1.0 / tot.gamesPlayed, 1, 2) + ' PPG') : '0.00 PPG'}">0.00 PPG</span>
+            </div>
+            <div class="ms-tile">
+                <span class="ms-tile-label">Goals &amp; Assists</span>
+                <span class="ms-tile-value" th:text="|${tot.goals} G · ${tot.assists} A|">0 G &middot; 0 A</span>
+                <span class="ms-tile-sub"
+                      th:text="${tot.gamesPlayed + (tot.gamesPlayed == 1 ? ' game played' : ' games played')}">0 games played</span>
+            </div>
+            <div class="ms-tile" th:if="${hasSkaterPO}">
+                <span class="ms-tile-label">Playoff Points</span>
+                <span class="ms-tile-value" th:text="${po.points}">0</span>
+                <span class="ms-tile-sub"
+                      th:text="|${po.goals} G · ${po.assists} A in ${po.gamesPlayed} GP|">0 G &middot; 0 A in 0 GP</span>
+            </div>
+            <div class="ms-tile" th:if="${!hasSkaterPO}">
+                <span class="ms-tile-label">Career PIM</span>
+                <span class="ms-tile-value" th:text="${tot.penaltyMinutes}">0</span>
+                <span class="ms-tile-sub"
+                      th:text="${tot.gamesPlayed > 0 ? (#numbers.formatDecimal(tot.penaltyMinutes * 1.0 / tot.gamesPlayed, 1, 1) + ' per game') : '0.0 per game'}">0.0 per game</span>
+            </div>
+            <div class="ms-tile">
+                <span class="ms-tile-label">Seasons</span>
+                <span class="ms-tile-value" th:text="${player.seasonsPlayed}">1</span>
+                <span class="ms-tile-sub"
+                      th:text="${hasSkaterPO ? (tot.penaltyMinutes + ' reg season PIM') : 'Regular Season'}">Regular Season</span>
+            </div>
+        </section>
+
+        <!-- Stats Sections (Goalies first for primary goalies, Skaters first for skaters) -->
+        <th:block th:if="${player.primaryGoalie}">
+            <div th:replace="~{fragments/player-tables :: goalieSection}"></div>
+            <div th:replace="~{fragments/player-tables :: skaterSection}"></div>
+        </th:block>
+        <th:block th:if="${!player.primaryGoalie}">
+            <div th:replace="~{fragments/player-tables :: skaterSection}"></div>
+            <div th:replace="~{fragments/player-tables :: goalieSection}"></div>
+        </th:block>
+
+        <!-- Empty stats fallback (for rostered players with no recorded games yet) -->
+        <section class="mp-section" th:if="${!hasAnyStats}">
+            <div class="ms-card mp-empty-card">
+                No game statistics have been recorded for this player yet.
+            </div>
+        </section>
+
+        <!-- Season & Draft History -->
+        <section class="mp-section" th:if="${!#lists.isEmpty(player.rosterHistory)}">
+            <div class="mp-section-head">
+                <h2 class="mp-section-title">Season &amp; Draft History</h2>
+            </div>
+            <div class="ms-card mp-card">
+                <header class="mp-card-head">
+                    <h3 class="mp-card-title">Roster History</h3>
+                    <span class="mp-pill"
+                          th:text="${#lists.size(player.rosterHistory) + (#lists.size(player.rosterHistory) == 1 ? ' Entry' : ' Entries')}">1 Entry</span>
+                </header>
+                <div class="ms-scroll">
+                    <table class="ms-table mp-table">
+                        <thead>
+                        <tr>
+                            <th class="mp-season-col">Season</th>
+                            <th class="ms-left">Team</th>
+                            <th>#</th>
+                            <th class="ms-left">Position</th>
+                            <th class="ms-left">Draft</th>
+                            <th class="ms-left">Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="entry : ${player.rosterHistory}">
+                            <td class="mp-season-col" th:text="${entry.seasonYear}">2025</td>
+                            <td class="ms-left">
+                                <a class="mp-team-link"
+                                   th:if="${!#strings.isEmpty(entry.teamName)}"
+                                   th:href="@{/teams/{team}(team=${utils.stripSpaces(entry.teamName)}, year=${entry.seasonYear})}">
+                                    <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(entry.teamName)} + '.svg'}"
+                                         th:alt="${entry.teamName}"
+                                         onerror="this.hidden=true;" />
+                                    <span th:text="${entry.teamName}">Team Name</span>
+                                </a>
+                                <span th:if="${#strings.isEmpty(entry.teamName)}">—</span>
+                            </td>
+                            <td th:text="${entry.jerseyNumber != null ? entry.jerseyNumber : '—'}">19</td>
+                            <td class="ms-left">
+                                <span class="mp-pos-pill"
+                                      th:if="${entry.position != null}"
+                                      th:text="${entry.position.label}">Forward</span>
+                                <span th:if="${entry.position == null}">—</span>
+                            </td>
+                            <td class="ms-left">
+                                <span th:text="${entry.draftPosition != null ? entry.draftPosition : '—'}">F_A1</span>
+                                <span class="mp-rookie-badge" th:if="${entry.rookie}" title="Rookie">R</span>
+                            </td>
+                            <td class="ms-left">
+                                <span class="mp-status active" th:if="${entry.active}">Active</span>
+                                <span class="mp-status inactive" th:if="${!entry.active}">Inactive</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>
