@@ -1,0 +1,419 @@
+/* Modern news management page. Builds on stats-modern.css (ms-* base) and main.css palette. */
+
+.mn-header-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.8);
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+.mn-header-link:hover,
+.mn-header-link:focus-visible {
+    color: #fff;
+    border-color: var(--accent);
+    background: rgba(204, 25, 25, 0.14);
+    outline: none;
+}
+
+/* ---------- Flash alerts ---------- */
+.mn-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding: 0.85rem 1.1rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.92rem;
+    font-weight: 500;
+    border-radius: 12px;
+}
+.mn-alert.success {
+    color: #bbf7d0;
+    background: rgba(34, 197, 94, 0.14);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+}
+.mn-alert.error {
+    color: #fecaca;
+    background: rgba(204, 25, 25, 0.2);
+    border: 1px solid rgba(204, 25, 25, 0.55);
+}
+.mn-alert-close {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: inherit;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.mn-alert-close:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+/* ---------- Two-column layout ---------- */
+.mn-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* ---------- Compose form card ---------- */
+.mn-form-card {
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38);
+    overflow: hidden;
+}
+
+.mn-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.15rem 1.35rem;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(204, 25, 25, 0.28), rgba(204, 25, 25, 0) 65%),
+        #111;
+    border-bottom: 2px solid var(--accent);
+}
+.mn-card-head h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+}
+
+.mn-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.65rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.78);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.mn-pill.accent {
+    color: #fff;
+    background: rgba(204, 25, 25, 0.22);
+    border-color: rgba(204, 25, 25, 0.55);
+}
+
+.mn-form {
+    padding: 1.35rem;
+}
+
+.mn-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.42rem;
+    margin-bottom: 1.15rem;
+}
+.mn-field-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.mn-field label {
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.72);
+}
+.mn-char-count {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.75rem;
+    color: rgba(243, 244, 246, 0.48);
+    font-variant-numeric: tabular-nums;
+}
+.mn-char-count.is-near {
+    color: #fca5a5;
+}
+
+.mn-input,
+.mn-textarea {
+    width: 100%;
+    padding: 0.78rem 1rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: var(--text);
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.mn-textarea {
+    min-height: 9.5rem;
+    resize: vertical;
+}
+.mn-input::placeholder,
+.mn-textarea::placeholder {
+    color: rgba(243, 244, 246, 0.36);
+}
+.mn-input:focus,
+.mn-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(204, 25, 25, 0.22);
+}
+.mn-hint {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.8rem;
+    color: rgba(243, 244, 246, 0.5);
+}
+
+.mn-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.35rem;
+}
+
+.mn-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.75rem 1.45rem;
+    font: inherit;
+    font-size: 0.98rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(204, 25, 25, 0.42);
+    transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+}
+.mn-btn-primary:hover,
+.mn-btn-primary:focus-visible {
+    background: #e02323;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(204, 25, 25, 0.52);
+    outline: none;
+}
+
+.mn-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.72rem 1.15rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.86rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: rgba(243, 244, 246, 0.75);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.18s, background 0.18s, border-color 0.18s;
+}
+.mn-btn-ghost:hover,
+.mn-btn-ghost:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.24);
+    outline: none;
+}
+
+/* ---------- Published articles panel ---------- */
+.mn-list-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.mn-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0;
+    font-size: 1.35rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+}
+.mn-panel-title::before {
+    content: "";
+    width: 4px;
+    height: 1.35rem;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.mn-article-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.95rem;
+}
+
+.mn-article-card {
+    position: relative;
+    padding: 1.15rem 1.35rem 1.2rem 1.55rem;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    transition: border-color 0.18s;
+}
+.mn-article-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    border-radius: 14px 0 0 14px;
+    background: var(--accent);
+}
+.mn-article-card:hover {
+    border-color: rgba(204, 25, 25, 0.5);
+}
+
+.mn-article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 0.45rem;
+}
+.mn-article-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.6rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.78rem;
+}
+.mn-article-date {
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+.mn-article-author {
+    padding: 0.12rem 0.55rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: rgba(243, 244, 246, 0.75);
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 999px;
+}
+
+.mn-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.28rem 0.7rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(252, 165, 165, 0.85);
+    background: rgba(204, 25, 25, 0.12);
+    border: 1px solid rgba(204, 25, 25, 0.35);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.mn-delete-btn:hover,
+.mn-delete-btn:focus-visible {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+    outline: none;
+}
+
+.mn-article-title {
+    margin: 0.15rem 0 0.45rem;
+    font-size: 1.3rem;
+    line-height: 1.22;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+.mn-article-summary {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.94rem;
+    line-height: 1.55;
+    color: rgba(243, 244, 246, 0.76);
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+.mn-empty {
+    padding: 2rem 1.25rem;
+    text-align: center;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.94rem;
+    color: rgba(243, 244, 246, 0.58);
+    background: var(--secondary);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 920px) {
+    .mn-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .mn-card-head {
+        padding: 0.95rem 1.1rem;
+    }
+    .mn-form {
+        padding: 1.1rem;
+    }
+    .mn-form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+    .mn-btn-primary,
+    .mn-btn-ghost {
+        width: 100%;
+    }
+    .mn-article-card {
+        padding: 1rem 1.05rem 1.05rem 1.25rem;
+    }
+    .mn-article-title {
+        font-size: 1.18rem;
+    }
+    .mn-panel-title {
+        font-size: 1.15rem;
+    }
+}

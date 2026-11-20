@@ -1,4 +1,4 @@
-<th:block th:fragment="header">
+<th:block th:fragment="header" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
     <header class="main-header">
         <div class="header-inner">
             <a th:href="@{/}" class="header-brand" aria-label="Madoc Mens Hockey League Home">
@@ -17,15 +17,89 @@
                 <li><a th:href="@{/stats/SKATERS}" data-section="stats">Stats</a></li>
                 <li><a th:href="@{/constitution}" data-section="constitution">Constitution</a></li>
             </ul>
+
+            <div class="nav-menu" sec:authorize="isAuthenticated()">
+                <button type="button"
+                        class="nav-menu-btn"
+                        id="nav-menu-toggle"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="nav-menu-dropdown"
+                        aria-label="Open menu">
+                    <svg class="nav-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="4" y1="7" x2="20" y2="7"/>
+                        <line x1="4" y1="12" x2="20" y2="12"/>
+                        <line x1="4" y1="17" x2="20" y2="17"/>
+                    </svg>
+                </button>
+                <div class="nav-menu-dropdown" id="nav-menu-dropdown" role="menu" hidden>
+                    <div class="nav-menu-user">
+                        <span class="nav-menu-user-label">Signed in as</span>
+                        <strong class="nav-menu-user-name" sec:authentication="name">user</strong>
+                    </div>
+                    <a class="nav-menu-item"
+                       role="menuitem"
+                       sec:authorize="hasRole('ROLE_[ADMIN]')"
+                       th:href="@{/news}"
+                       data-section="news">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+                            <path d="M18 14h-8"/>
+                            <path d="M15 18h-5"/>
+                            <path d="M10 6h8v4h-8V6Z"/>
+                        </svg>
+                        <span>News Management</span>
+                    </a>
+                    <div class="nav-menu-divider" sec:authorize="hasRole('ROLE_[ADMIN]')"></div>
+                    <a class="nav-menu-item logout"
+                       role="menuitem"
+                       th:href="@{/logout}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
     <script>
         (function () {
             var path = window.location.pathname;
-            document.querySelectorAll('.nav-links a[data-section]').forEach(function (link) {
+            document.querySelectorAll('.nav-links a[data-section], .nav-menu-dropdown a[data-section]').forEach(function (link) {
                 if (path.indexOf('/' + link.dataset.section) !== -1) {
                     link.classList.add('active');
                     link.setAttribute('aria-current', 'page');
+                }
+            });
+
+            var toggleBtn = document.getElementById('nav-menu-toggle');
+            var dropdown = document.getElementById('nav-menu-dropdown');
+            if (!toggleBtn || !dropdown) return;
+
+            function setOpen(open) {
+                dropdown.hidden = !open;
+                toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggleBtn.classList.toggle('is-open', open);
+            }
+
+            toggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                setOpen(dropdown.hidden);
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!dropdown.hidden && !dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    setOpen(false);
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !dropdown.hidden) {
+                    setOpen(false);
+                    toggleBtn.focus();
                 }
             });
         })();

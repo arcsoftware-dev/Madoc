@@ -1,22 +1,62 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title th:text="${status}+' Code Error'"></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${status != null ? ('MMHL — ' + status + ' Error') : 'MMHL — Error'}">MMHL — Error</title>
     <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
-    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/error-modern.css}" />
 </head>
-<body>
+<body class="ms-body">
     <div th:replace="~{fragments/header.html :: header}"></div>
-    <main class="content">
-        <section class="hero">
-            <h1>An error has occurred...</h1>
-            <p>There seems to be a problem with the page you requested
-                (<span th:text="${path}"></span>).
+
+    <main class="ms-page me-page">
+        <section class="me-card"
+                 th:with="code=${status != null ? status : 500},
+                          errLabel=${!#strings.isEmpty(error) ? error : 'Unexpected Error'}">
+
+            <img class="me-logo"
+                 th:src="@{/assets/mmhl.svg}"
+                 alt="MMHL Logo"
+                 onerror="this.hidden=true;" />
+
+            <span class="me-code" th:text="${code}">404</span>
+            <span class="me-badge" th:text="${errLabel}">Not Found</span>
+
+            <h1 class="ms-title" th:if="${code == 404}">Page Not Found</h1>
+            <h1 class="ms-title" th:if="${code == 401 or code == 403}">Access Restricted</h1>
+            <h1 class="ms-title" th:if="${code != 404 and code != 401 and code != 403}">Something Went Wrong</h1>
+
+            <p class="me-msg" th:if="${code == 404}">
+                The page or record you requested couldn't be found. It may have been moved or doesn't exist for this season.
             </p>
-            <p th:text="${'The status code is ' + status
-       + ', which means that the page was ' + error + '.'}"></p>
+            <p class="me-msg" th:if="${code == 401 or code == 403}">
+                You don't have permission to access this page. Sign in with an authorized account or return to the main site.
+            </p>
+            <p class="me-msg" th:if="${code != 404 and code != 401 and code != 403}">
+                We ran into an unexpected problem while loading this page. Please try again in a moment.
+            </p>
+
+            <div class="me-path-wrap" th:if="${!#strings.isEmpty(path)}">
+                <span class="me-path" th:text="${path}">/requested-path</span>
+            </div>
+
+            <div class="me-actions">
+                <a class="me-btn primary" th:href="@{/}">&larr; Back to Home</a>
+                <a class="me-btn"
+                   th:if="${code == 401 or code == 403}"
+                   th:href="@{/login}">Sign In</a>
+                <button type="button" class="me-btn"
+                        th:data-home="@{/}"
+                        onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = this.dataset.home; }">Go Back</button>
+                <a class="me-btn" th:href="@{/schedule}">Schedule</a>
+                <a class="me-btn" th:href="@{/standings}">Standings</a>
+            </div>
         </section>
     </main>
+
     <div th:replace="~{fragments/footer.html :: footer}"></div>
 </body>
 </html>

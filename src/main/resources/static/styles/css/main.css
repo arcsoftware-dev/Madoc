@@ -93,8 +93,10 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0.55rem 1.25rem;
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .page-header {
@@ -107,6 +109,7 @@ body {
 }
 
 .nav-links {
+    grid-column: 2;
     list-style: none;
     display: flex;
     flex-wrap: wrap;
@@ -140,6 +143,128 @@ body {
     box-shadow: 0 2px 10px rgba(204, 25, 25, 0.45);
 }
 
+/* Authenticated nav hamburger menu */
+.nav-menu {
+    grid-column: 3;
+    justify-self: end;
+    position: relative;
+}
+
+.nav-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    padding: 0;
+    color: rgba(243, 244, 246, 0.85);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s;
+}
+.nav-menu-btn:hover,
+.nav-menu-btn:focus-visible,
+.nav-menu-btn.is-open {
+    color: #fff;
+    background: rgba(204, 25, 25, 0.2);
+    border-color: var(--accent);
+    box-shadow: 0 2px 12px rgba(204, 25, 25, 0.35);
+    outline: none;
+}
+.nav-menu-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    display: block;
+}
+
+.nav-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.55rem);
+    min-width: 220px;
+    padding: 0.45rem;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 2px solid var(--accent);
+    border-radius: 14px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+    z-index: 60;
+}
+.nav-menu-dropdown[hidden] {
+    display: none;
+}
+
+.nav-menu-user {
+    padding: 0.5rem 0.7rem 0.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 0.35rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.nav-menu-user-label {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.52);
+}
+.nav-menu-user-name {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.nav-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 9px;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(243, 244, 246, 0.85);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+.nav-menu-item svg {
+    flex: 0 0 auto;
+    width: 1rem;
+    height: 1rem;
+    opacity: 0.8;
+}
+.nav-menu-item:hover,
+.nav-menu-item:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    outline: none;
+}
+.nav-menu-item.active {
+    color: #fff;
+    background: var(--accent);
+}
+.nav-menu-item.active svg {
+    opacity: 1;
+}
+.nav-menu-item.logout {
+    color: #fca5a5;
+}
+.nav-menu-item.logout:hover,
+.nav-menu-item.logout:focus-visible {
+    color: #fff;
+    background: rgba(204, 25, 25, 0.25);
+}
+
+.nav-menu-divider {
+    height: 1px;
+    margin: 0.35rem 0.4rem;
+    background: rgba(255, 255, 255, 0.08);
+}
+
 @media (max-width: 700px) {
     .header-inner {
         padding: 0.75rem 1rem 0.65rem;
@@ -162,15 +287,27 @@ body {
         color: rgba(243, 244, 246, 0.78);
     }
     .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
         padding: 0.45rem 0.75rem;
     }
     .nav-links {
+        flex: 1 1 auto;
         gap: 0.25rem 0.35rem;
     }
     .nav-links a {
         padding: 0.38rem 0.75rem;
         font-size: 0.82rem;
         letter-spacing: 0.06em;
+    }
+    .nav-menu {
+        flex: 0 0 auto;
+    }
+    .nav-menu-btn {
+        width: 2.15rem;
+        height: 2.15rem;
     }
 }
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import dev.arcsoftware.madoc.controller.NewsController;
 import dev.arcsoftware.madoc.model.entity.NewsArticleEntity;
@@ -31,53 +32,69 @@ public class NewsView {
         this.newsController = newsController;
     }
 
-    @ModelAttribute("allNews")
-    public List<NewsArticleEntity> newsArticles(){
-        return newsController.getAllNews().getBody();
-    }
-
     @PreAuthorize("hasRole('ROLE_[ADMIN]')")
     @GetMapping("")
     public String news(Model model) {
-        model.addAttribute("newsArticle", new NewsArticleEntity());
-        return "news";
+        List<NewsArticleEntity> articles = newsController.getAllNews().getBody();
+        model.addAttribute("allNews", articles != null ? articles : List.of());
+        if (!model.containsAttribute("newsArticle")) {
+            model.addAttribute("newsArticle", new NewsArticleEntity());
+        }
+        return "news-modern";
     }
 
     @PreAuthorize("hasRole('ROLE_[ADMIN]')")
     @PostMapping("/create")
-    public String createNewsArticle(Model model,
-        @ModelAttribute NewsArticleEntity newsArticleEntity
+    public String createNewsArticle(
+        @ModelAttribute NewsArticleEntity newsArticleEntity,
+        RedirectAttributes redirectAttributes
     ) {
+        String title = newsArticleEntity.getTitle() != null ? newsArticleEntity.getTitle().trim() : "";
+        String summary = newsArticleEntity.getSummary() != null ? newsArticleEntity.getSummary().trim() : "";
+
+        if (title.isEmpty() || summary.isEmpty()) {
+            redirectAttributes.addFlashAttribute("newsError", "Both a title and summary are required.");
+            redirectAttributes.addFlashAttribute("newsArticle", newsArticleEntity);
+            return "redirect:/news";
+        }
+        if (title.length() > 100) {
+            redirectAttributes.addFlashAttribute("newsError", "Title must be 100 characters or fewer.");
+            redirectAttributes.addFlashAttribute("newsArticle", newsArticleEntity);
+            return "redirect:/news";
+        }
+
         // Get the current authenticated user
         String username = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof String) {
-            log.info("found: {}", authentication.getPrincipal());
-            username = ((String) authentication.getPrincipal());
-            newsArticleEntity.setAuthor(username);
-            newsArticleEntity.setCreatedAt(LocalDateTime.now());
-            newsArticleEntity.setContent(newsArticleEntity.getSummary());
+        if (authentication != null && authentication.getName() != null && !authentication.getName().isBlank()) {
+            log.info("found: {}", authentication.getName());
+            username = authentication.getName();
         }
 
-        if(username == null){
+        if (username == null) {
             log.error("Username not available to set on new article");
             throw new IllegalArgumentException("Username not available for news article");
         }
 
-        newsController.createNews(newsArticleEntity);
+        newsArticleEntity.setTitle(title);
+        newsArticleEntity.setSummary(summary);
+        newsArticleEntity.setContent(summary);
+        newsArticleEntity.setAuthor(username.length() > 20 ? username.substring(0, 20) : username);
+        newsArticleEntity.setCreatedAt(LocalDateTime.now());
 
-        model.addAttribute("newsArticle", new NewsArticleEntity());
-        return "news";
+        newsController.createNews(newsArticleEntity);
+        redirectAttributes.addFlashAttribute("newsSuccess", "News article published.");
+        return "redirect:/news";
     }
 
     @PreAuthorize("hasRole('ROLE_[ADMIN]')")
     @PostMapping("/delete")
-    public String deleteNewsArticle(Model model,
-        @ModelAttribute NewsArticleEntity newsArticleEntity
+    public String deleteNewsArticle(
+        @ModelAttribute NewsArticleEntity newsArticleEntity,
+        RedirectAttributes redirectAttributes
     ) {
         newsController.deleteNews(newsArticleEntity.getId());
-
-        model.addAttribute("newsArticle", new NewsArticleEntity());
-        return "news";
+        redirectAttributes.addFlashAttribute("newsSuccess", "News article deleted.");
+        return "redirect:/news";
     }
 }

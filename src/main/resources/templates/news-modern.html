@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL — News Management</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/news-modern.css}" />
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page">
+
+        <!-- Page Heading -->
+        <section class="ms-heading">
+            <div>
+                <span class="ms-eyebrow">Admin &middot; League Updates</span>
+                <h1 class="ms-title">News Management</h1>
+            </div>
+            <a class="mn-header-link" th:href="@{/}">View Home Feed &rarr;</a>
+        </section>
+
+        <!-- Flash feedback alerts -->
+        <div class="mn-alert success" role="status" th:if="${newsSuccess != null}">
+            <span th:text="${newsSuccess}">News article published.</span>
+            <button type="button" class="mn-alert-close" aria-label="Dismiss message"
+                    onclick="this.parentElement.remove();">&times;</button>
+        </div>
+        <div class="mn-alert error" role="alert" th:if="${newsError != null}">
+            <span th:text="${newsError}">Please complete all fields.</span>
+            <button type="button" class="mn-alert-close" aria-label="Dismiss error"
+                    onclick="this.parentElement.remove();">&times;</button>
+        </div>
+
+        <div class="mn-grid">
+
+            <!-- Compose Form -->
+            <section class="mn-form-card" aria-labelledby="compose-heading">
+                <header class="mn-card-head">
+                    <h2 id="compose-heading">Publish Article</h2>
+                    <span class="mn-pill accent">Home Feed</span>
+                </header>
+
+                <form th:action="@{/news/create}" th:object="${newsArticle}" method="post" class="mn-form" id="news-compose-form">
+                    <div class="mn-field">
+                        <div class="mn-field-head">
+                            <label for="title">Title</label>
+                            <span class="mn-char-count" id="title-char-count" aria-live="polite">0 / 100</span>
+                        </div>
+                        <input type="text"
+                               th:field="*{title}"
+                               id="title"
+                               class="mn-input"
+                               maxlength="100"
+                               placeholder="e.g. Playoff Schedule Announced"
+                               autocomplete="off"
+                               required />
+                    </div>
+
+                    <div class="mn-field">
+                        <div class="mn-field-head">
+                            <label for="summary">Summary</label>
+                        </div>
+                        <textarea th:field="*{summary}"
+                                  id="summary"
+                                  class="mn-textarea"
+                                  rows="6"
+                                  placeholder="Write the league announcement or update..."
+                                  required></textarea>
+                        <p class="mn-hint">Line breaks are preserved when displayed on the home page.</p>
+                    </div>
+
+                    <div class="mn-form-actions">
+                        <button type="reset" class="mn-btn-ghost" id="news-reset-btn">Clear</button>
+                        <button type="submit" name="createNews" class="mn-btn-primary">Publish Article</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Existing Articles -->
+            <section class="mn-list-panel" aria-labelledby="articles-heading">
+                <div class="mn-list-head">
+                    <h2 class="mn-panel-title" id="articles-heading">Published Articles</h2>
+                    <span class="mn-pill"
+                          th:text="${#lists.size(allNews) + (#lists.size(allNews) == 1 ? ' Article' : ' Articles')}">0 Articles</span>
+                </div>
+
+                <!-- Search bar -->
+                <div class="ms-search-bar" th:if="${!#lists.isEmpty(allNews)}">
+                    <div class="ms-search-wrap">
+                        <svg class="ms-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="search"
+                               id="news-search"
+                               class="ms-search-input"
+                               placeholder="Filter articles by title, text, or author..."
+                               aria-label="Filter articles"
+                               autocomplete="off" />
+                        <button type="button"
+                                id="news-search-clear"
+                                class="ms-search-clear"
+                                aria-label="Clear search"
+                                hidden>&times;</button>
+                    </div>
+                </div>
+
+                <div class="mn-article-stack" th:if="${!#lists.isEmpty(allNews)}">
+                    <article class="mn-article-card" th:each="article : ${allNews}" data-news-card>
+                        <div class="mn-article-meta">
+                            <div class="mn-article-info">
+                                <span class="mn-article-date"
+                                      th:text="${article.createdAt != null ? #temporals.format(article.createdAt, 'MMM dd, yyyy · hh:mm a') : 'Date unavailable'}">Nov 20, 2025</span>
+                                <span class="mn-article-author"
+                                      th:if="${!#strings.isEmpty(article.author)}"
+                                      th:text="|by ${article.author}|">by Admin</span>
+                            </div>
+                            <form th:action="@{/news/delete}" method="post"
+                                  onsubmit="return confirm('Delete this news article? This cannot be undone.');">
+                                <input type="hidden" name="id" th:value="${article.id}" />
+                                <button type="submit" class="mn-delete-btn" aria-label="Delete article">Delete</button>
+                            </form>
+                        </div>
+
+                        <h3 class="mn-article-title" th:text="${article.title}">Article Title</h3>
+                        <p class="mn-article-summary" th:text="${article.summary}">Article summary text.</p>
+                    </article>
+
+                    <div class="mn-empty" id="news-no-match" hidden>No articles match your search.</div>
+                </div>
+
+                <div class="mn-empty" th:if="${#lists.isEmpty(allNews)}">
+                    No news articles published yet. Use the form to post the first update.
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+
+    <script>
+        (function () {
+            // Live character counter for Title (DB max 100 chars)
+            var titleInput = document.getElementById('title');
+            var countEl = document.getElementById('title-char-count');
+            var resetBtn = document.getElementById('news-reset-btn');
+            function updateCount() {
+                if (!titleInput || !countEl) return;
+                var len = titleInput.value.length;
+                countEl.textContent = len + ' / 100';
+                countEl.classList.toggle('is-near', len >= 85);
+            }
+            if (titleInput) {
+                titleInput.addEventListener('input', updateCount);
+                updateCount();
+            }
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    setTimeout(updateCount, 0);
+                });
+            }
+
+            // Client-side article filter
+            var searchInput = document.getElementById('news-search');
+            var clearBtn = document.getElementById('news-search-clear');
+            var cards = document.querySelectorAll('[data-news-card]');
+            var noMatch = document.getElementById('news-no-match');
+            if (!searchInput) return;
+
+            function filterArticles() {
+                var q = searchInput.value.trim().toLowerCase();
+                if (clearBtn) clearBtn.hidden = searchInput.value.length === 0;
+                var visible = 0;
+                cards.forEach(function (card) {
+                    var text = card.textContent.toLowerCase();
+                    var match = !q || text.indexOf(q) !== -1;
+                    card.hidden = !match;
+                    if (match) visible++;
+                });
+                if (noMatch) noMatch.hidden = visible > 0;
+            }
+
+            searchInput.addEventListener('input', filterArticles);
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    searchInput.value = '';
+                    filterArticles();
+                    searchInput.focus();
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
