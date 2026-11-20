@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -56,13 +56,24 @@
                                      th:alt="${upcomingGame.homeTeam}" onerror="this.hidden=true;" />
                                 <span th:text="${upcomingGame.homeTeam}">Home</span>
                             </a>
-                            <a class="ms-game-vs" th:href="@{|/games/${upcomingGame.gameId}|}" title="View game">VS</a>
+                            <span class="ms-game-vs" aria-hidden="true">VS</span>
                             <a class="ms-game-team" th:href="@{/teams/{team}(team=${utils.stripSpaces(upcomingGame.awayTeam)})}">
                                 <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(upcomingGame.awayTeam)} + '.svg'}"
                                      th:alt="${upcomingGame.awayTeam}" onerror="this.hidden=true;" />
                                 <span th:text="${upcomingGame.awayTeam}">Away</span>
                             </a>
                         </div>
+                        <a class="ms-game-cta"
+                           th:with="isCompleted=${!#strings.isEmpty(upcomingGame.homeScore) and !#strings.isEmpty(upcomingGame.awayScore)}"
+                           th:href="@{|/games/${upcomingGame.gameId}|}"
+                           th:aria-label="|View ${upcomingGame.homeTeam} vs ${upcomingGame.awayTeam}|">
+                            <span th:if="${isCompleted}">Boxscore</span>
+                            <span th:if="${!isCompleted}"
+                                  sec:authorize="isAnonymous() || !hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')">View Matchup</span>
+                            <span th:if="${!isCompleted}"
+                                  sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')">Open Gamesheet</span>
+                            <span class="ms-cta-arrow" aria-hidden="true">&rsaquo;</span>
+                        </a>
                     </article>
                     <div class="ms-home-empty" th:if="${#lists.isEmpty(upcomingMatches)}">No upcoming games scheduled.</div>
                 </div>

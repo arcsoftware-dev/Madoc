@@ -1,5 +1,5 @@
 <!-- One day of games, used by schedule-modern.html -->
-<article class="ms-card ms-day" th:fragment="dayCard(gameDay, yr)">
+<article class="ms-card ms-day" th:fragment="dayCard(gameDay, yr)" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
     <header class="ms-day-head">
         <h2 class="ms-day-title">
             <small th:text="${#temporals.format(gameDay.date, 'EEEE')}">Friday</small>
@@ -9,7 +9,9 @@
               th:text="|${#lists.size(gameDay.games)} ${#lists.size(gameDay.games) == 1 ? 'game' : 'games'}|">1 game</span>
     </header>
 
-    <div class="ms-sched-game" th:each="game : ${gameDay.games}">
+    <div class="ms-sched-game"
+         th:each="game : ${gameDay.games}"
+         th:with="isCompleted=${!#strings.isEmpty(game.homeScore) and !#strings.isEmpty(game.awayScore)}">
         <span class="ms-sched-time" th:text="${#temporals.format(game.startTime, 'hh:mm a')}">08:00 PM</span>
 
         <a class="ms-sched-team home"
@@ -21,7 +23,7 @@
             <span class="ms-sched-score" th:if="${!#strings.isEmpty(game.homeScore)}" th:text="${game.homeScore}">0</span>
         </a>
 
-        <a class="ms-sched-vs" th:href="@{|/games/${game.gameId}|}" title="View game">VS</a>
+        <span class="ms-sched-vs" aria-hidden="true">VS</span>
 
         <a class="ms-sched-team away"
            th:href="@{/teams/{team}(team=${utils.stripSpaces(game.awayTeam)}, year=${yr})}">
@@ -30,6 +32,17 @@
                  th:alt="${game.awayTeam}" onerror="this.hidden=true;" />
             <span class="ms-sched-name" th:text="${game.awayTeam}">Away</span>
             <span class="ms-sched-score" th:if="${!#strings.isEmpty(game.awayScore)}" th:text="${game.awayScore}">0</span>
+        </a>
+
+        <a class="ms-sched-cta"
+           th:href="@{|/games/${game.gameId}|}"
+           th:aria-label="|View ${game.homeTeam} vs ${game.awayTeam}|">
+            <span th:if="${isCompleted}">Boxscore</span>
+            <span th:if="${!isCompleted}"
+                  sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')">Gamesheet</span>
+            <span th:if="${!isCompleted}"
+                  sec:authorize="isAnonymous() || !hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')">Matchup</span>
+            <span class="ms-cta-arrow" aria-hidden="true">&rsaquo;</span>
         </a>
     </div>
 </article>

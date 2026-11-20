@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="|${gamesheet.homeTeam} vs ${gamesheet.awayTeam} — MMHL|">MMHL Gamesheet</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/gamesheet-modern.css}"/>
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page"
+          th:with="homeGoalsCount=${utils.countGoals(gamesheet.homeGoals)},
+                   awayGoalsCount=${utils.countGoals(gamesheet.awayGoals)},
+                   homePims=${utils.countPenaltyMinutes(gamesheet.homePenalties)},
+                   awayPims=${utils.countPenaltyMinutes(gamesheet.awayPenalties)},
+                   seasonLabel=${gamesheet.seasonType != null ? gamesheet.seasonType.label : 'Regular Season'},
+                   seasonCode=${gamesheet.seasonType != null ? gamesheet.seasonType.name() : 'REGULAR_SEASON'}">
+
+        <!-- Top Back Link + Game Status -->
+        <div class="mg-top-bar">
+            <a class="mg-back-link"
+               th:href="@{/schedule(year=${gamesheet.seasonYear}, season-type=${seasonCode})}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 12H5"/>
+                    <path d="M12 19l-7-7 7-7"/>
+                </svg>
+                <span>Back to Schedule</span>
+            </a>
+
+            <span class="mg-status-pill final" th:if="${gamesheet.finalized}">
+                <span class="mg-status-dot" aria-hidden="true"></span>
+                <span>Final</span>
+            </span>
+            <span class="mg-status-pill draft"
+                  sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
+                  th:if="${!gamesheet.finalized}">
+                <span class="mg-status-dot" aria-hidden="true"></span>
+                <span>Gamesheet Entry</span>
+            </span>
+            <span class="mg-status-pill"
+                  sec:authorize="isAnonymous() || !hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
+                  th:if="${!gamesheet.finalized}">
+                <span class="mg-status-dot" aria-hidden="true"></span>
+                <span>Upcoming Matchup</span>
+            </span>
+        </div>
+
+        <!-- Matchup Hero Card -->
+        <section class="mg-hero">
+            <div class="mg-hero-meta">
+                <span class="mg-hero-season" th:text="|${gamesheet.seasonYear} ${seasonLabel}|">2025 Regular Season</span>
+                <span class="mg-hero-venue" th:if="${gamesheet.venue != null}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span th:text="${gamesheet.venue.arenaName}">Century Gardens</span>
+                </span>
+            </div>
+
+            <div class="mg-scoreboard">
+                <!-- Home Team -->
+                <div class="mg-team-side home">
+                    <a class="mg-team-link"
+                       th:href="@{/teams/{team}(team=${utils.stripSpaces(gamesheet.homeTeam)}, year=${gamesheet.seasonYear})}">
+                        <img class="mg-hero-logo"
+                             th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.homeTeam)} + '.svg'}"
+                             th:alt="${gamesheet.homeTeam}"
+                             onerror="this.hidden=true;"/>
+                        <h1 class="mg-team-name" th:text="${gamesheet.homeTeam}">Home Team</h1>
+                    </a>
+                    <div class="mg-team-badges">
+                        <span class="mg-role-chip home">Home</span>
+                        <span class="mg-rank-chip" th:if="${homeTeamRank != null}" th:text="'#' + ${homeTeamRank}">#1</span>
+                    </div>
+                    <span class="mg-team-record"
+                          th:if="${homeTeamStats != null}"
+                          th:text="|${homeTeamStats.wins}-${homeTeamStats.losses}-${homeTeamStats.ties} • ${homeTeamStats.points} PTS|">0-0-0 • 0 PTS</span>
+                </div>
+
+                <!-- Center Score / VS & Game Time -->
+                <div class="mg-center">
+                    <!-- Score shown when finalized OR when authorized staff is editing -->
+                    <div class="mg-score-display" th:if="${gamesheet.finalized}">
+                        <span class="mg-score-num"
+                              th:classappend="${homeGoalsCount > awayGoalsCount ? 'winner' : (homeGoalsCount < awayGoalsCount ? 'loser' : '')}"
+                              th:text="${homeGoalsCount}">0</span>
+                        <span class="mg-score-dash">–</span>
+                        <span class="mg-score-num"
+                              th:classappend="${awayGoalsCount > homeGoalsCount ? 'winner' : (awayGoalsCount < homeGoalsCount ? 'loser' : '')}"
+                              th:text="${awayGoalsCount}">0</span>
+                    </div>
+
+                    <div class="mg-score-display"
+                         sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
+                         th:if="${!gamesheet.finalized}">
+                        <span class="mg-score-num" th:text="${homeGoalsCount}">0</span>
+                        <span class="mg-score-dash">–</span>
+                        <span class="mg-score-num" th:text="${awayGoalsCount}">0</span>
+                    </div>
+
+                    <!-- VS Emblem shown for upcoming games to public visitors -->
+                    <div class="mg-vs-badge"
+                         sec:authorize="isAnonymous() || !hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
+                         th:if="${!gamesheet.finalized}">VS</div>
+
+                    <span class="mg-game-datetime"
+                          th:if="${gamesheet.gameTime != null}"
+                          th:text="${#temporals.format(gamesheet.gameTime, 'EEE, MMM d, yyyy')}">Sun, Nov 23, 2025</span>
+                    <span class="mg-game-time"
+                          th:if="${gamesheet.gameTime != null}"
+                          th:text="${#temporals.format(gamesheet.gameTime, 'h:mm a')}">8:30 PM</span>
+
+                    <div class="mg-pim-strip" th:if="${gamesheet.finalized}">
+                        <span>PIM</span>
+                        <strong th:text="${homePims}">0</strong>
+                        <span>–</span>
+                        <strong th:text="${awayPims}">0</strong>
+                    </div>
+                    <div class="mg-pim-strip"
+                         sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
+                         th:if="${!gamesheet.finalized}">
+                        <span>PIM</span>
+                        <strong th:text="${homePims}">0</strong>
+                        <span>–</span>
+                        <strong th:text="${awayPims}">0</strong>
+                    </div>
+                </div>
+
+                <!-- Away Team -->
+                <div class="mg-team-side away">
+                    <a class="mg-team-link"
+                       th:href="@{/teams/{team}(team=${utils.stripSpaces(gamesheet.awayTeam)}, year=${gamesheet.seasonYear})}">
+                        <img class="mg-hero-logo"
+                             th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.awayTeam)} + '.svg'}"
+                             th:alt="${gamesheet.awayTeam}"
+                             onerror="this.hidden=true;"/>
+                        <h1 class="mg-team-name" th:text="${gamesheet.awayTeam}">Away Team</h1>
+                    </a>
+                    <div class="mg-team-badges">
+                        <span class="mg-role-chip">Away</span>
+                        <span class="mg-rank-chip" th:if="${awayTeamRank != null}" th:text="'#' + ${awayTeamRank}">#2</span>
+                    </div>
+                    <span class="mg-team-record"
+                          th:if="${awayTeamStats != null}"
+                          th:text="|${awayTeamStats.wins}-${awayTeamStats.losses}-${awayTeamStats.ties} • ${awayTeamStats.points} PTS|">0-0-0 • 0 PTS</span>
+                </div>
+            </div>
+
+            <!-- Period-by-period linescore (Finalized games only) -->
+            <div class="mg-linescore-wrap" th:if="${gamesheet.finalized}">
+                <table class="mg-linescore">
+                    <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>1st</th>
+                        <th>2nd</th>
+                        <th>3rd</th>
+                        <th th:if="${hasOvertime}">OT</th>
+                        <th>T</th>
+                        <th>PIM</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <span class="mg-linescore-team">
+                                <img class="ms-logo ms-logo-sm"
+                                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.homeTeam)} + '.svg'}"
+                                     th:alt="${gamesheet.homeTeam}"
+                                     onerror="this.hidden=true;"/>
+                                <span th:text="${gamesheet.homeTeam}">Home Team</span>
+                            </span>
+                        </td>
+                        <td th:text="${homePeriodGoals[0]}">0</td>
+                        <td th:text="${homePeriodGoals[1]}">0</td>
+                        <td th:text="${homePeriodGoals[2]}">0</td>
+                        <td th:if="${hasOvertime}" th:text="${homePeriodGoals[3]}">0</td>
+                        <td class="mg-linescore-total" th:text="${homeGoalsCount}">0</td>
+                        <td th:text="${homePims}">0</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="mg-linescore-team">
+                                <img class="ms-logo ms-logo-sm"
+                                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.awayTeam)} + '.svg'}"
+                                     th:alt="${gamesheet.awayTeam}"
+                                     onerror="this.hidden=true;"/>
+                                <span th:text="${gamesheet.awayTeam}">Away Team</span>
+                            </span>
+                        </td>
+                        <td th:text="${awayPeriodGoals[0]}">0</td>
+                        <td th:text="${awayPeriodGoals[1]}">0</td>
+                        <td th:text="${awayPeriodGoals[2]}">0</td>
+                        <td th:if="${hasOvertime}" th:text="${awayPeriodGoals[3]}">0</td>
+                        <td class="mg-linescore-total" th:text="${awayGoalsCount}">0</td>
+                        <td th:text="${awayPims}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             VIEW 1A: PUBLIC / NON-STAFF MATCHUP & SEASON HISTORY VIEW
+             ============================================================ -->
+        <th:block sec:authorize="isAnonymous() || !hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')">
+            <th:block th:replace="~{fragments/gamesheet-matchup :: matchup}"></th:block>
+        </th:block>
+
+        <!-- ============================================================
+             VIEW 1B: LOGGED-IN STAFF ON COMPLETED (FINALIZED) GAME
+             Shows Admin Unlock/Reset bar + Completed Matchup & Boxscore
+             ============================================================ -->
+        <th:block sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
+                  th:if="${gamesheet.finalized}">
+            <section class="mg-action-bar">
+                <form sec:authorize="hasRole('ROLE_[ADMIN]')"
+                      th:action="@{/games/{gameId}(gameId=${gamesheet.gameId})}"
+                      th:object="${gamesheet}"
+                      method="post"
+                      class="mg-btn-group">
+                    <input type="hidden" th:field="*{gameId}"/>
+                    <input type="hidden" th:field="*{gameTime}"/>
+                    <input type="hidden" th:field="*{venue}"/>
+                    <input type="hidden" th:field="*{seasonYear}"/>
+                    <input type="hidden" th:field="*{seasonType}"/>
+                    <input type="hidden" th:field="*{finalized}"/>
+                    <input type="hidden" th:field="*{homeTeam}"/>
+                    <input type="hidden" th:field="*{homeTeamId}"/>
+                    <input type="hidden" th:field="*{awayTeam}"/>
+                    <input type="hidden" th:field="*{awayTeamId}"/>
+
+                    <button type="submit" name="unlock" class="mg-btn primary"
+                            onclick="return confirm('Are you sure you want to unlock the Gamesheet? This will clear finalized stats until re-finalized.');">
+                        Unlock Gamesheet
+                    </button>
+                    <button type="submit" name="clear" class="mg-btn danger-outline"
+                            onclick="return confirm('Are you sure you want to reset the Gamesheet? This cannot be undone.');">
+                        Reset Gamesheet
+                    </button>
+                </form>
+
+                <div class="mg-btn-group">
+                    <a th:href="@{/api/documents/signin/{id}/{team}(id=${gamesheet.getGameId()}, team=${utils.stripSpaces(gamesheet.getHomeTeam())})}"
+                       class="mg-btn subtle">Home Sign-In PDF</a>
+                    <a th:href="@{/api/documents/signin/{id}/{team}(id=${gamesheet.getGameId()}, team=${utils.stripSpaces(gamesheet.getAwayTeam())})}"
+                       class="mg-btn subtle">Away Sign-In PDF</a>
+                    <a th:href="@{/api/documents/gamesheet/{id}(id=${gamesheet.getGameId()})}"
+                       class="mg-btn subtle">Empty Gamesheet</a>
+                </div>
+            </section>
+
+            <th:block th:replace="~{fragments/gamesheet-matchup :: matchup}"></th:block>
+        </th:block>
+
+        <!-- ============================================================
+             VIEW 2: LOGGED-IN STAFF GAMESHEET ENTRY FORM (NOT FINALIZED)
+             ============================================================ -->
+        <div id="gamesheet_form"
+             sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
+             th:if="${!gamesheet.finalized}">
+
+            <form action="#"
+                  th:action="@{/games/{gameId}(gameId=${gamesheet.gameId})}"
+                  th:object="${gamesheet}"
+                  method="post">
+
+                <!-- Hidden metadata fields required by GamesheetView handlers -->
+                <div id="gamesheet_form_metadata">
+                    <input type="hidden" th:field="*{gameId}"/>
+                    <input type="hidden" th:field="*{gameTime}"/>
+                    <input type="hidden" th:field="*{venue}"/>
+                    <input type="hidden" th:field="*{seasonYear}"/>
+                    <input type="hidden" th:field="*{seasonType}"/>
+                    <input type="hidden" th:field="*{finalized}"/>
+
+                    <input type="hidden" th:field="*{homeTeam}"/>
+                    <input type="hidden" th:field="*{homeTeamId}"/>
+                    <input type="hidden" th:field="*{awayTeam}"/>
+                    <input type="hidden" th:field="*{awayTeamId}"/>
+                </div>
+
+                <!-- Validation Errors Banner -->
+                <div class="mg-errors" th:if="${#fields.hasErrors()}" role="alert">
+                    <p class="mg-errors-title">Please fix the following before continuing</p>
+                    <ul>
+                        <li th:each="error : ${#fields.errors()}" th:text="${error}">Validation error</li>
+                    </ul>
+                </div>
+
+                <!-- Top Action & Download Bar -->
+                <section class="mg-action-bar">
+                    <div class="mg-btn-group">
+                        <button type="submit" name="save" class="mg-btn">Save Draft</button>
+                        <button type="submit" name="finalize" class="mg-btn primary"
+                                onclick="return confirm('Are you sure you want to finalize the Gamesheet? This will publish final scores and player stats.');">
+                            Finalize Gamesheet
+                        </button>
+                        <button type="submit" name="clear" class="mg-btn danger-outline"
+                                sec:authorize="hasRole('ROLE_[ADMIN]')"
+                                onclick="return confirm('Are you sure you want to reset the Gamesheet? This cannot be undone.');">
+                            Reset Gamesheet
+                        </button>
+                    </div>
+
+                    <div class="mg-btn-group">
+                        <a th:href="@{/api/documents/signin/{id}/{team}(id=${gamesheet.getGameId()}, team=${utils.stripSpaces(gamesheet.getHomeTeam())})}"
+                           class="mg-btn subtle">Home Sign-In</a>
+                        <a th:href="@{/api/documents/signin/{id}/{team}(id=${gamesheet.getGameId()}, team=${utils.stripSpaces(gamesheet.getAwayTeam())})}"
+                           class="mg-btn subtle">Away Sign-In</a>
+                        <a th:href="@{/api/documents/gamesheet/{id}(id=${gamesheet.getGameId()})}"
+                           class="mg-btn subtle">Empty Gamesheet</a>
+                    </div>
+                </section>
+
+                <!-- Add Goal Card -->
+                <section id="addGoal" class="ms-card mg-section">
+                    <header class="mg-card-head">
+                        <h2 class="mg-card-title">Add Goal</h2>
+                        <span class="mg-card-sub">Players must be checked in attendance</span>
+                    </header>
+                    <div class="mg-entry-body">
+                        <div class="mg-field-grid">
+                            <div class="mg-field mg-field-wide">
+                                <label for="nextGoalTeam">Team</label>
+                                <select id="nextGoalTeam" class="mg-select" th:field="*{nextGoal.team}">
+                                    <option th:value="${gamesheet.homeTeam}" th:text="${gamesheet.homeTeam}"></option>
+                                    <option th:value="${gamesheet.awayTeam}" th:text="${gamesheet.awayTeam}"></option>
+                                </select>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextGoalScorer">Scorer #</label>
+                                <input id="nextGoalScorer" class="mg-input" type="text" inputmode="numeric" maxlength="2" placeholder="##" th:field="*{nextGoal.goal.scorer}"/>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextGoalAssist1">Assist 1 #</label>
+                                <input id="nextGoalAssist1" class="mg-input" type="text" inputmode="numeric" maxlength="2" placeholder="Optional" th:field="*{nextGoal.goal.assist1}"/>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextGoalAssist2">Assist 2 #</label>
+                                <input id="nextGoalAssist2" class="mg-input" type="text" inputmode="numeric" maxlength="2" placeholder="Optional" th:field="*{nextGoal.goal.assist2}"/>
+                            </div>
+                            <div class="mg-field mg-field-wide">
+                                <label for="nextGoalType">Goal Type</label>
+                                <select id="nextGoalType" class="mg-select" th:field="*{nextGoal.goal.goalType}">
+                                    <option th:each="type : ${goalTypes}"
+                                            th:value="${type}"
+                                            th:text="${type}"></option>
+                                </select>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextGoalPeriod">Period</label>
+                                <input id="nextGoalPeriod" class="mg-input" type="text" inputmode="numeric" maxlength="1" placeholder="1–4" th:field="*{nextGoal.goal.period}"/>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextGoalTime">Time</label>
+                                <input id="nextGoalTime" class="mg-input" type="text" maxlength="5" placeholder="mm:ss" th:field="*{nextGoal.goal.time}"/>
+                            </div>
+                        </div>
+                        <div class="mg-entry-submit">
+                            <button type="submit" name="addGoal" value="addGoal" class="mg-btn primary">+ Add Goal</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Add Penalty Card -->
+                <section id="addPenalty" class="ms-card mg-section">
+                    <header class="mg-card-head">
+                        <h2 class="mg-card-title">Add Penalty</h2>
+                        <span class="mg-card-sub">Enter player jersey, minutes &amp; infraction</span>
+                    </header>
+                    <div class="mg-entry-body">
+                        <div class="mg-field-grid">
+                            <div class="mg-field mg-field-wide">
+                                <label for="nextPenaltyTeam">Team</label>
+                                <select id="nextPenaltyTeam" class="mg-select" th:field="*{nextPenalty.team}">
+                                    <option th:value="${gamesheet.homeTeam}" th:text="${gamesheet.homeTeam}"></option>
+                                    <option th:value="${gamesheet.awayTeam}" th:text="${gamesheet.awayTeam}"></option>
+                                </select>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextPenaltyPlayer">Player #</label>
+                                <input id="nextPenaltyPlayer" class="mg-input" type="text" inputmode="numeric" maxlength="2" placeholder="##" th:field="*{nextPenalty.penalty.jerseyNumber}"/>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextPenaltyMin">Minutes</label>
+                                <input id="nextPenaltyMin" class="mg-input" type="text" inputmode="numeric" maxlength="2" placeholder="2" th:field="*{nextPenalty.penalty.minutes}"/>
+                            </div>
+                            <div class="mg-field mg-field-wide">
+                                <label for="nextPenaltyInfraction">Infraction</label>
+                                <input id="nextPenaltyInfraction" class="mg-input" type="text" maxlength="15" placeholder="e.g. Tripping" th:field="*{nextPenalty.penalty.infraction}"/>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextPenaltyPeriod">Period</label>
+                                <input id="nextPenaltyPeriod" class="mg-input" type="text" inputmode="numeric" maxlength="1" placeholder="1–4" th:field="*{nextPenalty.penalty.period}"/>
+                            </div>
+                            <div class="mg-field">
+                                <label for="nextPenaltyTime">Time</label>
+                                <input id="nextPenaltyTime" class="mg-input" type="text" maxlength="5" placeholder="mm:ss" th:field="*{nextPenalty.penalty.time}"/>
+                            </div>
+                        </div>
+                        <div class="mg-entry-submit">
+                            <button type="submit" name="addPenalty" value="addPenalty" class="mg-btn primary">+ Add Penalty</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Attendance Section (Home & Away side-by-side) -->
+                <section id="attendances" class="mg-two-col">
+                    <!-- Home Attendance -->
+                    <div id="homeAttendance" class="ms-card">
+                        <header class="mg-card-head">
+                            <h3 class="mg-card-title">
+                                <img class="ms-logo ms-logo-sm"
+                                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.homeTeam)} + '.svg'}"
+                                     th:alt="${gamesheet.homeTeam}"
+                                     onerror="this.hidden=true;"/>
+                                <span th:text="${gamesheet.homeTeam} + ' Attendance'">Home Attendance</span>
+                            </h3>
+                            <div class="mg-att-controls">
+                                <span class="mg-pill" data-att-count="homeAttendance">0 / 0</span>
+                                <button type="button" class="mg-btn subtle sm" onclick="toggleAttendance('homeAttendance')">Toggle All</button>
+                            </div>
+                        </header>
+                        <div class="ms-scroll">
+                            <table class="mg-roster-table">
+                                <thead>
+                                <tr>
+                                    <th style="width: 3.5rem;">In</th>
+                                    <th>#</th>
+                                    <th>Player</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr class="mg-att-row" th:each="player, rowStat : ${homeTeamPlayers}">
+                                    <td>
+                                        <input type="checkbox"
+                                               class="mg-att-check"
+                                               th:id="|home-att-${rowStat.index}|"
+                                               th:field="*{homeAttendanceByPlayerId[__${rowStat.index}__].attended}"
+                                               onchange="updateAttendanceCount('homeAttendance')"/>
+                                        <input type="hidden" th:name="|homeAttendanceByPlayerId[${rowStat.index}].playerName|" th:value="${player.fullName}"/>
+                                        <input type="hidden" th:name="|homeAttendanceByPlayerId[${rowStat.index}].rosterId|" th:value="${player.id}"/>
+                                        <input type="hidden" th:name="|homeAttendanceByPlayerId[${rowStat.index}].teamId|" th:value="${player.teamId}"/>
+                                        <input type="hidden" th:name="|homeAttendanceByPlayerId[${rowStat.index}].gameId|" th:value="${gamesheet.gameId}"/>
+                                        <input type="hidden" th:name="|homeAttendanceByPlayerId[${rowStat.index}].jerseyNumber|" th:value="${player.jerseyNumber}"/>
+                                    </td>
+                                    <td class="mg-jersey">
+                                        <label class="mg-att-label" th:for="|home-att-${rowStat.index}|" th:text="${player.jerseyNumber}">19</label>
+                                    </td>
+                                    <td>
+                                        <label class="mg-att-label" th:for="|home-att-${rowStat.index}|" th:text="${player.fullName}">Player Name</label>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Away Attendance -->
+                    <div id="awayAttendance" class="ms-card">
+                        <header class="mg-card-head">
+                            <h3 class="mg-card-title">
+                                <img class="ms-logo ms-logo-sm"
+                                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.awayTeam)} + '.svg'}"
+                                     th:alt="${gamesheet.awayTeam}"
+                                     onerror="this.hidden=true;"/>
+                                <span th:text="${gamesheet.awayTeam} + ' Attendance'">Away Attendance</span>
+                            </h3>
+                            <div class="mg-att-controls">
+                                <span class="mg-pill" data-att-count="awayAttendance">0 / 0</span>
+                                <button type="button" class="mg-btn subtle sm" onclick="toggleAttendance('awayAttendance')">Toggle All</button>
+                            </div>
+                        </header>
+                        <div class="ms-scroll">
+                            <table class="mg-roster-table">
+                                <thead>
+                                <tr>
+                                    <th style="width: 3.5rem;">In</th>
+                                    <th>#</th>
+                                    <th>Player</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr class="mg-att-row" th:each="player, rowStat : ${awayTeamPlayers}">
+                                    <td>
+                                        <input type="checkbox"
+                                               class="mg-att-check"
+                                               th:id="|away-att-${rowStat.index}|"
+                                               th:field="*{awayAttendanceByPlayerId[__${rowStat.index}__].attended}"
+                                               onchange="updateAttendanceCount('awayAttendance')"/>
+                                        <input type="hidden" th:name="|awayAttendanceByPlayerId[${rowStat.index}].playerName|" th:value="${player.fullName}"/>
+                                        <input type="hidden" th:name="|awayAttendanceByPlayerId[${rowStat.index}].rosterId|" th:value="${player.id}"/>
+                                        <input type="hidden" th:name="|awayAttendanceByPlayerId[${rowStat.index}].teamId|" th:value="${player.teamId}"/>
+                                        <input type="hidden" th:name="|awayAttendanceByPlayerId[${rowStat.index}].gameId|" th:value="${gamesheet.gameId}"/>
+                                        <input type="hidden" th:name="|awayAttendanceByPlayerId[${rowStat.index}].jerseyNumber|" th:value="${player.jerseyNumber}"/>
+                                    </td>
+                                    <td class="mg-jersey">
+                                        <label class="mg-att-label" th:for="|away-att-${rowStat.index}|" th:text="${player.jerseyNumber}">19</label>
+                                    </td>
+                                    <td>
+                                        <label class="mg-att-label" th:for="|away-att-${rowStat.index}|" th:text="${player.fullName}">Player Name</label>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Home Goals -->
+                <section id="home_goals" class="ms-card mg-section">
+                    <header class="mg-card-head">
+                        <h2 class="mg-card-title">
+                            <img class="ms-logo ms-logo-sm"
+                                 th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.homeTeam)} + '.svg'}"
+                                 th:alt="${gamesheet.homeTeam}"
+                                 onerror="this.hidden=true;"/>
+                            <span th:text="${gamesheet.homeTeam} + ' Goals'">Home Goals</span>
+                        </h2>
+                        <span class="mg-pill accent" th:text="${homeGoalsCount}">0</span>
+                    </header>
+
+                    <div th:if="${utils.collectionIsNotEmpty(gamesheet.homeGoals)}">
+                        <div class="ms-scroll">
+                            <table class="mg-edit-table">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Scorer</th>
+                                    <th>Assist 1</th>
+                                    <th>Assist 2</th>
+                                    <th>Type</th>
+                                    <th>Per</th>
+                                    <th>Time</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="goal, rowStat : *{homeGoals}">
+                                    <td class="mg-jersey" th:text="${rowStat.count}">1</td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{homeGoals[__${rowStat.index}__].scorer}"/></td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{homeGoals[__${rowStat.index}__].assist1}"/></td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{homeGoals[__${rowStat.index}__].assist2}"/></td>
+                                    <td>
+                                        <select class="mg-select mg-edit-select" th:field="*{homeGoals[__${rowStat.index}__].goalType}">
+                                            <option th:each="type : ${goalTypes}" th:value="${type}" th:text="${type}"></option>
+                                        </select>
+                                    </td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="1" th:field="*{homeGoals[__${rowStat.index}__].period}"/></td>
+                                    <td><input class="mg-input mg-edit-input sm" type="text" maxlength="5" th:field="*{homeGoals[__${rowStat.index}__].time}"/></td>
+                                    <td>
+                                        <button type="submit" name="removeGoal" class="mg-btn danger-outline sm"
+                                                th:value="'home-' + ${rowStat.index}">Delete</button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mg-card-footer">
+                            <button type="submit" name="save" class="mg-btn sm">Update Goals</button>
+                        </div>
+                    </div>
+                    <p class="mg-empty-inline" th:if="${utils.collectionIsEmpty(gamesheet.homeGoals)}">No goals recorded yet.</p>
+                </section>
+
+                <!-- Home Penalties -->
+                <section id="home_penalties" class="ms-card mg-section">
+                    <header class="mg-card-head">
+                        <h2 class="mg-card-title">
+                            <img class="ms-logo ms-logo-sm"
+                                 th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.homeTeam)} + '.svg'}"
+                                 th:alt="${gamesheet.homeTeam}"
+                                 onerror="this.hidden=true;"/>
+                            <span th:text="${gamesheet.homeTeam} + ' Penalties'">Home Penalties</span>
+                        </h2>
+                        <span class="mg-pill" th:text="${homePims} + ' PIM'">0 PIM</span>
+                    </header>
+
+                    <div th:if="${utils.collectionIsNotEmpty(gamesheet.homePenalties)}">
+                        <div class="ms-scroll">
+                            <table class="mg-edit-table">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Player</th>
+                                    <th>Min</th>
+                                    <th>Infraction</th>
+                                    <th>Per</th>
+                                    <th>Time</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="penalty, rowStat : *{homePenalties}">
+                                    <td class="mg-jersey" th:text="${rowStat.count}">1</td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{homePenalties[__${rowStat.index}__].jerseyNumber}"/></td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{homePenalties[__${rowStat.index}__].minutes}"/></td>
+                                    <td><input class="mg-input mg-edit-input md" type="text" maxlength="15" th:field="*{homePenalties[__${rowStat.index}__].infraction}"/></td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="1" th:field="*{homePenalties[__${rowStat.index}__].period}"/></td>
+                                    <td><input class="mg-input mg-edit-input sm" type="text" maxlength="5" th:field="*{homePenalties[__${rowStat.index}__].time}"/></td>
+                                    <td>
+                                        <button type="submit" name="removePenalty" class="mg-btn danger-outline sm"
+                                                th:value="'home-' + ${rowStat.index}">Delete</button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mg-card-footer">
+                            <button type="submit" name="save" class="mg-btn sm">Update Penalties</button>
+                        </div>
+                    </div>
+                    <p class="mg-empty-inline" th:if="${utils.collectionIsEmpty(gamesheet.homePenalties)}">No penalties recorded yet.</p>
+                </section>
+
+                <!-- Away Goals -->
+                <section id="away_goals" class="ms-card mg-section">
+                    <header class="mg-card-head">
+                        <h2 class="mg-card-title">
+                            <img class="ms-logo ms-logo-sm"
+                                 th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.awayTeam)} + '.svg'}"
+                                 th:alt="${gamesheet.awayTeam}"
+                                 onerror="this.hidden=true;"/>
+                            <span th:text="${gamesheet.awayTeam} + ' Goals'">Away Goals</span>
+                        </h2>
+                        <span class="mg-pill accent" th:text="${awayGoalsCount}">0</span>
+                    </header>
+
+                    <div th:if="${utils.collectionIsNotEmpty(gamesheet.awayGoals)}">
+                        <div class="ms-scroll">
+                            <table class="mg-edit-table">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Scorer</th>
+                                    <th>Assist 1</th>
+                                    <th>Assist 2</th>
+                                    <th>Type</th>
+                                    <th>Per</th>
+                                    <th>Time</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="goal, rowStat : *{awayGoals}">
+                                    <td class="mg-jersey" th:text="${rowStat.count}">1</td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{awayGoals[__${rowStat.index}__].scorer}"/></td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{awayGoals[__${rowStat.index}__].assist1}"/></td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{awayGoals[__${rowStat.index}__].assist2}"/></td>
+                                    <td>
+                                        <select class="mg-select mg-edit-select" th:field="*{awayGoals[__${rowStat.index}__].goalType}">
+                                            <option th:each="type : ${goalTypes}" th:value="${type}" th:text="${type}"></option>
+                                        </select>
+                                    </td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="1" th:field="*{awayGoals[__${rowStat.index}__].period}"/></td>
+                                    <td><input class="mg-input mg-edit-input sm" type="text" maxlength="5" th:field="*{awayGoals[__${rowStat.index}__].time}"/></td>
+                                    <td>
+                                        <button type="submit" name="removeGoal" class="mg-btn danger-outline sm"
+                                                th:value="'away-' + ${rowStat.index}">Delete</button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mg-card-footer">
+                            <button type="submit" name="save" class="mg-btn sm">Update Goals</button>
+                        </div>
+                    </div>
+                    <p class="mg-empty-inline" th:if="${utils.collectionIsEmpty(gamesheet.awayGoals)}">No goals recorded yet.</p>
+                </section>
+
+                <!-- Away Penalties -->
+                <section id="away_penalties" class="ms-card mg-section">
+                    <header class="mg-card-head">
+                        <h2 class="mg-card-title">
+                            <img class="ms-logo ms-logo-sm"
+                                 th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.awayTeam)} + '.svg'}"
+                                 th:alt="${gamesheet.awayTeam}"
+                                 onerror="this.hidden=true;"/>
+                            <span th:text="${gamesheet.awayTeam} + ' Penalties'">Away Penalties</span>
+                        </h2>
+                        <span class="mg-pill" th:text="${awayPims} + ' PIM'">0 PIM</span>
+                    </header>
+
+                    <div th:if="${utils.collectionIsNotEmpty(gamesheet.awayPenalties)}">
+                        <div class="ms-scroll">
+                            <table class="mg-edit-table">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Player</th>
+                                    <th>Min</th>
+                                    <th>Infraction</th>
+                                    <th>Per</th>
+                                    <th>Time</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="penalty, rowStat : *{awayPenalties}">
+                                    <td class="mg-jersey" th:text="${rowStat.count}">1</td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{awayPenalties[__${rowStat.index}__].jerseyNumber}"/></td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="2" th:field="*{awayPenalties[__${rowStat.index}__].minutes}"/></td>
+                                    <td><input class="mg-input mg-edit-input md" type="text" maxlength="15" th:field="*{awayPenalties[__${rowStat.index}__].infraction}"/></td>
+                                    <td><input class="mg-input mg-edit-input xs" type="text" inputmode="numeric" maxlength="1" th:field="*{awayPenalties[__${rowStat.index}__].period}"/></td>
+                                    <td><input class="mg-input mg-edit-input sm" type="text" maxlength="5" th:field="*{awayPenalties[__${rowStat.index}__].time}"/></td>
+                                    <td>
+                                        <button type="submit" name="removePenalty" class="mg-btn danger-outline sm"
+                                                th:value="'away-' + ${rowStat.index}">Delete</button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mg-card-footer">
+                            <button type="submit" name="save" class="mg-btn sm">Update Penalties</button>
+                        </div>
+                    </div>
+                    <p class="mg-empty-inline" th:if="${utils.collectionIsEmpty(gamesheet.awayPenalties)}">No penalties recorded yet.</p>
+                </section>
+            </form>
+
+            <script>
+                function updateAttendanceCount(containerId) {
+                    var container = document.getElementById(containerId);
+                    if (!container) return;
+                    var boxes = container.querySelectorAll('input[type="checkbox"].mg-att-check');
+                    var checked = 0;
+                    boxes.forEach(function (cb) { if (cb.checked) checked++; });
+                    var pill = container.querySelector('[data-att-count]');
+                    if (pill) pill.textContent = checked + ' / ' + boxes.length;
+                }
+
+                function toggleAttendance(containerId) {
+                    var container = document.getElementById(containerId);
+                    if (!container) return;
+                    var boxes = container.querySelectorAll('input[type="checkbox"].mg-att-check');
+                    var allChecked = boxes.length > 0 && Array.prototype.every.call(boxes, function (cb) { return cb.checked; });
+                    boxes.forEach(function (cb) { cb.checked = !allChecked; });
+                    updateAttendanceCount(containerId);
+                }
+
+                updateAttendanceCount('homeAttendance');
+                updateAttendanceCount('awayAttendance');
+            </script>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

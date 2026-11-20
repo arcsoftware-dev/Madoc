@@ -226,12 +226,14 @@ html:has(.ms-jump) { scroll-behavior: smooth; }
 
 /* ---------- Game rows ---------- */
 .ms-sched-game {
+    position: relative;
     display: grid;
-    grid-template-columns: 6rem minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-columns: 5.75rem minmax(0, 1fr) auto minmax(0, 1fr) 7.5rem;
     align-items: center;
     gap: 0.75rem 1rem;
     padding: 0.9rem 1.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
     transition: background 0.15s;
 }
 .ms-sched-game:last-child { border-bottom: none; }
@@ -245,6 +247,8 @@ html:has(.ms-jump) { scroll-behavior: smooth; }
 }
 
 .ms-sched-team {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     gap: 0.9rem;
@@ -262,6 +266,7 @@ html:has(.ms-jump) { scroll-behavior: smooth; }
     transition: transform 0.2s;
 }
 .ms-sched-team:hover .ms-sched-logo { transform: scale(1.08); }
+.ms-sched-team:hover .ms-sched-name { color: #fff; }
 
 .ms-sched-name {
     min-width: 0;
@@ -269,6 +274,7 @@ html:has(.ms-jump) { scroll-behavior: smooth; }
     letter-spacing: 0.02em;
     color: var(--text);
     overflow-wrap: anywhere;
+    transition: color 0.15s;
 }
 .ms-sched-score {
     flex: 0 0 auto;
@@ -288,17 +294,55 @@ html:has(.ms-jump) { scroll-behavior: smooth; }
 .ms-sched-team.away .ms-sched-name  { order: 3; text-align: left; }
 
 .ms-sched-vs {
-    padding: 0.3rem 0.8rem;
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
-    color: #fff;
-    background: var(--accent);
+    padding: 0.22rem 0.65rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: rgba(243, 244, 246, 0.72);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 999px;
-    transition: background 0.2s, box-shadow 0.2s;
+    user-select: none;
 }
-.ms-sched-vs:hover {
-    background: #e02323;
-    box-shadow: 0 2px 10px rgba(204, 25, 25, 0.5);
+
+.ms-sched-cta {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.85rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(204, 25, 25, 0.2);
+    border: 1px solid rgba(204, 25, 25, 0.55);
+    border-radius: 999px;
+    white-space: nowrap;
+    transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+}
+/* Stretched click target covers the entire game row beneath team links */
+.ms-sched-cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+.ms-cta-arrow {
+    font-size: 1.1em;
+    line-height: 1;
+    transition: transform 0.18s;
+}
+.ms-sched-game:hover:not(:has(.ms-sched-team:hover)) .ms-sched-cta,
+.ms-sched-cta:focus-visible {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 2px 12px rgba(204, 25, 25, 0.45);
+    outline: none;
+}
+.ms-sched-game:hover:not(:has(.ms-sched-team:hover)) .ms-cta-arrow {
+    transform: translateX(2px);
 }
 
 /* ---------- Responsive ---------- */
@@ -307,8 +351,9 @@ html:has(.ms-jump) { scroll-behavior: smooth; }
         grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
         grid-template-areas:
             "time time time"
-            "home vs away";
-        padding: 0.9rem 1rem 1.1rem;
+            "home vs away"
+            "cta cta cta";
+        padding: 0.9rem 1rem 1rem;
     }
     .ms-sched-time {
         grid-area: time;
@@ -318,6 +363,12 @@ html:has(.ms-jump) { scroll-behavior: smooth; }
     .ms-sched-team.home { grid-area: home; }
     .ms-sched-vs        { grid-area: vs; }
     .ms-sched-team.away { grid-area: away; }
+    .ms-sched-cta {
+        grid-area: cta;
+        justify-self: center;
+        margin-top: 0.25rem;
+        padding: 0.4rem 1.05rem;
+    }
 
     /* stacked team: logo, name, score */
     .ms-sched-team {

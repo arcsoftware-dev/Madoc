@@ -1,0 +1,354 @@
+<th:block th:fragment="matchup">
+
+    <!-- Completed game boxscore: Scoring & Penalties (only shown when game is finalized) -->
+    <th:block th:if="${gamesheet.finalized}">
+        <!-- Scoring Summary -->
+        <section class="ms-card mg-section">
+            <header class="mg-card-head">
+                <h2 class="mg-card-title">Scoring Summary</h2>
+                <span class="mg-pill accent"
+                      th:text="${#lists.size(boxscoreGoals) + (#lists.size(boxscoreGoals) == 1 ? ' Goal' : ' Goals')}">0 Goals</span>
+            </header>
+            <div class="ms-scroll" th:if="${!#lists.isEmpty(boxscoreGoals)}">
+                <table class="mg-boxscore-table">
+                    <thead>
+                    <tr>
+                        <th>Per</th>
+                        <th>Time</th>
+                        <th>Team</th>
+                        <th>Scorer</th>
+                        <th>Assists</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="g : ${boxscoreGoals}">
+                        <td>
+                            <span class="mg-period-chip"
+                                  th:text="${g.period == 4 ? 'OT' : (g.period == 1 ? '1st' : (g.period == 2 ? '2nd' : (g.period == 3 ? '3rd' : g.period)))}">1st</span>
+                        </td>
+                        <td class="mg-time-cell" th:text="${g.time}">12:00</td>
+                        <td>
+                            <span class="mg-team-cell">
+                                <img class="ms-logo ms-logo-sm"
+                                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(g.teamName)} + '.svg'}"
+                                     th:alt="${g.teamName}"
+                                     onerror="this.hidden=true;"/>
+                                <span th:text="${g.teamName}">Team</span>
+                            </span>
+                        </td>
+                        <td>
+                            <strong th:text="${g.scorer}">#19 Player</strong>
+                            <span class="mg-goal-badge"
+                                  th:if="${!#strings.isEmpty(g.goalTypeBadge)}"
+                                  th:text="${g.goalTypeBadge}">PP</span>
+                        </td>
+                        <td class="mg-wrap mg-assists-text" th:text="${g.assists}">Unassisted</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="mg-empty-inline" th:if="${#lists.isEmpty(boxscoreGoals)}">No goals were scored in this game.</p>
+        </section>
+
+        <!-- Penalty Summary -->
+        <section class="ms-card mg-section">
+            <header class="mg-card-head">
+                <h2 class="mg-card-title">Penalty Summary</h2>
+                <span class="mg-pill"
+                      th:text="${(utils.countPenaltyMinutes(gamesheet.homePenalties) + utils.countPenaltyMinutes(gamesheet.awayPenalties)) + ' Total PIM'}">0 Total PIM</span>
+            </header>
+            <div class="ms-scroll" th:if="${!#lists.isEmpty(boxscorePenalties)}">
+                <table class="mg-boxscore-table">
+                    <thead>
+                    <tr>
+                        <th>Per</th>
+                        <th>Time</th>
+                        <th>Team</th>
+                        <th>Player</th>
+                        <th>Infraction</th>
+                        <th>Min</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${boxscorePenalties}">
+                        <td>
+                            <span class="mg-period-chip"
+                                  th:text="${p.period == 4 ? 'OT' : (p.period == 1 ? '1st' : (p.period == 2 ? '2nd' : (p.period == 3 ? '3rd' : p.period)))}">1st</span>
+                        </td>
+                        <td class="mg-time-cell" th:text="${p.time}">08:15</td>
+                        <td>
+                            <span class="mg-team-cell">
+                                <img class="ms-logo ms-logo-sm"
+                                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(p.teamName)} + '.svg'}"
+                                     th:alt="${p.teamName}"
+                                     onerror="this.hidden=true;"/>
+                                <span th:text="${p.teamName}">Team</span>
+                            </span>
+                        </td>
+                        <td th:text="${p.player}">#7 Player</td>
+                        <td class="mg-wrap" th:text="${p.infraction}">Tripping</td>
+                        <td><span class="mg-pim-badge" th:text="${p.minutes + 'm'}">2m</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="mg-empty-inline" th:if="${#lists.isEmpty(boxscorePenalties)}">No penalties were called in this game.</p>
+        </section>
+    </th:block>
+
+    <!-- Season History: Previous games between these two teams this season -->
+    <section class="ms-card mg-section">
+        <header class="mg-card-head">
+            <div>
+                <h2 class="mg-card-title">Season Matchup History</h2>
+            </div>
+            <span class="mg-pill accent"
+                  th:if="${#lists.isEmpty(previousMatchups)}">First Meeting This Season</span>
+            <span class="mg-pill accent"
+                  th:if="${!#lists.isEmpty(previousMatchups) and seriesHomeWins > seriesAwayWins}"
+                  th:text="${gamesheet.homeTeam + ' lead ' + seriesHomeWins + '–' + seriesAwayWins + (seriesTies > 0 ? '–' + seriesTies : '')}">Home leads</span>
+            <span class="mg-pill accent"
+                  th:if="${!#lists.isEmpty(previousMatchups) and seriesAwayWins > seriesHomeWins}"
+                  th:text="${gamesheet.awayTeam + ' lead ' + seriesAwayWins + '–' + seriesHomeWins + (seriesTies > 0 ? '–' + seriesTies : '')}">Away leads</span>
+            <span class="mg-pill accent"
+                  th:if="${!#lists.isEmpty(previousMatchups) and seriesHomeWins == seriesAwayWins}"
+                  th:text="${'Series tied ' + seriesHomeWins + '–' + seriesAwayWins + (seriesTies > 0 ? '–' + seriesTies : '')}">Series tied</span>
+        </header>
+
+        <div class="mg-series-strip" th:if="${!#lists.isEmpty(previousMatchups)}">
+            <div class="mg-series-stat">
+                <span class="mg-series-val" th:text="${seriesHomeWins + '–' + seriesAwayWins + '–' + seriesTies}">1-0-0</span>
+                <span class="mg-series-lbl" th:text="${gamesheet.homeTeam + ' H2H'}">Home H2H</span>
+            </div>
+            <div class="mg-series-stat">
+                <span class="mg-series-val" th:text="${#lists.size(previousMatchups)}">1</span>
+                <span class="mg-series-lbl" th:text="${#lists.size(previousMatchups) == 1 ? 'Previous Game' : 'Previous Games'}">Previous Games</span>
+            </div>
+            <div class="mg-series-stat">
+                <span class="mg-series-val" th:text="${seriesHomeGoals + ' – ' + seriesAwayGoals}">4 - 3</span>
+                <span class="mg-series-lbl">H2H Goals</span>
+            </div>
+        </div>
+
+        <div class="mg-history-list" th:if="${!#lists.isEmpty(previousMatchups)}">
+            <a class="mg-history-row"
+               th:each="prev : ${previousMatchups}"
+               th:href="@{/games/{id}(id=${prev.gameId})}">
+                <div class="mg-history-date">
+                    <span th:text="${prev.startTime != null ? #temporals.format(prev.startTime, 'MMM d, yyyy') : 'Date TBD'}">Nov 12, 2025</span>
+                    <span class="mg-history-tag" th:if="${prev.playoffs}">Playoffs</span>
+                </div>
+
+                <div class="mg-history-team home"
+                     th:classappend="${!prev.tie and prev.homeScore > prev.awayScore ? 'winner' : (!prev.tie ? 'loser' : '')}">
+                    <span th:text="${prev.homeTeam}">Home Team</span>
+                    <img class="ms-logo ms-logo-sm"
+                         th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(prev.homeTeam)} + '.svg'}"
+                         th:alt="${prev.homeTeam}"
+                         onerror="this.hidden=true;"/>
+                </div>
+
+                <div class="mg-history-score">
+                    <span th:text="${prev.homeScore}">3</span>
+                    <span class="dash">–</span>
+                    <span th:text="${prev.awayScore}">2</span>
+                </div>
+
+                <div class="mg-history-team away"
+                     th:classappend="${!prev.tie and prev.awayScore > prev.homeScore ? 'winner' : (!prev.tie ? 'loser' : '')}">
+                    <img class="ms-logo ms-logo-sm"
+                         th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(prev.awayTeam)} + '.svg'}"
+                         th:alt="${prev.awayTeam}"
+                         onerror="this.hidden=true;"/>
+                    <span th:text="${prev.awayTeam}">Away Team</span>
+                </div>
+
+                <span class="mg-history-arrow" aria-hidden="true">&rarr;</span>
+            </a>
+        </div>
+
+        <p class="mg-empty-inline" th:if="${#lists.isEmpty(previousMatchups)}"
+           th:text="${'No previous completed games between ' + gamesheet.homeTeam + ' and ' + gamesheet.awayTeam + ' in the ' + gamesheet.seasonYear + ' season.'}">
+            No previous completed games between these teams this season.
+        </p>
+    </section>
+
+    <!-- Season Comparison ("Tale of the Tape") -->
+    <section class="ms-card mg-section" th:if="${homeTeamStats != null or awayTeamStats != null}">
+        <header class="mg-card-head">
+            <h2 class="mg-card-title">Team Comparison</h2>
+            <span class="mg-card-sub" th:text="${gamesheet.seasonYear + ' ' + statsSeasonLabel}">2025 Regular Season</span>
+        </header>
+
+        <div class="mg-compare-header">
+            <div class="mg-compare-team home">
+                <img class="ms-logo ms-logo-sm"
+                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.homeTeam)} + '.svg'}"
+                     th:alt="${gamesheet.homeTeam}"
+                     onerror="this.hidden=true;"/>
+                <span th:text="${gamesheet.homeTeam}">Home Team</span>
+            </div>
+            <span class="mg-compare-label">Stat</span>
+            <div class="mg-compare-team away">
+                <span th:text="${gamesheet.awayTeam}">Away Team</span>
+                <img class="ms-logo ms-logo-sm"
+                     th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.awayTeam)} + '.svg'}"
+                     th:alt="${gamesheet.awayTeam}"
+                     onerror="this.hidden=true;"/>
+            </div>
+        </div>
+
+        <div class="mg-compare-rows"
+             th:with="h=${homeTeamStats}, a=${awayTeamStats},
+                      hGd=${h != null ? (h.goalsFor - h.goalsAgainst) : 0},
+                      aGd=${a != null ? (a.goalsFor - a.goalsAgainst) : 0}">
+            <div class="mg-compare-row" th:if="${homeTeamRank != null or awayTeamRank != null}">
+                <span class="mg-compare-val home"
+                      th:classappend="${homeTeamRank != null and awayTeamRank != null and homeTeamRank < awayTeamRank ? 'lead' : ''}"
+                      th:text="${homeTeamRank != null ? ('#' + homeTeamRank) : '—'}">#1</span>
+                <span class="mg-compare-label">Standing</span>
+                <span class="mg-compare-val away"
+                      th:classappend="${homeTeamRank != null and awayTeamRank != null and awayTeamRank < homeTeamRank ? 'lead' : ''}"
+                      th:text="${awayTeamRank != null ? ('#' + awayTeamRank) : '—'}">#2</span>
+            </div>
+
+            <div class="mg-compare-row">
+                <span class="mg-compare-val home"
+                      th:classappend="${h != null and a != null and h.points > a.points ? 'lead' : ''}"
+                      th:text="${h != null ? (h.wins + '-' + h.losses + '-' + h.ties) : '0-0-0'}">0-0-0</span>
+                <span class="mg-compare-label">Record</span>
+                <span class="mg-compare-val away"
+                      th:classappend="${h != null and a != null and a.points > h.points ? 'lead' : ''}"
+                      th:text="${a != null ? (a.wins + '-' + a.losses + '-' + a.ties) : '0-0-0'}">0-0-0</span>
+            </div>
+
+            <div class="mg-compare-row">
+                <span class="mg-compare-val home"
+                      th:classappend="${h != null and a != null and h.points > a.points ? 'lead' : ''}"
+                      th:text="${h != null ? h.points : 0}">0</span>
+                <span class="mg-compare-label">Points</span>
+                <span class="mg-compare-val away"
+                      th:classappend="${h != null and a != null and a.points > h.points ? 'lead' : ''}"
+                      th:text="${a != null ? a.points : 0}">0</span>
+            </div>
+
+            <div class="mg-compare-row">
+                <span class="mg-compare-val home"
+                      th:classappend="${h != null and a != null and h.goalsFor > a.goalsFor ? 'lead' : ''}"
+                      th:text="${h != null ? h.goalsFor : 0}">0</span>
+                <span class="mg-compare-label">Goals For</span>
+                <span class="mg-compare-val away"
+                      th:classappend="${h != null and a != null and a.goalsFor > h.goalsFor ? 'lead' : ''}"
+                      th:text="${a != null ? a.goalsFor : 0}">0</span>
+            </div>
+
+            <div class="mg-compare-row">
+                <span class="mg-compare-val home"
+                      th:classappend="${h != null and a != null and h.goalsAgainst < a.goalsAgainst ? 'lead' : ''}"
+                      th:text="${h != null ? h.goalsAgainst : 0}">0</span>
+                <span class="mg-compare-label">Goals Against</span>
+                <span class="mg-compare-val away"
+                      th:classappend="${h != null and a != null and a.goalsAgainst < h.goalsAgainst ? 'lead' : ''}"
+                      th:text="${a != null ? a.goalsAgainst : 0}">0</span>
+            </div>
+
+            <div class="mg-compare-row">
+                <span class="mg-compare-val home"
+                      th:classappend="${hGd > aGd ? 'lead' : ''}"
+                      th:text="${hGd > 0 ? ('+' + hGd) : hGd}">0</span>
+                <span class="mg-compare-label">Goal Diff</span>
+                <span class="mg-compare-val away"
+                      th:classappend="${aGd > hGd ? 'lead' : ''}"
+                      th:text="${aGd > 0 ? ('+' + aGd) : aGd}">0</span>
+            </div>
+
+            <div class="mg-compare-row">
+                <span class="mg-compare-val home"
+                      th:classappend="${h != null and a != null and h.penaltyMinutes < a.penaltyMinutes ? 'lead' : ''}"
+                      th:text="${h != null ? h.penaltyMinutes : 0}">0</span>
+                <span class="mg-compare-label">Penalty Min</span>
+                <span class="mg-compare-val away"
+                      th:classappend="${h != null and a != null and a.penaltyMinutes < h.penaltyMinutes ? 'lead' : ''}"
+                      th:text="${a != null ? a.penaltyMinutes : 0}">0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Rosters -->
+    <section class="mg-two-col">
+        <!-- Home Roster -->
+        <div class="ms-card">
+            <header class="mg-card-head">
+                <h3 class="mg-card-title">
+                    <img class="ms-logo ms-logo-sm"
+                         th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.homeTeam)} + '.svg'}"
+                         th:alt="${gamesheet.homeTeam}"
+                         onerror="this.hidden=true;"/>
+                    <span th:text="${gamesheet.homeTeam}">Home Team</span>
+                </h3>
+                <span class="mg-pill" th:text="${#lists.size(homeTeamPlayers) + ' Players'}">0 Players</span>
+            </header>
+            <div class="ms-scroll" th:if="${!#lists.isEmpty(homeTeamPlayers)}">
+                <table class="mg-roster-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Player</th>
+                        <th>Pos</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="player : ${homeTeamPlayers}">
+                        <td class="mg-jersey" th:text="${player.jerseyNumber != null ? player.jerseyNumber : '—'}">19</td>
+                        <td th:text="${player.fullName}">Player Name</td>
+                        <td>
+                            <span class="mg-pos-chip"
+                                  th:if="${player.position != null}"
+                                  th:text="${player.position.code}">F</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="mg-empty-inline" th:if="${#lists.isEmpty(homeTeamPlayers)}">No active roster available.</p>
+        </div>
+
+        <!-- Away Roster -->
+        <div class="ms-card">
+            <header class="mg-card-head">
+                <h3 class="mg-card-title">
+                    <img class="ms-logo ms-logo-sm"
+                         th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(gamesheet.awayTeam)} + '.svg'}"
+                         th:alt="${gamesheet.awayTeam}"
+                         onerror="this.hidden=true;"/>
+                    <span th:text="${gamesheet.awayTeam}">Away Team</span>
+                </h3>
+                <span class="mg-pill" th:text="${#lists.size(awayTeamPlayers) + ' Players'}">0 Players</span>
+            </header>
+            <div class="ms-scroll" th:if="${!#lists.isEmpty(awayTeamPlayers)}">
+                <table class="mg-roster-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Player</th>
+                        <th>Pos</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="player : ${awayTeamPlayers}">
+                        <td class="mg-jersey" th:text="${player.jerseyNumber != null ? player.jerseyNumber : '—'}">19</td>
+                        <td th:text="${player.fullName}">Player Name</td>
+                        <td>
+                            <span class="mg-pos-chip"
+                                  th:if="${player.position != null}"
+                                  th:text="${player.position.code}">F</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="mg-empty-inline" th:if="${#lists.isEmpty(awayTeamPlayers)}">No active roster available.</p>
+        </div>
+    </section>
+
+</th:block>
