@@ -57,12 +57,12 @@ public class HomeView {
         List<ScheduleItemDto> upcomingMatches = scheduleController.getUpcomingSchedule(3).getBody();
         model.addAttribute("upcomingMatches", upcomingMatches);
 
-        return "index";
+        return "index-modern";
     }
 
     @GetMapping("/login")
     public String login() {
-        return "login";
+        return "login-modern";
     }
 
     @PostMapping("/login")
@@ -70,8 +70,12 @@ public class HomeView {
             HttpServletResponse response,
             @RequestParam Map<String, String> paramMap
     ){
-        authorizationController.login(response, paramMap);
-        return "redirect:/";
+        try {
+            authorizationController.login(response, paramMap);
+            return "redirect:/";
+        } catch (dev.arcsoftware.madoc.exception.UnauthorizedException ex) {
+            return "redirect:/login?error";
+        }
     }
 
     @GetMapping("/logout")

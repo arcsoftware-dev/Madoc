@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL Schedule</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/schedule-modern.css}"/>
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page"
+          th:with="st=${seasonType.name()}, yr=${year}">
+
+        <!-- Heading -->
+        <section class="ms-heading">
+            <div>
+                <span class="ms-eyebrow" th:text="|${yr} ${seasonType.getLabel()}|">2025 Regular Season</span>
+                <h1 class="ms-title">Schedule</h1>
+            </div>
+            <button type="button"
+                    class="ms-print-trigger"
+                    th:if="${!#lists.isEmpty(teams)}"
+                    onclick="document.getElementById('printable-dialog').showModal();">
+                <svg class="ms-print-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 9V2h12v7"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                <span>Printable Schedule</span>
+            </button>
+        </section>
+
+        <!-- Toolbar -->
+        <section class="ms-toolbar">
+            <div class="ms-segmented">
+                <a th:href="@{/schedule(season-type='REGULAR_SEASON', year=${yr})}"
+                   th:classappend="${st == 'REGULAR_SEASON'} ? 'active' : ''">Regular Season</a>
+                <a th:href="@{/schedule(season-type='PLAYOFFS', year=${yr})}"
+                   th:classappend="${st == 'PLAYOFFS'} ? 'active' : ''">Playoffs</a>
+            </div>
+
+            <span class="ms-spacer"></span>
+
+            <form th:action="@{/schedule}" method="get" id="year-select-form">
+                <input type="hidden" name="season-type" th:value="${st}" />
+                <select name="year" id="year" class="ms-select" aria-label="Season year" required
+                        onchange="document.getElementById('year-select-form').submit();">
+                    <option th:each="season_year : ${season_years}"
+                            th:value="${season_year}"
+                            th:text="${season_year}"
+                            th:selected="${season_year == yr}">
+                    </option>
+                </select>
+            </form>
+        </section>
+
+        <!-- Jump nav (only useful when both sections exist) -->
+        <section class="ms-toolbar"
+                 th:if="${!#lists.isEmpty(upcomingSchedule) and !#lists.isEmpty(completedSchedule)}">
+            <nav class="ms-segmented ms-jump" aria-label="Jump to section">
+                <a href="#upcoming-games">Upcoming <span class="ms-jump-count" th:text="${upcomingCount}">0</span></a>
+                <a href="#completed-games">Completed <span class="ms-jump-count" th:text="${completedCount}">0</span></a>
+            </nav>
+        </section>
+
+        <!-- Printable schedule modal -->
+        <dialog id="printable-dialog"
+                class="ms-dialog"
+                aria-labelledby="printable-dialog-title"
+                onclick="if (event.target === this) this.close();">
+            <div class="ms-dialog-box">
+                <header class="ms-dialog-head">
+                    <h2 id="printable-dialog-title">Printable Schedule</h2>
+                    <button type="button"
+                            class="ms-dialog-close"
+                            aria-label="Close"
+                            onclick="document.getElementById('printable-dialog').close();">&times;</button>
+                </header>
+                <form class="ms-dialog-body"
+                      th:action="@{/api/schedule/printable}"
+                      method="get"
+                      onsubmit="document.getElementById('printable-dialog').close();">
+                    <p class="ms-dialog-desc"
+                       th:text="|Download the ${yr} ${seasonType.getLabel()} schedule for one team or the whole league.|">
+                        Download the schedule for one team or the whole league.
+                    </p>
+                    <label class="ms-dialog-label" for="team-filter">Team</label>
+                    <select name="team-filter" id="team-filter" class="ms-select ms-dialog-select" required>
+                        <option value="ALL" selected>All Teams</option>
+                        <option th:each="team : ${teams}" th:value="${team}" th:text="${team}"></option>
+                    </select>
+                    <input type="hidden" name="year" th:value="${yr}"/>
+                    <input type="hidden" name="season-type" th:value="${seasonType}"/>
+                    <div class="ms-dialog-actions">
+                        <button type="button"
+                                class="ms-dialog-cancel"
+                                onclick="document.getElementById('printable-dialog').close();">Cancel</button>
+                        <button type="submit" class="ms-download-btn">Download</button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <!-- Upcoming games -->
+        <section class="ms-sched-section" id="upcoming-games" th:if="${!#lists.isEmpty(upcomingSchedule)}">
+            <h2 class="ms-section-title">
+                Upcoming Games
+                <span class="ms-section-count" th:text="${upcomingCount}">0</span>
+            </h2>
+            <!-- th:replace is processed before th:each, so the loop lives on a wrapper block -->
+            <th:block th:each="gameDay : ${upcomingSchedule}">
+                <th:block th:replace="~{fragments/schedule-day :: dayCard(${gameDay}, ${yr})}"></th:block>
+            </th:block>
+        </section>
+
+        <!-- Completed games -->
+        <section class="ms-sched-section" id="completed-games" th:if="${!#lists.isEmpty(completedSchedule)}">
+            <h2 class="ms-section-title">
+                Completed Games
+                <span class="ms-section-count" th:text="${completedCount}">0</span>
+            </h2>
+            <!-- th:replace is processed before th:each, so the loop lives on a wrapper block -->
+            <th:block th:each="gameDay : ${completedSchedule}">
+                <th:block th:replace="~{fragments/schedule-day :: dayCard(${gameDay}, ${yr})}"></th:block>
+            </th:block>
+        </section>
+
+        <p class="ms-card ms-empty"
+           th:if="${#lists.isEmpty(upcomingSchedule) and #lists.isEmpty(completedSchedule)}">No games scheduled for this season yet.</p>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

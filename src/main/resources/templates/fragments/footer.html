@@ -1,14 +1,27 @@
 <footer class="main-footer" th:fragment="footer" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
-    <p th:text="'&copy; ' + ${#dates.year(#dates.createNow())} + ' Arc Software'">&copy; 2025 Arc Software</p>
-    <p th:text="${viewCount == null ? '' : 'View Count: ' + viewCount}">View Count</p>
-    <div sec:authorize="isAnonymous()">
-        <a th:href="@{/login}">Login</a>
-    </div>
-    <div sec:authorize="isAuthenticated()">
-        <div>
-            <span>Logged in as: </span>
-            <span sec:authentication="name"></span>
+    <div class="footer-inner">
+        <a th:href="@{/}" class="footer-brand">
+            <img th:src="@{/assets/mmhl.svg}" alt="MMHL Logo" class="footer-logo" />
+            <span class="footer-brand-name">Madoc Mens Hockey League</span>
+        </a>
+
+        <div class="footer-meta">
+            <span th:text="|&copy; ${#dates.year(#dates.createNow())} Arc Software|">&copy; 2025 Arc Software</span>
+            <span class="footer-views" th:if="${viewCount != null}">
+                <span class="footer-views-dot" aria-hidden="true"></span>
+                <span th:text="|${viewCount} views|">0 views</span>
+            </span>
         </div>
-        <a th:href="@{/logout}">Logout</a>
+
+        <div class="footer-auth" sec:authorize="isAnonymous()">
+            <a class="footer-auth-btn" th:href="@{/login}">Admin Login</a>
+        </div>
+        <div class="footer-auth" sec:authorize="isAuthenticated()">
+            <span class="footer-user">
+                <span class="footer-user-label">Signed in as</span>
+                <strong sec:authentication="name">user</strong>
+            </span>
+            <a class="footer-auth-btn logout" th:href="@{/logout}">Logout</a>
+        </div>
     </div>
 </footer>

@@ -73,7 +73,7 @@ public class TeamsView {
         model.addAttribute("year", normalizedRequest.left());
         model.addAttribute("seasonType", normalizedRequest.right());
         model.addAttribute("teamData", teamData);
-        return "team-details";
+        return "team-details-modern";
     }
 
     //Just need teamname and roster
@@ -99,8 +99,9 @@ public class TeamsView {
                     .build());
         }
 
+        model.addAttribute("year", normalizedRequest.left());
         model.addAttribute("teams", teams);
-        return "teams";
+        return "teams-modern";
     }
 
     private void normalizeTeamDataDtoForMissingRanks(List<RosterAssignmentDto> roster){

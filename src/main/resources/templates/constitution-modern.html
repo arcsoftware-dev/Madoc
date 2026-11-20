@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL Constitution &amp; Rules</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/constitution-modern.css}"/>
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page">
+
+        <!-- Heading -->
+        <section class="ms-heading">
+            <div>
+                <span class="ms-eyebrow"
+                      th:text="${!#lists.isEmpty(rules)} ? |League Governance · ${#lists.size(rules)} Sections| : 'League Governance'">League Governance</span>
+                <h1 class="ms-title">Constitution &amp; Rules</h1>
+            </div>
+
+            <button type="button"
+                    class="ms-const-action"
+                    sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]')"
+                    onclick="document.getElementById('replace-rules-dialog').showModal();">
+                <svg class="ms-const-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>Replace Ruleset</span>
+            </button>
+        </section>
+
+        <!-- Admin upload modal -->
+        <dialog id="replace-rules-dialog"
+                class="ms-dialog"
+                aria-labelledby="replace-rules-title"
+                sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]')"
+                onclick="if (event.target === this) this.close();">
+            <div class="ms-dialog-box">
+                <header class="ms-dialog-head">
+                    <h2 id="replace-rules-title">Replace Rule Set</h2>
+                    <button type="button"
+                            class="ms-dialog-close"
+                            aria-label="Close"
+                            onclick="document.getElementById('replace-rules-dialog').close();">&times;</button>
+                </header>
+                <form class="ms-dialog-body"
+                      th:action="@{/constitution/replace}"
+                      method="post"
+                      enctype="multipart/form-data">
+                    <p class="ms-dialog-desc">Upload a file to replace the current league constitution and rules.</p>
+                    <input type="file" name="file" class="ms-file-input" required />
+                    <div class="ms-dialog-actions">
+                        <button type="button"
+                                class="ms-dialog-cancel"
+                                onclick="document.getElementById('replace-rules-dialog').close();">Cancel</button>
+                        <button type="submit" name="replace" class="ms-submit-btn">Replace</button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <!-- Search + mobile section jump -->
+        <section class="ms-const-bar" th:if="${!#lists.isEmpty(rules)}">
+            <div class="ms-search-wrap">
+                <svg class="ms-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="search"
+                       id="rule-search"
+                       class="ms-search-input"
+                       placeholder="Search rules..."
+                       aria-label="Search rules" />
+                <button type="button"
+                        id="rule-search-clear"
+                        class="ms-search-clear"
+                        aria-label="Clear search"
+                        hidden>&times;</button>
+            </div>
+
+            <select id="mobile-rule-jump"
+                    class="ms-select ms-mobile-jump"
+                    aria-label="Jump to rule"
+                    onchange="if (this.value) { document.getElementById(this.value).scrollIntoView({behavior: 'smooth'}); this.selectedIndex = 0; }">
+                <option value="">Jump to section...</option>
+                <option th:each="rule, rowStat : ${rules}"
+                        th:value="|rule-${rowStat.count}|"
+                        th:text="|${rowStat.count}. ${rule.title}|">1. Rule Title</option>
+            </select>
+        </section>
+
+        <!-- TOC + Rules -->
+        <div class="ms-const-layout" th:if="${!#lists.isEmpty(rules)}">
+            <aside class="ms-const-toc" aria-label="Rule sections">
+                <div class="ms-toc-head">Sections</div>
+                <ul class="ms-toc-list">
+                    <li th:each="rule, rowStat : ${rules}" th:attr="data-rule-item=|rule-${rowStat.count}|">
+                        <a th:href="|#rule-${rowStat.count}|">
+                            <span class="ms-toc-num" th:text="${rowStat.count < 10 ? '0' + rowStat.count : rowStat.count}">01</span>
+                            <span th:text="${rule.title}">Rule Title</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <section class="ms-rules-list" id="rules-list">
+                <article class="ms-rule-card"
+                         th:each="rule, rowStat : ${rules}"
+                         th:id="|rule-${rowStat.count}|">
+                    <header class="ms-rule-head">
+                        <span class="ms-rule-num" th:text="${rowStat.count < 10 ? '0' + rowStat.count : rowStat.count}">01</span>
+                        <h2 class="ms-rule-title" th:text="${rule.title}">Rule Title</h2>
+                    </header>
+                    <p class="ms-rule-desc" th:text="${rule.description}">Description</p>
+                </article>
+
+                <p class="ms-card ms-empty" id="rules-no-match" hidden>No rules match your search.</p>
+            </section>
+        </div>
+
+        <p class="ms-card ms-empty" th:if="${#lists.isEmpty(rules)}">No constitution rules are posted yet.</p>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+
+    <script th:if="${!#lists.isEmpty(rules)}">
+        (function () {
+            var input = document.getElementById('rule-search');
+            var clearBtn = document.getElementById('rule-search-clear');
+            var cards = document.querySelectorAll('.ms-rule-card');
+            var noMatch = document.getElementById('rules-no-match');
+            if (!input) return;
+
+            function filter() {
+                var q = input.value.trim().toLowerCase();
+                if (clearBtn) clearBtn.hidden = input.value.length === 0;
+                var visible = 0;
+                cards.forEach(function (card) {
+                    var match = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+                    card.hidden = !match;
+                    var tocItem = document.querySelector('[data-rule-item="' + card.id + '"]');
+                    if (tocItem) tocItem.hidden = !match;
+                    if (match) visible++;
+                });
+                if (noMatch) noMatch.hidden = visible > 0;
+            }
+
+            input.addEventListener('input', filter);
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    input.value = '';
+                    filter();
+                    input.focus();
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+/* Modern teams page. Builds on stats-modern.css (ms-* classes) and the main.css palette. */
+
+/* Logo quick-nav */
+.ms-teamnav {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.25rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.ms-teamnav a {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: 0.5rem;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    transition: border-color 0.2s, transform 0.2s;
+}
+.ms-teamnav a:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+.ms-teamnav img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Wider container than the stats pages so cards can sit 3 across on desktop */
+.ms-page.ms-wide { max-width: 1500px; }
+
+/* Team cards: as many columns as fit at >=420px each (3 across on desktop,
+   2 on smaller laptops/tablets, 1 on phones) */
+.ms-team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+    gap: 1.25rem;
+    align-items: start;
+}
+.ms-team-card {
+    min-width: 0; /* stop a wide table from stretching the grid track */
+    scroll-margin-top: 5rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ms-team-card:hover,
+.ms-team-card:target {
+    border-color: rgba(204, 25, 25, 0.6);
+}
+.ms-team-card .ms-scroll {
+    max-height: none;
+}
+
+.ms-team-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, rgba(204, 25, 25, 0.22), rgba(204, 25, 25, 0) 70%), #111;
+    border-bottom: 2px solid var(--accent);
+}
+.ms-team-logo {
+    flex: 0 0 auto;
+    display: block;
+    width: 4.25rem;
+    height: 4.25rem;
+    object-fit: contain;
+    transition: transform 0.2s;
+}
+a:hover > .ms-team-logo { transform: scale(1.06); }
+.ms-team-title {
+    min-width: 0;
+}
+.ms-team-title h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    letter-spacing: 0.03em;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ms-team-link {
+    display: inline-block;
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    transition: letter-spacing 0.2s, color 0.2s;
+}
+.ms-team-link:hover {
+    color: var(--text);
+    letter-spacing: 0.18em;
+}
+
+/* Roster rows: slightly tighter so a roster fits a 3-across card without scrolling */
+@media (min-width: 701px) {
+    .ms-roster thead th { padding: 0.8rem 0.75rem; }
+    .ms-roster tbody td { padding: 0.65rem 0.75rem; font-size: 1rem; }
+}
+/* Roster rows */
+.ms-roster tbody td:nth-child(2) { text-align: left; }
+.ms-roster thead th:nth-child(2),
+.ms-roster thead th:nth-child(3),
+.ms-roster thead th:nth-child(4),
+.ms-roster tbody td:nth-child(3),
+.ms-roster tbody td:nth-child(4) { text-align: left; }
+.ms-roster .ms-num {
+    width: 1%;
+    text-align: center;
+    color: rgba(243, 244, 246, 0.6);
+}
+.ms-roster tbody tr.is-vacant td {
+    color: rgba(243, 244, 246, 0.4);
+    font-style: italic;
+}
+.ms-roster tbody tr.is-inactive td {
+    color: rgba(243, 244, 246, 0.45);
+    text-decoration: line-through;
+    text-decoration-color: rgba(243, 244, 246, 0.5);
+}
+.ms-pos {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+}
+.ms-rookie {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.4rem;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+/* ---------- Team details ---------- */
+.ms-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, rgba(204, 25, 25, 0.22), rgba(204, 25, 25, 0) 65%), var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 3px solid var(--accent);
+    border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+.ms-hero-logo {
+    flex: 0 0 auto;
+    width: 8rem;
+    height: 8rem;
+    object-fit: contain;
+}
+.ms-hero-text { min-width: 0; }
+.ms-hero .ms-title {
+    overflow-wrap: anywhere;
+}
+
+.ms-block { margin-top: 1.75rem; }
+.ms-block .ms-scroll { max-height: none; }
+.ms-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 0.9rem;
+    font-size: 1.35rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+}
+.ms-section-title::before {
+    content: "";
+    width: 4px;
+    height: 1.4rem;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+@media (max-width: 700px) {
+    .ms-teamnav { margin-bottom: 1rem; }
+    .ms-teamnav a { width: 3rem; height: 3rem; }
+    .ms-team-grid { gap: 1rem; }
+    .ms-team-head { padding: 0.75rem 1rem; gap: 0.75rem; }
+    .ms-team-logo { width: 3.25rem; height: 3.25rem; }
+    .ms-team-title h2 { font-size: 1.3rem; }
+
+    .ms-hero { flex-direction: column; text-align: center; gap: 0.75rem; padding: 1rem; }
+    .ms-hero-logo { width: 6rem; height: 6rem; }
+    .ms-hero .ms-title::after { margin-left: auto; margin-right: auto; }
+    .ms-block { margin-top: 1.25rem; }
+    .ms-section-title { font-size: 1.15rem; }
+}

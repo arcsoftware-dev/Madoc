@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL Rosters</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/teams-modern.css}" />
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page ms-wide">
+
+        <!-- Heading -->
+        <section class="ms-heading">
+            <div>
+                <span class="ms-eyebrow" th:text="|${year} Season Rosters|">Season Rosters</span>
+                <h1 class="ms-title">Team Rosters</h1>
+            </div>
+        </section>
+
+        <!-- Toolbar -->
+        <section class="ms-toolbar">
+            <span class="ms-spacer"></span>
+            <form th:action="@{/teams}" method="get" id="year-select-form">
+                <select name="year" id="year" class="ms-select" aria-label="Season year" required
+                        onchange="document.getElementById('year-select-form').submit();">
+                    <option th:each="season_year : ${season_years}"
+                            th:value="${season_year}"
+                            th:text="${season_year}"
+                            th:selected="${season_year == year}">
+                    </option>
+                </select>
+            </form>
+        </section>
+
+        <!-- Logo quick-nav -->
+        <nav class="ms-teamnav" aria-label="Jump to team" th:if="${!#lists.isEmpty(teams)}">
+            <a th:each="team : ${teams}"
+               th:href="${'#team-' + utils.stripSpaces(team.teamName)}"
+               th:title="${team.teamName}">
+                <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(team.teamName)} + '.svg'}"
+                     th:alt="${team.teamName}"
+                     onerror="this.hidden=true;" />
+            </a>
+        </nav>
+
+        <!-- Team cards -->
+        <section class="ms-team-grid">
+            <article class="ms-card ms-team-card"
+                     th:each="team : ${teams}"
+                     th:id="|team-${utils.stripSpaces(team.teamName)}|">
+
+                <header class="ms-team-head">
+                    <a th:href="@{/teams/{teamName}(teamName=${utils.stripSpaces(team.teamName)}, year=${year})}"
+                       th:title="|View ${team.teamName}|">
+                        <img class="ms-team-logo"
+                             th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(team.teamName)} + '.svg'}"
+                             th:alt="${team.teamName}"
+                             onerror="this.hidden=true;" />
+                    </a>
+                    <div class="ms-team-title">
+                        <h2 th:text="${team.teamName}">Team Name</h2>
+                        <a class="ms-team-link"
+                           th:href="@{/teams/{teamName}(teamName=${utils.stripSpaces(team.teamName)}, year=${year})}">View team &rarr;</a>
+                    </div>
+                </header>
+
+                <div class="ms-scroll">
+                    <table class="ms-table ms-roster">
+                        <thead>
+                        <tr>
+                            <th class="ms-rank-col" aria-label="Jersey number">#</th>
+                            <th>Player</th>
+                            <th>Position</th>
+                            <th>Draft</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="player : ${team.roster}"
+                            th:if="${player.isActive()}"
+                            th:classappend="${player.fullName == 'Vacant'} ? 'is-vacant' : ''">
+                            <td class="ms-num" th:text="${player.jerseyNumber ?: '–'}">0</td>
+                            <td class="ms-player" th:text="${player.fullName}">Player Name</td>
+                            <td><span class="ms-pos" th:text="${player.position.getLabel()}">Position</span></td>
+                            <td>
+                                <span th:text="${player.draftPosition}">Rank</span>
+                                <span class="ms-rookie" th:if="${player.rookie}" title="Rookie">R</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+
+        <p class="ms-empty" th:if="${#lists.isEmpty(teams)}">No rosters available yet.</p>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

@@ -53,7 +53,7 @@ public class DocumentService {
 
         String awayTeam = gameEntity.getAwayTeam().getTeamName();
         List<RosterAssignmentDto> awayRoster = rosterRepository.getAssignmentsByYearAndTeam(gameEntity.getYear(), awayTeam);
-        if(CollectionUtils.isEmpty(homeRoster)){
+        if(CollectionUtils.isEmpty(awayRoster)){
             throw new ResultNotFoundException("No roster found for team "+awayTeam+" for game id "+gameId);
         }
         awayRoster.sort(Comparator.comparing(RosterAssignmentDto::getDraftPosition));

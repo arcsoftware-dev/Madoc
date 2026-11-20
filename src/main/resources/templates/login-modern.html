@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL Login</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/login-modern.css}"/>
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page ms-login-page">
+        <section class="ms-login-card" aria-labelledby="login-heading">
+            <header class="ms-login-head">
+                <span class="ms-eyebrow">Madoc Mens Hockey League</span>
+                <h1 id="login-heading">Sign In</h1>
+            </header>
+
+            <div class="ms-login-body">
+                <div class="ms-alert error" role="alert" th:if="${param.error}">
+                    Invalid username or password.
+                </div>
+                <div class="ms-alert info" role="status" th:if="${param.logout}">
+                    You have been logged out.
+                </div>
+
+                <form th:action="@{/login}" method="post" class="login-form">
+                    <div class="ms-field">
+                        <label for="username">Username</label>
+                        <input type="text"
+                               id="username"
+                               name="username"
+                               class="ms-input"
+                               placeholder="Enter your username"
+                               autocomplete="username"
+                               autocapitalize="none"
+                               autocorrect="off"
+                               spellcheck="false"
+                               required
+                               autofocus />
+                    </div>
+
+                    <div class="ms-field">
+                        <label for="password">Password</label>
+                        <div class="ms-password-wrap">
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   class="ms-input"
+                                   placeholder="Enter your password"
+                                   autocomplete="current-password"
+                                   required />
+                            <button type="button"
+                                    class="ms-password-toggle"
+                                    aria-label="Show password"
+                                    onclick="var p=document.getElementById('password'); var show=p.type==='password'; p.type=show?'text':'password'; this.textContent=show?'Hide':'Show'; this.setAttribute('aria-label', show?'Hide password':'Show password');">Show</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="ms-login-submit">Login</button>
+                </form>
+
+                <a class="ms-login-back" th:href="@{/}">&larr; Back to home</a>
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+</body>
+</html>

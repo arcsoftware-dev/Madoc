@@ -1,0 +1,13 @@
+<!-- Sortable column header for stats-modern.html. Shows an arrow only on the active sort column. -->
+<th th:fragment="sortHeader(label, tooltip, playerType, sortField, sortOrder, requestSortField, seasonType, year)"
+    th:classappend="${requestSortField == sortField} ? 'is-sorted' : ''">
+    <a th:href="@{/stats/{playerType}(playerType=${playerType}, sort-field=${sortField}, sort-order=${requestSortField == sortField ? (sortOrder == 'ASC' ? 'DESC' : 'ASC') : 'DESC'}, season-type=${seasonType}, year=${year})}"
+       th:title="${tooltip}"
+       class="ms-sort">
+        <span th:text="${label}">GP</span>
+        <span class="ms-sort-icon"
+              th:if="${requestSortField == sortField}"
+              th:classappend="${sortOrder == 'ASC'} ? 'asc' : 'desc'"
+              aria-hidden="true"></span>
+    </a>
+</th>

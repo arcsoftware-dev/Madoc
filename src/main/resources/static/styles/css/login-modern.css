@@ -1,0 +1,166 @@
+/* Modern login page. Builds on stats-modern.css (ms-* base) and main.css palette. */
+
+.ms-login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.ms-login-card {
+    width: 100%;
+    max-width: 430px;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 18px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+}
+
+.ms-login-head {
+    padding: 1.65rem 1.75rem 1.4rem;
+    text-align: center;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(204, 25, 25, 0.3), rgba(204, 25, 25, 0) 70%),
+        #111;
+    border-bottom: 2px solid var(--accent);
+}
+.ms-login-head .ms-eyebrow {
+    margin-bottom: 0.3rem;
+}
+.ms-login-head h1 {
+    margin: 0;
+    font-size: 1.9rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+}
+
+.ms-login-body {
+    padding: 1.6rem 1.75rem 1.75rem;
+}
+
+.ms-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.15rem;
+    padding: 0.75rem 0.95rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    border-radius: 10px;
+}
+.ms-alert.error {
+    color: #fecaca;
+    background: rgba(204, 25, 25, 0.2);
+    border: 1px solid rgba(204, 25, 25, 0.55);
+}
+.ms-alert.info {
+    color: #e5e7eb;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.ms-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1.1rem;
+}
+.ms-field label {
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.7);
+}
+.ms-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 1rem;
+    color: var(--text);
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ms-input::placeholder {
+    color: rgba(243, 244, 246, 0.35);
+}
+.ms-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(204, 25, 25, 0.22);
+}
+
+.ms-password-wrap {
+    position: relative;
+}
+.ms-password-wrap .ms-input {
+    padding-right: 3.4rem;
+}
+.ms-password-toggle {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.3rem 0.55rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.65);
+    background: rgba(255, 255, 255, 0.06);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+}
+.ms-password-toggle:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.ms-login-submit {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.8rem 1.25rem;
+    font: inherit;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    cursor: pointer;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    box-shadow: 0 4px 16px rgba(204, 25, 25, 0.45);
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.ms-login-submit:hover {
+    background: #e02323;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(204, 25, 25, 0.55);
+}
+
+.ms-login-back {
+    display: block;
+    margin-top: 1.25rem;
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.6);
+    transition: color 0.2s;
+}
+.ms-login-back:hover {
+    color: var(--accent);
+}
+
+@media (max-width: 700px) {
+    .ms-login-head { padding: 1.35rem 1.25rem 1.15rem; }
+    .ms-login-head h1 { font-size: 1.6rem; }
+    .ms-login-body { padding: 1.35rem 1.25rem 1.5rem; }
+}
