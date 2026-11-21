@@ -170,15 +170,8 @@
             <div class="ms-card mp-card">
                 <header class="mp-card-head">
                     <h3 class="mp-card-title">Recent Games</h3>
-                    <span class="mp-pill" id="gamelog-count-pill">
-                        <th:block th:if="${player.totalGameLogs > #lists.size(player.gameLogs)}">
-                            Showing <span id="gamelog-shown-count" th:text="${#lists.size(player.gameLogs)}">5</span> of <span id="gamelog-total-count" th:text="${player.totalGameLogs}">10</span>
-                        </th:block>
-                        <th:block th:if="${player.totalGameLogs <= #lists.size(player.gameLogs)}">
-                            <span id="gamelog-shown-count" th:text="${#lists.size(player.gameLogs)}">5</span>
-                            <span th:text="${#lists.size(player.gameLogs) == 1 ? ' Game' : ' Games'}"> Games</span>
-                        </th:block>
-                    </span>
+                    <span class="mp-pill" id="gamelog-count-pill"
+                          th:text="${player.totalGameLogs > #lists.size(player.gameLogs) ? ('Showing ' + #lists.size(player.gameLogs) + ' of ' + player.totalGameLogs) : (#lists.size(player.gameLogs) + (#lists.size(player.gameLogs) == 1 ? ' Game' : ' Games'))}">Showing 5 of 10</span>
                 </header>
                 <div class="ms-scroll">
                     <table class="ms-table mp-table mp-gamelog-table">
