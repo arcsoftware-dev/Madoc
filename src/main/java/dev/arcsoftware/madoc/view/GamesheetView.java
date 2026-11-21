@@ -9,9 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,7 +24,10 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import dev.arcsoftware.madoc.controller.GameController;
 import dev.arcsoftware.madoc.controller.RosterController;
@@ -56,6 +61,9 @@ import lombok.extern.slf4j.Slf4j;
 public class GamesheetView {
 
     private static final String GAMESHEET_VIEW = "gamesheet-modern";
+    private static final Pattern YOUTUBE_ID_PATTERN = Pattern.compile("^[A-Za-z0-9_-]{6,20}$");
+    private static final Pattern YOUTUBE_URL_PATTERN = Pattern.compile(
+            "(?:youtube\\.com/(?:watch\\?(?:.*&)?v=|embed/|live/|shorts/)|youtu\\.be/)([A-Za-z0-9_-]{6,20})");
 
     private final GameController gameController;
     private final RosterController rosterController;
@@ -438,6 +446,47 @@ public class GamesheetView {
         }
 
         return GAMESHEET_VIEW;
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
+    @PostMapping("/{gameId}/video")
+    public String updateGameVideo(
+            @PathVariable("gameId") int gameId,
+            @RequestParam(value = "videoId", required = false) String rawVideoId,
+            @RequestParam(value = "clearVideo", required = false, defaultValue = "false") boolean clearVideo,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            String normalizedId = clearVideo ? null : normalizeYoutubeVideoId(rawVideoId);
+            gameService.updateVideoId(gameId, normalizedId);
+            redirectAttributes.addFlashAttribute("videoSuccess",
+                    normalizedId == null ? "Game video removed." : "Game video updated.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("videoError", e.getMessage());
+            redirectAttributes.addFlashAttribute("videoInput", rawVideoId);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Duplicate videoId rejected for game {}: {}", gameId, rawVideoId);
+            redirectAttributes.addFlashAttribute("videoError",
+                    "That YouTube video ID is already assigned to another game.");
+            redirectAttributes.addFlashAttribute("videoInput", rawVideoId);
+        }
+        return "redirect:/games/" + gameId;
+    }
+
+    private String normalizeYoutubeVideoId(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String trimmed = raw.trim();
+        Matcher urlMatcher = YOUTUBE_URL_PATTERN.matcher(trimmed);
+        if (urlMatcher.find()) {
+            return urlMatcher.group(1);
+        }
+        if (YOUTUBE_ID_PATTERN.matcher(trimmed).matches()) {
+            return trimmed;
+        }
+        throw new IllegalArgumentException(
+                "Please enter a valid YouTube video ID (e.g. 09d9oyG5dzQ) or YouTube link.");
     }
 
     @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")

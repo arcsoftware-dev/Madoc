@@ -254,6 +254,7 @@ public class GameService {
         }
         else{
             gamesheet = gamesheetOpt.get();
+            gameRepository.findById(gameId).ifPresent(game -> gamesheet.setVideoId(game.getVideoId()));
         }
 
         return gamesheet;
@@ -264,6 +265,7 @@ public class GameService {
         GamesheetPayload gamesheet = new GamesheetPayload();
         gamesheet.setGameId(gameId);
         gamesheet.setFinalized(gameEntity.isFinalized());
+        gamesheet.setVideoId(gameEntity.getVideoId());
         gamesheet.setGameTime(gameEntity.getGameTime());
         gamesheet.setVenue(gameEntity.getVenue());
         gamesheet.setSeasonYear(gameEntity.getYear());
@@ -322,6 +324,7 @@ public class GameService {
         Optional.ofNullable(gamesheet.getHomeAttendanceByPlayerId()).orElse(new ArrayList<>()).forEach(a -> a.setAttended(false));
         Optional.ofNullable(gamesheet.getAwayAttendanceByPlayerId()).orElse(new ArrayList<>()).forEach(a -> a.setAttended(false));
         gamesheet.setFinalized(false);
+        gamesheet.setVideoId(gameEntity.getVideoId());
         gameRepository.updateGamesheetPayload(gamesheet);
 
         //Clear game
@@ -351,6 +354,7 @@ public class GameService {
 
         //Clear Gamesheet
         gamesheet.setFinalized(false);
+        gamesheet.setVideoId(gameEntity.getVideoId());
         gameRepository.updateGamesheetPayload(gamesheet);
 
         //Clear game
@@ -363,5 +367,15 @@ public class GameService {
         //Clear attendance table
         attendanceRepository.clearByGameId(gameId);
         return gamesheet;
+    }
+
+    public GameEntity updateVideoId(int gameId, String videoId) {
+        GameEntity game = gameRepository.findById(gameId).orElseThrow();
+        String normalized = (videoId == null || videoId.isBlank()) ? null : videoId.trim();
+        game.setVideoId(normalized);
+        log.info("Updating video id for game {} to {}", gameId, normalized);
+        gameRepository.updateGame(game);
+        log.info("Successfully updated video id for game {}", gameId);
+        return game;
     }
 }

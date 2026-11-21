@@ -103,6 +103,7 @@ public class GameRepository {
                     game.setRefereeNameOne(rs.getString("referee_name_one"));
                     game.setRefereeNameTwo(rs.getString("referee_name_two"));
                     game.setRefereeNameThree(rs.getString("referee_name_three"));
+                    game.setVideoId(rs.getString("video_id"));
 
                     Array rawArray = rs.getArray("referee_notes");
                     if(rawArray != null){
@@ -160,6 +161,7 @@ public class GameRepository {
                     game.setRefereeNameOne(rs.getString("referee_name_one"));
                     game.setRefereeNameTwo(rs.getString("referee_name_two"));
                     game.setRefereeNameThree(rs.getString("referee_name_three"));
+                    game.setVideoId(rs.getString("video_id"));
 
                     Array rawArray = rs.getArray("referee_notes");
                     if(rawArray != null){
@@ -259,7 +261,7 @@ public class GameRepository {
         """;
 
         public static final String FIND_GAME_BY_ID = """
-                SELECT g.id, g.year, g.season_type, g.game_time, g.home_team, g.away_team, g.venue, g.referee_name_one, g.referee_name_two, g.referee_name_three, g.referee_notes, g.is_finalized, g.finalized_at, ht.team_name as home_team_name, at.team_name as away_team_name
+                SELECT g.id, g.year, g.season_type, g.game_time, g.home_team, g.away_team, g.venue, g.referee_name_one, g.referee_name_two, g.referee_name_three, g.referee_notes, g.is_finalized, g.finalized_at, g.video_id, ht.team_name as home_team_name, at.team_name as away_team_name
             FROM "madoc".games g
             JOIN "madoc".teams as ht ON g.home_team = ht.id AND g.year = ht.year
             JOIN "madoc".teams as at ON g.away_team = at.id AND g.year = at.year
@@ -291,7 +293,8 @@ public class GameRepository {
             referee_name_three = :referee_name_three,
             referee_notes = ARRAY[:referee_notes]::text[],
             is_finalized = :is_finalized,
-            finalized_at = :finalized_at
+            finalized_at = :finalized_at,
+            video_id = :video_id
         WHERE id = :id;
         """;
 
@@ -303,7 +306,7 @@ public class GameRepository {
 
 
         public static final String GET_GAME_BY_TIME_YEAR_SEASONTYPE = """
-        SELECT g.id, g.home_team, g.away_team, g.venue, g.referee_name_one, g.referee_name_two, g.referee_name_three, g.referee_notes, g.is_finalized, g.finalized_at, ht.team_name as home_team_name, at.team_name as away_team_name
+        SELECT g.id, g.home_team, g.away_team, g.venue, g.referee_name_one, g.referee_name_two, g.referee_name_three, g.referee_notes, g.is_finalized, g.finalized_at, g.video_id, ht.team_name as home_team_name, at.team_name as away_team_name
             FROM "madoc".games g
             JOIN "madoc".teams as ht ON g.home_team = ht.id AND g.year = ht.year
             JOIN "madoc".teams as at ON g.away_team = at.id AND g.year = at.year

@@ -14,6 +14,7 @@ import java.util.List;
 public class GamesheetPayload {
     private int gameId;
     private boolean finalized;
+    private String videoId;
 
     private LocalDateTime gameTime;
     private Arena venue;

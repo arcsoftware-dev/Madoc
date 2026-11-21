@@ -94,4 +94,12 @@ public class Utils {
         return normalizedTeamName.toString();
     }
 
+    public boolean isNullOrEmpty(String s) {
+        return s == null || s.isBlank();
+    }
+
+    public boolean isNotNullOrEmpty(String s) {
+        return !isNullOrEmpty(s);
+    }
+
 }

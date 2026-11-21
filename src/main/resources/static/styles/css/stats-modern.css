@@ -301,7 +301,6 @@
 }
 .ms-table {
     width: 100%;
-    min-width: max-content; /* columns keep their natural width; card scrolls */
     border-collapse: separate;
     border-spacing: 0;
     font-variant-numeric: tabular-nums;
@@ -361,7 +360,7 @@
 }
 
 /* Rank badge */
-.ms-rank-col { width: 1%; text-align: center !important; }
+.ms-rank-col { width: 1px; text-align: center !important; }
 .ms-rank {
     display: inline-flex;
     align-items: center;
@@ -422,8 +421,14 @@
     letter-spacing: 0.02em;
 }
 
-/* Wide screens: add the team name beside the logo, but only once the whole
-   table fits without sideways scrolling (goalies have more columns). */
+/* Standings always displays the team name beside the logo (including mobile) */
+.ms-standings thead th.ms-team-col,
+.ms-standings tbody td.ms-team-col { text-align: left; }
+.ms-standings .ms-team-cell { justify-content: flex-start; }
+.ms-standings .ms-team-name { display: inline; }
+
+/* Wide screens: add the team name beside the logo on player stats tables
+   once the whole table fits without sideways scrolling (goalies have more columns). */
 @media (min-width: 1000px) {
     .ms-skaters thead th.ms-team-col,
     .ms-skaters tbody td.ms-team-col { text-align: left; }
@@ -432,13 +437,9 @@
 }
 @media (min-width: 1200px) {
     .ms-goalies thead th.ms-team-col,
-    .ms-goalies tbody td.ms-team-col,
-    .ms-standings thead th.ms-team-col,
-    .ms-standings tbody td.ms-team-col { text-align: left; }
-    .ms-goalies .ms-team-cell,
-    .ms-standings .ms-team-cell { justify-content: flex-start; }
-    .ms-goalies .ms-team-name,
-    .ms-standings .ms-team-name { display: inline; }
+    .ms-goalies tbody td.ms-team-col { text-align: left; }
+    .ms-goalies .ms-team-cell { justify-content: flex-start; }
+    .ms-goalies .ms-team-name { display: inline; }
 }
 .ms-team {
     display: inline-block;
@@ -503,6 +504,8 @@
         font-size: 0.9rem;
     }
     .ms-player { font-size: 0.95rem; }
+    .ms-standings .ms-team-cell { gap: 0.45rem; }
+    .ms-standings .ms-team-name { font-size: 0.9rem; }
     .ms-team { padding: 0.15rem 0.45rem; font-size: 0.7rem; }
     .ms-logo { width: 1.75rem; height: 1.4rem; }
     .ms-rank { min-width: 1.6rem; height: 1.6rem; font-size: 0.8rem; }

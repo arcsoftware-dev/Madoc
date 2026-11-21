@@ -112,7 +112,7 @@ a:hover > .ms-team-logo { transform: scale(1.06); }
 .ms-roster tbody td:nth-child(3),
 .ms-roster tbody td:nth-child(4) { text-align: left; }
 .ms-roster .ms-num {
-    width: 1%;
+    width: 1px;
     text-align: center;
     color: rgba(243, 244, 246, 0.6);
 }

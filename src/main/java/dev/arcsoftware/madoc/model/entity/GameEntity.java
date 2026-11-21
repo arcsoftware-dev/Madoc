@@ -29,6 +29,8 @@ public class GameEntity {
     private boolean isFinalized;
     private LocalDateTime finalizedAt;
 
+    private String videoId;
+
     public GameEntity(int id) {
         this.id = id;
     }
@@ -48,6 +50,7 @@ public class GameEntity {
         map.put("referee_notes", refereeNotes);
         map.put("is_finalized", isFinalized);
         map.put("finalized_at", finalizedAt);
+        map.put("video_id", videoId);
         return map;
     }
 }

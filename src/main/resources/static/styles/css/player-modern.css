@@ -244,7 +244,7 @@
 .mp-table tbody td.mp-season-col,
 .mp-table tfoot td.mp-season-col {
     text-align: left;
-    width: 1%;
+    width: 1px;
 }
 
 .mp-table tbody td.mp-season-col {

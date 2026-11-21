@@ -146,7 +146,6 @@
                                      onerror="this.hidden=true;this.nextElementSibling.hidden=false;" />
                                 <!-- fallback if a team has no logo file -->
                                 <span class="ms-team" hidden th:text="${utils.abbreviateTeamName(stat.teamName)}">TEAM</span>
-                                <!-- full name: only shown on screens wide enough (see stats-modern.css) -->
                                 <span class="ms-team-name" th:text="${stat.teamName}">Team Name</span>
                             </div>
                         </td>

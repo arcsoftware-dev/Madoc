@@ -121,6 +121,41 @@
         </section>
     </th:block>
 
+    <!-- Game Footage: Embedded YouTube video when videoId is available -->
+    <section id="game-video"
+             class="ms-card mg-section"
+             th:if="${utils.isNotNullOrEmpty(gamesheet.videoId)}"
+             th:with="ytId=${#strings.trim(gamesheet.videoId)}">
+        <header class="mg-card-head">
+            <h2 class="mg-card-title">
+                <svg class="mg-video-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.56A3.02 3.02 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14c1.88.56 9.38.56 9.38.56s7.5 0 9.38-.56a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8ZM9.6 15.6V8.4l6.3 3.6-6.3 3.6Z"/>
+                </svg>
+                <span>Game Footage</span>
+            </h2>
+            <a class="mg-video-ext-link"
+               th:href="|https://www.youtube.com/watch?v=${ytId}|"
+               target="_blank"
+               rel="noopener noreferrer">
+                <span>Watch on YouTube</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+            </a>
+        </header>
+        <div class="mg-video-wrap">
+            <iframe class="mg-video-iframe"
+                    th:src="|https://www.youtube.com/embed/${ytId}|"
+                    th:title="|${gamesheet.homeTeam} vs ${gamesheet.awayTeam} Game Footage|"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen></iframe>
+        </div>
+    </section>
+
     <!-- Season History: Previous games between these two teams this season -->
     <section class="ms-card mg-section">
         <header class="mg-card-head">

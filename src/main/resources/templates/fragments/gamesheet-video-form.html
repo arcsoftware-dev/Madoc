@@ -1,0 +1,43 @@
+<section class="ms-card mg-section mg-video-editor" th:fragment="videoForm">
+    <header class="mg-card-head">
+        <h2 class="mg-card-title">
+            <svg class="mg-video-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.56A3.02 3.02 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14c1.88.56 9.38.56 9.38.56s7.5 0 9.38-.56a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8ZM9.6 15.6V8.4l6.3 3.6-6.3 3.6Z"/>
+            </svg>
+            <span>Game Video</span>
+        </h2>
+        <span class="mg-pill"
+              th:classappend="${utils.isNotNullOrEmpty(gamesheet.videoId) ? 'accent' : ''}"
+              th:text="${utils.isNotNullOrEmpty(gamesheet.videoId) ? 'Linked' : 'Not Set'}">Not Set</span>
+    </header>
+    <div class="mg-video-editor-body">
+        <div class="mg-flash success" th:if="${videoSuccess != null}" role="status" th:text="${videoSuccess}"></div>
+        <div class="mg-flash error" th:if="${videoError != null}" role="alert" th:text="${videoError}"></div>
+
+        <form th:action="@{/games/{gameId}/video(gameId=${gamesheet.gameId})}"
+              method="post"
+              class="mg-video-form">
+            <div class="mg-field mg-video-input-field">
+                <label for="gameVideoId">YouTube Video ID or URL</label>
+                <input id="gameVideoId"
+                       name="videoId"
+                       type="text"
+                       class="mg-input"
+                       placeholder="e.g. 09d9oyG5dzQ or https://youtu.be/09d9oyG5dzQ"
+                       th:value="${videoInput != null ? videoInput : gamesheet.videoId}"
+                       autocomplete="off"/>
+            </div>
+            <div class="mg-video-form-actions">
+                <button type="submit" class="mg-btn primary">Save Video</button>
+                <button type="submit"
+                        name="clearVideo"
+                        value="true"
+                        class="mg-btn danger-outline"
+                        th:if="${utils.isNotNullOrEmpty(gamesheet.videoId)}"
+                        onclick="return confirm('Remove the YouTube video from this game?');">
+                    Remove
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
