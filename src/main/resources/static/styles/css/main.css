@@ -404,6 +404,33 @@ body {
     border-radius: 50%;
     background: var(--accent);
 }
+.footer-social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.22rem 0.72rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    color: rgba(243, 244, 246, 0.85);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+.footer-social-link:hover,
+.footer-social-link:focus-visible {
+    color: #fff;
+    background: rgba(204, 25, 25, 0.22);
+    border-color: var(--accent);
+    outline: none;
+}
+.footer-social-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    color: var(--accent);
+    flex-shrink: 0;
+}
 .footer-auth {
     display: flex;
     flex-wrap: wrap;

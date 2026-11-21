@@ -43,5 +43,6 @@ build/
 
 .env
 release.sh
+deploy.py
 skills/
 skills/*
