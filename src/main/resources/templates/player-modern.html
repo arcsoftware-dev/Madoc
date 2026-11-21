@@ -162,6 +162,74 @@
             </div>
         </section>
 
+        <!-- Game Log -->
+        <section class="mp-section" th:if="${!#lists.isEmpty(player.gameLogs)}">
+            <div class="mp-section-head">
+                <h2 class="mp-section-title">Game Log</h2>
+            </div>
+            <div class="ms-card mp-card">
+                <header class="mp-card-head">
+                    <h3 class="mp-card-title">Recent Games</h3>
+                    <span class="mp-pill" id="gamelog-count-pill">
+                        <th:block th:if="${player.totalGameLogs > #lists.size(player.gameLogs)}">
+                            Showing <span id="gamelog-shown-count" th:text="${#lists.size(player.gameLogs)}">5</span> of <span id="gamelog-total-count" th:text="${player.totalGameLogs}">10</span>
+                        </th:block>
+                        <th:block th:if="${player.totalGameLogs <= #lists.size(player.gameLogs)}">
+                            <span id="gamelog-shown-count" th:text="${#lists.size(player.gameLogs)}">5</span>
+                            <span th:text="${#lists.size(player.gameLogs) == 1 ? ' Game' : ' Games'}"> Games</span>
+                        </th:block>
+                    </span>
+                </header>
+                <div class="ms-scroll">
+                    <table class="ms-table mp-table mp-gamelog-table">
+                        <thead>
+                        <tr>
+                            <th class="mp-season-col">Date</th>
+                            <th class="ms-left">Team</th>
+                            <th class="ms-left">
+                                <span class="mp-full">Opponent</span>
+                                <span class="mp-abbr" title="Opponent">Opp</span>
+                            </th>
+                            <th class="ms-left">Result</th>
+                            <th:block th:if="${!player.primaryGoalie}">
+                                <th title="Goals">G</th>
+                                <th title="Assists">A</th>
+                                <th title="Points">P</th>
+                                <th title="Penalty Minutes">PIM</th>
+                            </th:block>
+                            <th:block th:if="${player.primaryGoalie}">
+                                <th title="Goals Against">GA</th>
+                                <th title="Shutout">SO</th>
+                                <th title="Penalty Minutes">PIM</th>
+                            </th:block>
+                        </tr>
+                        </thead>
+                        <tbody id="gamelog-tbody">
+                            <th:block th:replace="~{fragments/player-tables :: gameLogRows(${player.gameLogs}, ${player.primaryGoalie})}"></th:block>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mp-load-more-wrap"
+                     id="gamelog-load-more-wrap"
+                     th:if="${player.playerId != null and player.totalGameLogs > #lists.size(player.gameLogs)}">
+                    <button type="button"
+                            class="mp-load-more-btn"
+                            id="gamelog-load-more-btn"
+                            th:data-url="@{/players/{id}/game-logs(id=${player.playerId})}"
+                            th:data-offset="${#lists.size(player.gameLogs)}"
+                            data-limit="5"
+                            th:data-goalie="${player.primaryGoalie}"
+                            th:data-total="${player.totalGameLogs}">
+                        Load More
+                    </button>
+                    <p class="mp-load-more-err" id="gamelog-load-more-err" role="alert" hidden>
+                        Unable to load more games. Please try again.
+                    </p>
+                </div>
+            </div>
+        </section>
+
         <!-- Season & Draft History -->
         <section class="mp-section" th:if="${!#lists.isEmpty(player.rosterHistory)}">
             <div class="mp-section-head">
@@ -195,7 +263,8 @@
                                     <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(entry.teamName)} + '.svg'}"
                                          th:alt="${entry.teamName}"
                                          onerror="this.hidden=true;" />
-                                    <span th:text="${entry.teamName}">Team Name</span>
+                                    <span class="mp-full" th:text="${entry.teamName}">Team Name</span>
+                                    <span class="mp-abbr" th:text="${utils.abbreviateTeamName(entry.teamName)}" th:title="${entry.teamName}">TEAM</span>
                                 </a>
                                 <span th:if="${#strings.isEmpty(entry.teamName)}">—</span>
                             </td>
@@ -224,5 +293,80 @@
     </main>
 
     <div th:replace="~{fragments/footer.html :: footer}"></div>
+
+    <script th:if="${player.playerId != null and player.totalGameLogs > #lists.size(player.gameLogs)}">
+        (function () {
+            var btn = document.getElementById('gamelog-load-more-btn');
+            var wrap = document.getElementById('gamelog-load-more-wrap');
+            var tbody = document.getElementById('gamelog-tbody');
+            var errEl = document.getElementById('gamelog-load-more-err');
+            var pill = document.getElementById('gamelog-count-pill');
+            if (!btn || !tbody) return;
+
+            var loading = false;
+
+            btn.addEventListener('click', function () {
+                if (loading) return;
+                loading = true;
+                btn.disabled = true;
+                btn.textContent = 'Loading...';
+                if (errEl) errEl.hidden = true;
+
+                var baseUrl = btn.dataset.url;
+                var offset = parseInt(btn.dataset.offset, 10) || 0;
+                var limit = parseInt(btn.dataset.limit, 10) || 5;
+                var goalie = btn.dataset.goalie === 'true';
+                var sep = baseUrl.indexOf('?') === -1 ? '?' : '&';
+                var reqUrl = baseUrl + sep + 'offset=' + offset + '&limit=' + limit + '&goalie=' + goalie;
+
+                fetch(reqUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (resp) {
+                        if (!resp.ok) throw new Error('Request failed');
+                        return resp.text();
+                    })
+                    .then(function (html) {
+                        var doc = new DOMParser().parseFromString(html, 'text/html');
+                        var parsedBody = doc.querySelector('tbody');
+                        var newRows = parsedBody ? parsedBody.querySelectorAll('tr') : [];
+                        newRows.forEach(function (row) {
+                            tbody.appendChild(document.importNode(row, true));
+                        });
+
+                        var totalShown = tbody.querySelectorAll('tr').length;
+                        var totalGames = parsedBody && parsedBody.dataset.totalGames
+                            ? parseInt(parsedBody.dataset.totalGames, 10)
+                            : (parseInt(btn.dataset.total, 10) || totalShown);
+                        var hasMore = parsedBody
+                            ? parsedBody.dataset.hasMore === 'true'
+                            : (newRows.length === limit && totalShown < totalGames);
+
+                        if (pill) {
+                            pill.textContent = hasMore
+                                ? ('Showing ' + totalShown + ' of ' + totalGames)
+                                : (totalShown + (totalShown === 1 ? ' Game' : ' Games'));
+                        }
+
+                        if (!hasMore || newRows.length === 0) {
+                            if (wrap) wrap.remove();
+                            return;
+                        }
+
+                        var nextOffset = parsedBody && parsedBody.dataset.nextOffset
+                            ? parseInt(parsedBody.dataset.nextOffset, 10)
+                            : totalShown;
+                        btn.dataset.offset = String(nextOffset);
+                        btn.disabled = false;
+                        btn.textContent = 'Load More';
+                        loading = false;
+                    })
+                    .catch(function () {
+                        btn.disabled = false;
+                        btn.textContent = 'Load More';
+                        loading = false;
+                        if (errEl) errEl.hidden = false;
+                    });
+            });
+        })();
+    </script>
 </body>
 </html>

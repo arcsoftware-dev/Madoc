@@ -38,6 +38,8 @@ public class ThymeleafConfig {
     public ThymeleafViewResolver thymeleafViewResolver(ISpringTemplateEngine templateEngine, Utils utils) {
         ThymeleafViewResolver resolver = new ThymeleafViewResolver();
         resolver.setTemplateEngine(templateEngine);
+        resolver.setCharacterEncoding("UTF-8");
+        resolver.setContentType("text/html; charset=UTF-8");
         resolver.setStaticVariables(Map.of("utils", utils));
         return resolver;
     }

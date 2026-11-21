@@ -33,6 +33,9 @@ public class PlayerProfileDto {
     private final PlayerSeasonStat goalieRegularTotals;
     private final PlayerSeasonStat goaliePlayoffTotals;
 
+    private final List<PlayerGameLogDto> gameLogs;
+    private final int totalGameLogs;
+
     @Getter
     @Builder
     public static class PlayerSeasonStat {

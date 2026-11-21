@@ -1,9 +1,12 @@
 package dev.arcsoftware.madoc.repository;
 
+import dev.arcsoftware.madoc.enums.Position;
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.model.entity.AssistEntity;
 import dev.arcsoftware.madoc.model.entity.GoalEntity;
 import dev.arcsoftware.madoc.model.entity.PenaltyEntity;
+import dev.arcsoftware.madoc.model.payload.PlayerGameLogDto;
+import dev.arcsoftware.madoc.model.payload.PlayerGameLogPage;
 import dev.arcsoftware.madoc.model.payload.StatsDto;
 import dev.arcsoftware.madoc.util.Utils;
 import jakarta.annotation.PostConstruct;
@@ -15,9 +18,12 @@ import org.springframework.stereotype.Repository;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Repository
@@ -189,6 +195,69 @@ public class StatsRepository {
                 .update();
 
         log.info("Deleted {} goals, {} penalties", goals, penalties);
+    }
+
+    public PlayerGameLogPage getPlayerGameLogs(int playerId, int offset, int limit) {
+        log.info("Getting game logs for playerId={}, offset={}, limit={}", playerId, offset, limit);
+        AtomicInteger totalCount = new AtomicInteger(0);
+        List<PlayerGameLogDto> games = jdbcClient
+                .sql(StatsSql.GET_PLAYER_GAME_LOGS)
+                .param("player_id", playerId)
+                .param("offset", offset)
+                .param("limit", limit)
+                .query((rs, num) -> {
+                    totalCount.set(rs.getInt("total_count"));
+                    Timestamp ts = rs.getTimestamp("game_time");
+                    LocalDateTime gameTime = ts != null ? ts.toLocalDateTime() : null;
+
+                    SeasonType seasonType = SeasonType.REGULAR_SEASON;
+                    String stRaw = rs.getString("season_type");
+                    if (stRaw != null) {
+                        try {
+                            seasonType = SeasonType.valueOf(stRaw);
+                        } catch (IllegalArgumentException ignored) {
+                            // Keep default
+                        }
+                    }
+
+                    Position position = null;
+                    String posRaw = rs.getString("position");
+                    if (posRaw != null) {
+                        try {
+                            position = Position.valueOf(posRaw);
+                        } catch (IllegalArgumentException ignored) {
+                            // Leave null
+                        }
+                    }
+
+                    int teamScore = rs.getInt("team_score");
+                    int opponentScore = rs.getInt("opponent_score");
+                    int goals = rs.getInt("goals");
+                    int assists = rs.getInt("assists");
+                    String result = teamScore > opponentScore ? "W" : (teamScore < opponentScore ? "L" : "T");
+
+                    return PlayerGameLogDto.builder()
+                            .gameId(rs.getInt("game_id"))
+                            .gameTime(gameTime)
+                            .seasonYear(rs.getInt("season_year"))
+                            .seasonType(seasonType)
+                            .home(rs.getBoolean("is_home"))
+                            .position(position)
+                            .teamName(rs.getString("team_name"))
+                            .opponentTeamName(rs.getString("opponent_team_name"))
+                            .teamScore(teamScore)
+                            .opponentScore(opponentScore)
+                            .goals(goals)
+                            .assists(assists)
+                            .points(goals + assists)
+                            .penaltyMinutes(rs.getInt("penalty_minutes"))
+                            .result(result)
+                            .shutout(opponentScore == 0)
+                            .build();
+                })
+                .list();
+
+        return new PlayerGameLogPage(games, totalCount.get(), offset, limit);
     }
 
     public static class StatsSql{
@@ -372,6 +441,99 @@ public class StatsRepository {
         GROUP BY p.id, ra.jersey_number, p.first_name, p.last_name, t.team_name, penalty_minutes.total_penalty_minutes, ra.position, gs.wins, gs.losses, gs.ties, gs.shutouts, gs.total_goals_against, games_played.games_played
         HAVING ra.position = 'GOALIE';
         
+        """;
+
+        public static final String GET_PLAYER_GAME_LOGS = """
+        WITH player_ras AS (
+            SELECT ra.id AS ra_id, ra.team_id, ra.season_year, ra.position
+            FROM madoc.roster_assignments ra
+            WHERE ra.player_id = :player_id
+        ),
+        player_game_links AS (
+            SELECT DISTINCT gm.id AS game_id, pra.ra_id, pra.team_id, pra.position
+            FROM player_ras pra
+            JOIN madoc.games gm ON gm.year = pra.season_year
+                AND (gm.home_team = pra.team_id OR gm.away_team = pra.team_id)
+            WHERE gm.is_finalized = true
+              AND (
+                  EXISTS (
+                      SELECT 1 FROM madoc.attendance at
+                      WHERE at.game_id = gm.id
+                        AND at.roster_assignment_id = pra.ra_id
+                        AND at.attended = true
+                  )
+                  OR EXISTS (
+                      SELECT 1 FROM madoc.goals go
+                      WHERE go.game_id = gm.id
+                        AND (go.scorer_roster_assignment_id = pra.ra_id
+                             OR go.primary_assist_roster_assignment_id = pra.ra_id
+                             OR go.secondary_assist_roster_assignment_id = pra.ra_id)
+                  )
+                  OR EXISTS (
+                      SELECT 1 FROM madoc.penalties pen
+                      WHERE pen.game_id = gm.id
+                        AND pen.roster_assignment_id = pra.ra_id
+                  )
+              )
+        ),
+        game_scores AS (
+            SELECT
+                pgl.game_id,
+                COALESCE(SUM(CASE WHEN ra_s.team_id = gm.home_team THEN 1 ELSE 0 END), 0) AS home_score,
+                COALESCE(SUM(CASE WHEN ra_s.team_id = gm.away_team THEN 1 ELSE 0 END), 0) AS away_score
+            FROM (SELECT DISTINCT game_id FROM player_game_links) pgl
+            JOIN madoc.games gm ON gm.id = pgl.game_id
+            LEFT JOIN madoc.goals gl ON gl.game_id = gm.id
+            LEFT JOIN madoc.roster_assignments ra_s ON gl.scorer_roster_assignment_id = ra_s.id
+            GROUP BY pgl.game_id
+        ),
+        player_goals AS (
+            SELECT
+                go.game_id,
+                pgl.ra_id,
+                SUM(CASE WHEN go.scorer_roster_assignment_id = pgl.ra_id THEN 1 ELSE 0 END) AS goals,
+                SUM(CASE WHEN go.primary_assist_roster_assignment_id = pgl.ra_id THEN 1 ELSE 0 END)
+                  + SUM(CASE WHEN go.secondary_assist_roster_assignment_id = pgl.ra_id THEN 1 ELSE 0 END) AS assists
+            FROM player_game_links pgl
+            JOIN madoc.goals go ON go.game_id = pgl.game_id
+            WHERE go.scorer_roster_assignment_id = pgl.ra_id
+               OR go.primary_assist_roster_assignment_id = pgl.ra_id
+               OR go.secondary_assist_roster_assignment_id = pgl.ra_id
+            GROUP BY go.game_id, pgl.ra_id
+        ),
+        player_penalties AS (
+            SELECT
+                pen.game_id,
+                pgl.ra_id,
+                COALESCE(SUM(pen.minutes), 0) AS penalty_minutes
+            FROM player_game_links pgl
+            JOIN madoc.penalties pen ON pen.game_id = pgl.game_id AND pen.roster_assignment_id = pgl.ra_id
+            GROUP BY pen.game_id, pgl.ra_id
+        )
+        SELECT
+            gm.id AS game_id,
+            gm.game_time AS game_time,
+            gm.year AS season_year,
+            gm.season_type AS season_type,
+            (pgl.team_id = gm.home_team) AS is_home,
+            pgl.position AS position,
+            pt.team_name AS team_name,
+            opp.team_name AS opponent_team_name,
+            CASE WHEN pgl.team_id = gm.home_team THEN gs.home_score ELSE gs.away_score END AS team_score,
+            CASE WHEN pgl.team_id = gm.home_team THEN gs.away_score ELSE gs.home_score END AS opponent_score,
+            COALESCE(pg.goals, 0) AS goals,
+            COALESCE(pg.assists, 0) AS assists,
+            COALESCE(pp.penalty_minutes, 0) AS penalty_minutes,
+            COUNT(*) OVER() AS total_count
+        FROM player_game_links pgl
+        JOIN madoc.games gm ON gm.id = pgl.game_id
+        JOIN madoc.teams pt ON pt.id = pgl.team_id
+        JOIN madoc.teams opp ON opp.id = CASE WHEN pgl.team_id = gm.home_team THEN gm.away_team ELSE gm.home_team END
+        LEFT JOIN game_scores gs ON gs.game_id = gm.id
+        LEFT JOIN player_goals pg ON pg.game_id = gm.id AND pg.ra_id = pgl.ra_id
+        LEFT JOIN player_penalties pp ON pp.game_id = gm.id AND pp.ra_id = pgl.ra_id
+        ORDER BY gm.game_time DESC, gm.id DESC
+        LIMIT :limit OFFSET :offset;
         """;
     }
 }

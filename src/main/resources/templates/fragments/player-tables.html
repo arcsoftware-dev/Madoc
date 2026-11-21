@@ -52,7 +52,8 @@
                         <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(row.teamName)} + '.svg'}"
                              th:alt="${row.teamName}"
                              onerror="this.hidden=true;" />
-                        <span th:text="${row.teamName}">Team Name</span>
+                        <span class="mp-full" th:text="${row.teamName}">Team Name</span>
+                        <span class="mp-abbr" th:text="${utils.abbreviateTeamName(row.teamName)}" th:title="${row.teamName}">TEAM</span>
                     </a>
                     <span th:if="${#strings.isEmpty(row.teamName)}">—</span>
                 </td>
@@ -134,7 +135,8 @@
                         <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(row.teamName)} + '.svg'}"
                              th:alt="${row.teamName}"
                              onerror="this.hidden=true;" />
-                        <span th:text="${row.teamName}">Team Name</span>
+                        <span class="mp-full" th:text="${row.teamName}">Team Name</span>
+                        <span class="mp-abbr" th:text="${utils.abbreviateTeamName(row.teamName)}" th:title="${row.teamName}">TEAM</span>
                     </a>
                     <span th:if="${#strings.isEmpty(row.teamName)}">—</span>
                 </td>
@@ -167,6 +169,75 @@
         </table>
     </div>
 </div>
+
+<!-- Game Log rows (shared by initial render and AJAX Load More) -->
+<th:block th:fragment="gameLogRows(games, isGoalie)">
+    <tr th:each="g : ${games}">
+        <td class="mp-season-col mp-date-cell">
+            <span class="mp-full" th:text="${g.gameTime != null ? #temporals.format(g.gameTime, 'MMM d, yyyy') : g.seasonYear}">Nov 16, 2025</span>
+            <span class="mp-abbr" th:text="${g.gameTime != null ? #temporals.format(g.gameTime, 'M/d/yy') : g.seasonYear}">11/16/25</span>
+            <span class="mp-po-tag"
+                  th:if="${g.seasonType != null and g.seasonType.name() == 'PLAYOFFS'}"
+                  title="Playoffs">PO</span>
+        </td>
+        <td class="ms-left">
+            <a class="mp-team-link"
+               th:if="${!#strings.isEmpty(g.teamName)}"
+               th:href="@{/teams/{team}(team=${utils.stripSpaces(g.teamName)}, year=${g.seasonYear}, season-type=${g.seasonType != null ? g.seasonType.name() : 'REGULAR_SEASON'})}">
+                <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(g.teamName)} + '.svg'}"
+                     th:alt="${g.teamName}"
+                     onerror="this.hidden=true;" />
+                <span class="mp-full" th:text="${g.teamName}">Team</span>
+                <span class="mp-abbr" th:text="${utils.abbreviateTeamName(g.teamName)}" th:title="${g.teamName}">TM</span>
+            </a>
+        </td>
+        <td class="ms-left">
+            <div class="mp-opp-cell">
+                <span class="mp-opp-prefix" th:text="${g.home ? 'vs' : '@'}">vs</span>
+                <a class="mp-team-link"
+                   th:if="${!#strings.isEmpty(g.opponentTeamName)}"
+                   th:href="@{/teams/{team}(team=${utils.stripSpaces(g.opponentTeamName)}, year=${g.seasonYear}, season-type=${g.seasonType != null ? g.seasonType.name() : 'REGULAR_SEASON'})}">
+                    <img th:src="@{'/assets/teamLogos/' + ${utils.stripSpaces(g.opponentTeamName)} + '.svg'}"
+                         th:alt="${g.opponentTeamName}"
+                         onerror="this.hidden=true;" />
+                    <span class="mp-full" th:text="${g.opponentTeamName}">Opponent</span>
+                    <span class="mp-abbr" th:text="${utils.abbreviateTeamName(g.opponentTeamName)}" th:title="${g.opponentTeamName}">OPP</span>
+                </a>
+            </div>
+        </td>
+        <td class="ms-left">
+            <a class="mp-result-link"
+               th:href="@{/games/{id}(id=${g.gameId})}"
+               title="View boxscore">
+                <span class="mp-result-badge"
+                      th:classappend="${g.result == 'W' ? 'win' : (g.result == 'L' ? 'loss' : 'tie')}"
+                      th:text="${g.result}">W</span>
+                <span class="mp-result-score" th:text="|${g.teamScore}-${g.opponentScore}|">4-2</span>
+            </a>
+        </td>
+        <th:block th:if="${!isGoalie}">
+            <td th:text="${g.goals}">0</td>
+            <td th:text="${g.assists}">0</td>
+            <td th:classappend="${g.points > 0 ? 'mp-highlight' : ''}" th:text="${g.points}">0</td>
+            <td th:text="${g.penaltyMinutes}">0</td>
+        </th:block>
+        <th:block th:if="${isGoalie}">
+            <td th:text="${g.opponentScore}">0</td>
+            <td th:classappend="${g.shutout ? 'mp-highlight' : ''}" th:text="${g.shutout ? '1' : '0'}">0</td>
+            <td th:text="${g.penaltyMinutes}">0</td>
+        </th:block>
+    </tr>
+</th:block>
+
+<!-- AJAX wrapper for Load More pagination -->
+<table th:fragment="gameLogPage">
+    <tbody th:attr="data-has-more=${hasMore},
+                    data-next-offset=${nextOffset},
+                    data-total-games=${totalGames},
+                    data-remaining=${remaining}">
+        <th:block th:replace="~{fragments/player-tables :: gameLogRows(${games}, ${isGoalie})}"></th:block>
+    </tbody>
+</table>
 
 </body>
 </html>

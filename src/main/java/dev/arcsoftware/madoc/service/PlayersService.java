@@ -4,6 +4,7 @@ import dev.arcsoftware.madoc.enums.Position;
 import dev.arcsoftware.madoc.enums.SeasonType;
 import dev.arcsoftware.madoc.exception.ResultNotFoundException;
 import dev.arcsoftware.madoc.model.entity.PlayerEntity;
+import dev.arcsoftware.madoc.model.payload.PlayerGameLogPage;
 import dev.arcsoftware.madoc.model.payload.PlayerProfileDto;
 import dev.arcsoftware.madoc.model.payload.PlayerProfileDto.PlayerSeasonStat;
 import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @Service
 public class PlayersService {
 
+    public static final int GAME_LOG_PAGE_SIZE = 5;
     private static final Pattern TRAILING_JERSEY_PATTERN = Pattern.compile("\\s*\\(#(\\d+)\\)\\s*$");
 
     private final RosterRepository rosterRepository;
@@ -195,6 +197,10 @@ public class PlayersService {
         goalieRegular.forEach(s -> distinctYears.add(s.getYear()));
         goaliePlayoffs.forEach(s -> distinctYears.add(s.getYear()));
 
+        PlayerGameLogPage initialGameLogs = playerId != null
+                ? statsRepository.getPlayerGameLogs(playerId, 0, GAME_LOG_PAGE_SIZE)
+                : new PlayerGameLogPage(List.of(), 0, 0, GAME_LOG_PAGE_SIZE);
+
         return PlayerProfileDto.builder()
                 .playerId(playerId)
                 .fullName(fullName)
@@ -215,7 +221,15 @@ public class PlayersService {
                 .goaliePlayoffStats(goaliePlayoffs)
                 .goalieRegularTotals(sumStats(goalieRegular))
                 .goaliePlayoffTotals(sumStats(goaliePlayoffs))
+                .gameLogs(initialGameLogs.getGames())
+                .totalGameLogs(initialGameLogs.getTotalGames())
                 .build();
+    }
+
+    public PlayerGameLogPage getPlayerGameLogs(int playerId, int offset, int limit) {
+        int safeOffset = Math.max(0, offset);
+        int safeLimit = Math.min(Math.max(1, limit), 50);
+        return statsRepository.getPlayerGameLogs(playerId, safeOffset, safeLimit);
     }
 
     private boolean matchesPlayer(StatsDto stat, Integer playerId, String fullName) {
