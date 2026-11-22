@@ -1,13 +1,15 @@
 package dev.arcsoftware.madoc.service;
 
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import dev.arcsoftware.madoc.exception.ResultNotFoundException;
 import dev.arcsoftware.madoc.model.Pair;
 import dev.arcsoftware.madoc.model.entity.GameEntity;
+import dev.arcsoftware.madoc.model.payload.PregamePackageGameDto;
+import dev.arcsoftware.madoc.model.payload.PregamePackageGameDto.RosterRow;
 import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
 import dev.arcsoftware.madoc.repository.GameRepository;
 import dev.arcsoftware.madoc.repository.RosterRepository;
 import dev.arcsoftware.madoc.util.Utils;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.odftoolkit.odfdom.doc.OdfDocument;
 import org.odftoolkit.odfdom.doc.table.OdfTable;
@@ -17,6 +19,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.ISpringTemplateEngine;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -31,18 +35,23 @@ import java.util.Locale;
 @Slf4j
 public class DocumentService {
 
-    private final static String SIGN_IN_SHEET_TEMPLATE_RESOURCE_PATH = "data/templates/SignInSheetTemplate.ods";
-    private final static String GAMESHEET_TEMPLATE_RESOURCE_PATH = "data/templates/GamesheetTemplate.ods";
-    private final static String PREGAME_PACKAGE_TEMPLATE_RESOURCE_PATH = "data/templates/PreGamePackage.ods";
-
+    private static final String SIGN_IN_SHEET_TEMPLATE_RESOURCE_PATH = "data/templates/SignInSheetTemplate.ods";
+    private static final String GAMESHEET_TEMPLATE_RESOURCE_PATH = "data/templates/GamesheetTemplate.ods";
+    private static final String PREGAME_PACKAGE_PRINT_TEMPLATE = "pregame-package-print";
+    private static final int GAMESHEET_MIN_ROWS = 15;
+    private static final int SIGN_IN_MIN_ROWS = 18;
 
     private final GameRepository gameRepository;
     private final RosterRepository rosterRepository;
+    private final ISpringTemplateEngine templateEngine;
 
     @Autowired
-    public DocumentService(GameRepository gameRepository, RosterRepository rosterRepository) {
+    public DocumentService(GameRepository gameRepository,
+                           RosterRepository rosterRepository,
+                           ISpringTemplateEngine templateEngine) {
         this.gameRepository = gameRepository;
         this.rosterRepository = rosterRepository;
+        this.templateEngine = templateEngine;
     }
 
     public Pair<String, byte[]> getEmptyGamesheet(int gameId) {
@@ -103,43 +112,72 @@ public class DocumentService {
         return new Pair<>(downloadFileName, data);
     }
 
-    public Pair<String, byte[]> getPregamePackage(LocalDate date){
+    public List<PregamePackageGameDto> getPregamePackageGames(LocalDate date) {
         List<GameEntity> games = gameRepository.findByDate(date);
-        if(CollectionUtils.isEmpty(games)){
-            throw new IllegalArgumentException("No Games available for "+date);
+        if (CollectionUtils.isEmpty(games)) {
+            throw new ResultNotFoundException("No games scheduled for " + date);
         }
 
-        Resource resource = new ClassPathResource(PREGAME_PACKAGE_TEMPLATE_RESOURCE_PATH);
-        byte[] documentData;
-        try (InputStream inputStream = resource.getInputStream(); OdfDocument template = OdfDocument.loadDocument(inputStream)) {
-            PreGamePackageData packageData = new PreGamePackageData();
-            List<List<RosterAssignmentDto>> rosters = null;
-            for(int i=0; i<games.size(); i++){
-                GameEntity game = games.get(i);
-                rosters = getRosters(game);
-                if(CollectionUtils.isEmpty(rosters)){
-                    throw new IllegalArgumentException("No Rosters available for game "+game.getId());
-                }
+        List<PregamePackageGameDto> packageGames = new ArrayList<>(games.size());
+        for (GameEntity game : games) {
+            List<List<RosterAssignmentDto>> rosters = getRosters(game);
+            List<RosterAssignmentDto> homeRoster = rosters.getFirst();
+            List<RosterAssignmentDto> awayRoster = rosters.getLast();
 
-                // Get first table sheet of the current document
-                OdfTable gameSheet = template.getTableList(true).get(i*3);
-                writeEmptyGamesheetData(gameSheet, game, rosters.getFirst(), rosters.getLast());
-
-                OdfTable signInSheetHome = template.getTableList(true).get(i*3+1);
-                writeEmptySigninSheetData(signInSheetHome, game.getHomeTeam().getTeamName(), game.getGameTime(), rosters.getFirst());
-
-                OdfTable signInSheetAway = template.getTableList(true).get(i*3+2);
-                writeEmptySigninSheetData(signInSheetAway, game.getHomeTeam().getTeamName(), game.getGameTime(), rosters.getLast());
-            }
-            documentData = exportDocument(template);
-        } catch (Exception e) {
-            log.error("Error reading pregame package template resource: {}", e.getMessage());
-            throw new RuntimeException("Failed to load pregame package resource", e);
+            packageGames.add(new PregamePackageGameDto(
+                    game,
+                    buildPaddedRosterRows(homeRoster, GAMESHEET_MIN_ROWS),
+                    buildPaddedRosterRows(awayRoster, GAMESHEET_MIN_ROWS),
+                    buildPaddedRosterRows(homeRoster, SIGN_IN_MIN_ROWS),
+                    buildPaddedRosterRows(awayRoster, SIGN_IN_MIN_ROWS)
+            ));
         }
+        return packageGames;
+    }
+
+    public Pair<String, byte[]> getPregamePackagePdf(LocalDate date) {
+        List<PregamePackageGameDto> packageGames = getPregamePackageGames(date);
+        byte[] pdfBytes = renderPregamePackagePdf(date, packageGames);
 
         String dateString = DateTimeFormatter.BASIC_ISO_DATE.format(date);
-        String downloadFileName = "PregamePackage-"+dateString;
-        return new Pair<>(downloadFileName, documentData);
+        String downloadFileName = "PregamePackage-" + dateString;
+        return new Pair<>(downloadFileName, pdfBytes);
+    }
+
+    public byte[] renderPregamePackagePdf(LocalDate date, List<PregamePackageGameDto> packageGames) {
+        Context context = new Context(Locale.ENGLISH);
+        context.setVariable("date", date);
+        context.setVariable("isoDate", date.format(DateTimeFormatter.ISO_LOCAL_DATE));
+        context.setVariable("games", packageGames);
+        context.setVariable("totalPages", packageGames.isEmpty() ? 0 : 1 + packageGames.size() * 3);
+        context.setVariable("pdfMode", true);
+
+        String xhtml = templateEngine.process(PREGAME_PACKAGE_PRINT_TEMPLATE, context);
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            PdfRendererBuilder builder = new PdfRendererBuilder()
+                    .withHtmlContent(xhtml, null)
+                    .toStream(outputStream);
+            builder.run();
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            log.error("Failed to generate pregame package PDF for {}", date, e);
+            throw new RuntimeException("Failed to generate pregame package PDF for " + date, e);
+        }
+    }
+
+    private List<RosterRow> buildPaddedRosterRows(List<RosterAssignmentDto> roster, int minRows) {
+        List<RosterRow> rows = new ArrayList<>(Math.max(roster.size(), minRows));
+        for (RosterAssignmentDto player : roster) {
+            if (!player.isActive()) {
+                continue;
+            }
+            String number = player.getJerseyNumber() == 0 ? "" : String.valueOf(player.getJerseyNumber());
+            rows.add(new RosterRow(number, player.getFullName()));
+        }
+        while (rows.size() < minRows) {
+            rows.add(RosterRow.BLANK);
+        }
+        return rows;
     }
 
     private byte[] exportDocument(OdfDocument template){
@@ -246,19 +284,5 @@ public class DocumentService {
 
         // Jersey numbers and names (A6:21, B6:21)
         writeRosterToTable(signInSheet, 0, 1, 5, roster);
-    }
-
-    @Getter
-    private static class PreGamePackageData{
-        private final List<List<RosterAssignmentDto>> rosters = new ArrayList<>(6);
-        private final List<GameEntity> games = new ArrayList<>(3);
-
-        public void addRoster(List<RosterAssignmentDto> roster){
-            this.rosters.add(roster);
-        }
-
-        public void addGame(GameEntity game){
-            this.games.add(game);
-        }
     }
 }

@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="|Pre-Game Package - ${#temporals.format(date, 'MMM dd, yyyy')}|">Pre-Game Package</title>
+    <style>
+        @page {
+            size: letter portrait;
+            margin: 0.3in;
+        }
+
+        @page room-sheet {
+            size: letter landscape;
+            margin: 0.4in;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: Helvetica, Arial, sans-serif;
+            color: #000000;
+            background: #ffffff;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body.browser-mode {
+            background: #1b1f27;
+            padding-top: 68px;
+            padding-bottom: 36px;
+        }
+
+        /* ---------- Screen-only floating toolbar ---------- */
+        .pkg-toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: #111318;
+            color: #f3f4f6;
+            border-bottom: 2px solid #cc1919;
+            padding: 12px 20px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+        }
+
+        .pkg-toolbar-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: table;
+            width: 100%;
+        }
+
+        .pkg-toolbar-left,
+        .pkg-toolbar-right {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .pkg-toolbar-right {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .pkg-back-link {
+            display: inline-block;
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            margin-right: 14px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        .pkg-back-link:hover {
+            color: #ffffff;
+            border-color: #cc1919;
+        }
+
+        .pkg-toolbar-title {
+            display: inline-block;
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            vertical-align: middle;
+        }
+
+        .pkg-toolbar-meta {
+            display: inline-block;
+            font-size: 12px;
+            color: #9ca3af;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .pkg-btn {
+            display: inline-block;
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 999px;
+            cursor: pointer;
+            margin-left: 8px;
+            vertical-align: middle;
+            line-height: 1.2;
+        }
+
+        .pkg-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f3f4f6;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pkg-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+
+        .pkg-btn-primary {
+            background: #cc1919;
+            color: #ffffff;
+            border: 1px solid #cc1919;
+        }
+
+        .pkg-btn-primary:hover {
+            background: #e02323;
+            border-color: #e02323;
+        }
+
+        /* ---------- Printable sheet container ---------- */
+        .sheet {
+            width: 100%;
+            background: #ffffff;
+            color: #000000;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .sheet.last-sheet {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        body.browser-mode .sheet {
+            width: 8.5in;
+            min-height: 11in;
+            margin: 18px auto;
+            padding: 0.3in;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+            border-radius: 2px;
+        }
+
+        /* ---------- Shared table helpers ---------- */
+        table {
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        /* ---------- Gamesheet header (pure black and white) ---------- */
+        .gs-header {
+            margin-bottom: 8px;
+            border: 1.5px solid #000000;
+        }
+
+        .gs-header th {
+            border: 1px solid #000000;
+            border-bottom: 1.5px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 2.5px 4px;
+            text-align: center;
+        }
+
+        .gs-header td {
+            border: 1px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            padding: 4px 6px;
+            vertical-align: top;
+        }
+
+        .gs-brand-cell {
+            width: 27%;
+        }
+
+        .gs-brand-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .gs-brand-season {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+
+        .gs-brand-venue {
+            font-size: 10.5px;
+            margin-top: 4px;
+            padding-top: 3px;
+            border-top: 1px solid #000000;
+            font-weight: 700;
+        }
+
+        .gs-datetime-cell {
+            width: 17%;
+            text-align: center;
+            vertical-align: middle !important;
+        }
+
+        .gs-score-col {
+            width: 8%;
+            text-align: center;
+            padding: 3px 2px !important;
+        }
+
+        .gs-periods-cell {
+            width: 20%;
+        }
+
+        .gs-types-cell {
+            width: 20%;
+        }
+
+        .gs-date-val {
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .gs-time-val {
+            font-size: 12.5px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        .gs-score-side {
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .gs-info-line {
+            font-size: 9.5px;
+            line-height: 1.3;
+        }
+
+        .gs-info-compact {
+            font-size: 9px;
+            line-height: 1.22;
+        }
+
+        /* ---------- Gamesheet team block (Home / Away, pure black and white) ---------- */
+        .gs-team-block {
+            margin-bottom: 10px;
+        }
+
+        .gs-team-block.gs-team-last {
+            margin-bottom: 0;
+        }
+
+        .gs-layout-table td.gs-col-roster {
+            width: 24.5%;
+            vertical-align: top;
+            padding: 0;
+        }
+
+        .gs-layout-table td.gs-col-gap {
+            width: 1%;
+            padding: 0;
+        }
+
+        .gs-layout-table td.gs-col-scoring {
+            width: 35%;
+            vertical-align: top;
+            padding: 0;
+        }
+
+        .gs-layout-table td.gs-col-penalties {
+            width: 38.5%;
+            vertical-align: top;
+            padding: 0;
+        }
+
+        .gs-grid {
+            border: 1.5px solid #000000;
+        }
+
+        .gs-grid th,
+        .gs-grid td {
+            border: 1px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            padding: 0 3px;
+            font-size: 10px;
+            height: 25px;
+            line-height: 1.15;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .gs-grid tr.gs-section-banner th {
+            background: #ffffff;
+            color: #000000;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            height: 22px;
+            text-align: left;
+            padding: 0 5px;
+            border-bottom: 1.5px solid #000000;
+        }
+
+        .gs-grid tr.gs-section-banner th.gs-center {
+            text-align: center;
+        }
+
+        .gs-grid tr.gs-col-head th {
+            background: #ffffff;
+            color: #000000;
+            font-size: 9px;
+            font-weight: 700;
+            text-align: center;
+            height: 19px;
+            border-bottom: 1.5px solid #000000;
+        }
+
+        .gs-grid tr.gs-col-head th.gs-left {
+            text-align: left;
+            padding-left: 3px;
+        }
+
+        .gs-num {
+            text-align: center;
+            font-weight: 700;
+            padding: 0 1px !important;
+        }
+
+        .gs-name {
+            text-align: left;
+            padding-left: 3px !important;
+        }
+
+        /* ---------- Sign-In Sheet (pure black and white) ---------- */
+        .si-header {
+            border: 1.5px solid #000000;
+            margin-bottom: 14px;
+        }
+
+        .si-header td {
+            border: 1px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+
+        .si-title-cell {
+            width: 34%;
+        }
+
+        .si-title {
+            font-size: 16.5px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .si-subtitle {
+            font-size: 10.5px;
+            margin-top: 3px;
+        }
+
+        .si-team-cell {
+            width: 36%;
+            text-align: center;
+        }
+
+        .si-team-role {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .si-team-name {
+            font-size: 19px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .si-meta-cell {
+            width: 30%;
+            text-align: right;
+        }
+
+        .si-meta-date {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .si-meta-time {
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        .si-meta-venue {
+            font-size: 10.5px;
+            margin-top: 3px;
+        }
+
+        .si-table {
+            border: 1.5px solid #000000;
+        }
+
+        .si-table th {
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
+            border-bottom: 1.5px solid #000000;
+            padding: 8px 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-align: left;
+        }
+
+        .si-table th.si-center {
+            text-align: center;
+        }
+
+        .si-table td {
+            border: 1px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            padding: 0 10px;
+            height: 43px;
+            font-size: 13.5px;
+            vertical-align: middle;
+        }
+
+        .si-table td.si-num {
+            text-align: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .si-table td.si-name {
+            font-weight: 600;
+        }
+
+        .si-footer-note {
+            margin-top: 10px;
+            font-size: 10.5px;
+            color: #000000;
+            text-align: center;
+        }
+
+        /* ---------- Room Sheet Display (landscape, pure black and white) ---------- */
+        .sheet-room {
+            page: room-sheet;
+        }
+
+        body.pdf-mode .sheet-room {
+            width: 10.2in;
+        }
+
+        body.browser-mode .sheet-room {
+            width: 11in;
+            min-height: 8.5in;
+            padding: 0.4in;
+        }
+
+        .rs-meta {
+            margin-bottom: 18px;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid #000000;
+        }
+
+        .rs-meta td {
+            font-size: 13px;
+            font-weight: 700;
+            color: #000000;
+            padding: 0;
+        }
+
+        .rs-meta-right {
+            text-align: right;
+        }
+
+        .rs-row {
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .rs-header-row {
+            margin-bottom: 34px;
+        }
+
+        .rs-game-row {
+            margin-bottom: 44px;
+        }
+
+        .rs-game-row.rs-last-game {
+            margin-bottom: 0;
+        }
+
+        .rs-row td {
+            padding: 0;
+            vertical-align: middle;
+        }
+
+        .rs-head-box {
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: fixed;
+            width: 100%;
+            border: 2.5px solid #000000;
+            background: #ffffff;
+        }
+
+        .rs-head-box-team {
+            width: 68%;
+            margin: 0 auto;
+        }
+
+        .rs-head-box td,
+        .rs-head-room {
+            height: 62px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 26px;
+            font-weight: 700;
+            color: #000000;
+            padding: 0 6px !important;
+        }
+
+        .rs-head-room {
+            border: 2.5px solid #000000;
+            background: #ffffff;
+        }
+
+        .rs-box {
+            border: 2.5px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            height: 138px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .rs-team-box {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.15;
+            padding: 0 12px !important;
+            word-wrap: break-word;
+        }
+
+        .rs-room-box {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .rs-time-box {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            border: 2.5px solid #000000;
+            background: #ffffff;
+        }
+
+        .rs-time-box td {
+            height: 78px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 26px;
+            font-weight: 700;
+            color: #000000;
+            white-space: nowrap;
+            padding: 0 4px;
+        }
+
+        /* Compact sizing when more than 3 games share the room sheet */
+        .rs-compact .rs-header-row {
+            margin-bottom: 18px;
+        }
+
+        .rs-compact .rs-game-row {
+            margin-bottom: 20px;
+        }
+
+        .rs-compact .rs-head-box td,
+        .rs-compact .rs-head-room {
+            height: 50px;
+            font-size: 24px;
+        }
+
+        .rs-compact .rs-box {
+            height: 98px;
+        }
+
+        .rs-compact .rs-team-box {
+            font-size: 24px;
+        }
+
+        .rs-compact .rs-time-box td {
+            height: 60px;
+            font-size: 22px;
+        }
+
+        /* ---------- Print media overrides ---------- */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body.browser-mode {
+                background: #ffffff;
+                padding: 0;
+            }
+
+            body.browser-mode .sheet,
+            body.browser-mode .sheet-room {
+                width: 100%;
+                min-height: 0;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body th:class="${pdfMode} ? 'pdf-mode' : 'browser-mode'">
+
+    <!-- Screen-only toolbar (excluded in PDF mode and hidden when printing) -->
+    <div class="pkg-toolbar no-print" th:if="${!pdfMode}">
+        <div class="pkg-toolbar-inner">
+            <div class="pkg-toolbar-left">
+                <a class="pkg-back-link" th:href="@{/schedule}">&#8592; Schedule</a>
+                <span class="pkg-toolbar-title"
+                      th:text="|Pre-Game Package &#183; ${#temporals.format(date, 'EEEE, MMM dd, yyyy')}|">Pre-Game Package</span>
+                <span class="pkg-toolbar-meta"
+                      th:text="|${#lists.size(games)} ${#lists.size(games) == 1 ? 'game' : 'games'} (${totalPages} pages)|">3 games (9 pages)</span>
+            </div>
+            <div class="pkg-toolbar-right">
+                <button type="button" class="pkg-btn pkg-btn-secondary" onclick="window.print();">Print</button>
+                <a class="pkg-btn pkg-btn-primary"
+                   th:href="@{/api/documents/package/{date}(date=${isoDate})}">Download PDF</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== FIRST PAGE: DRESSING ROOM DISPLAY SHEET ==================== -->
+    <div class="sheet sheet-room"
+         th:if="${!#lists.isEmpty(games)}"
+         th:classappend="${#lists.size(games) > 3} ? 'rs-compact' : ''">
+        <table class="rs-meta">
+            <tr>
+                <td th:text="|Madoc Mens Hockey League &#183; ${#temporals.format(date, 'EEEE, MMM dd, yyyy')}|">Madoc Mens Hockey League &#183; Sunday, Sep 20, 2026</td>
+                <td class="rs-meta-right" th:text="${games[0].game.venue.arenaName}">Century Gardens</td>
+            </tr>
+        </table>
+
+        <table class="rs-row rs-header-row">
+            <colgroup>
+                <col style="width: 28%;"/>
+                <col style="width: 1.5%;"/>
+                <col style="width: 13.5%;"/>
+                <col style="width: 1.5%;"/>
+                <col style="width: 11%;"/>
+                <col style="width: 1.5%;"/>
+                <col style="width: 28%;"/>
+                <col style="width: 1.5%;"/>
+                <col style="width: 13.5%;"/>
+            </colgroup>
+            <tr>
+                <td>
+                    <table class="rs-head-box rs-head-box-team">
+                        <tr><td>Home</td></tr>
+                    </table>
+                </td>
+                <td></td>
+                <td class="rs-head-room">Room</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>
+                    <table class="rs-head-box rs-head-box-team">
+                        <tr><td>Away</td></tr>
+                    </table>
+                </td>
+                <td></td>
+                <td class="rs-head-room">Room</td>
+            </tr>
+        </table>
+
+        <table class="rs-row rs-game-row"
+               th:each="pkg, rStat : ${games}"
+               th:classappend="${rStat.last} ? 'rs-last-game' : ''">
+            <colgroup>
+                <col style="width: 28%;"/>
+                <col style="width: 1.5%;"/>
+                <col style="width: 13.5%;"/>
+                <col style="width: 1.5%;"/>
+                <col style="width: 11%;"/>
+                <col style="width: 1.5%;"/>
+                <col style="width: 28%;"/>
+                <col style="width: 1.5%;"/>
+                <col style="width: 13.5%;"/>
+            </colgroup>
+            <tr>
+                <td class="rs-box rs-team-box" th:text="${pkg.game.homeTeam.teamName}">Flames</td>
+                <td></td>
+                <td class="rs-box rs-room-box">&#160;</td>
+                <td></td>
+                <td>
+                    <table class="rs-time-box">
+                        <tr>
+                            <td th:text="${pkg.game.gameTime.minute == 0 ? #temporals.format(pkg.game.gameTime, 'h a') : #temporals.format(pkg.game.gameTime, 'h:mm a')}">7 PM</td>
+                        </tr>
+                    </table>
+                </td>
+                <td></td>
+                <td class="rs-box rs-team-box" th:text="${pkg.game.awayTeam.teamName}">Leafs</td>
+                <td></td>
+                <td class="rs-box rs-room-box">&#160;</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- One Gamesheet + Home Sign-In + Away Sign-In per game -->
+    <th:block th:each="pkg, gStat : ${games}">
+
+        <!-- ==================== GAMESHEET ==================== -->
+        <div class="sheet">
+            <table class="gs-header">
+                <tr>
+                    <td rowspan="2" class="gs-brand-cell">
+                        <div class="gs-brand-title"
+                             th:text="|Madoc Mens Hockey League ${pkg.game.year}/${pkg.game.year + 1}|">Madoc Mens Hockey League 2026/2027</div>
+                        <div class="gs-brand-season" th:text="${pkg.game.seasonType.label}">Regular Season</div>
+                        <div class="gs-brand-venue" th:text="${pkg.game.venue.arenaName}">Century Gardens</div>
+                    </td>
+                    <th>Date &amp; Time</th>
+                    <th colspan="2">Final Score</th>
+                    <th>Period Lengths</th>
+                    <th>Goal Types</th>
+                </tr>
+                <tr>
+                    <td class="gs-datetime-cell">
+                        <div class="gs-date-val" th:text="${#temporals.format(pkg.game.gameTime, 'dd/MM/yyyy')}">20/09/2026</div>
+                        <div class="gs-time-val" th:text="${#temporals.format(pkg.game.gameTime, 'h:mm a')}">7:00 PM</div>
+                    </td>
+                    <td class="gs-score-col"><span class="gs-score-side">Home</span></td>
+                    <td class="gs-score-col"><span class="gs-score-side">Away</span></td>
+                    <td class="gs-periods-cell">
+                        <div class="gs-info-line">Period 1: <strong>10:30</strong></div>
+                        <div class="gs-info-line">Period 2: <strong>10:30</strong></div>
+                        <div class="gs-info-line">Period 3: <strong>14:00</strong></div>
+                    </td>
+                    <td class="gs-types-cell">
+                        <div class="gs-info-line gs-info-compact"><strong>*SH</strong> = Short Handed</div>
+                        <div class="gs-info-line gs-info-compact"><strong>*PP</strong> = Powerplay</div>
+                        <div class="gs-info-line gs-info-compact"><strong>*EN</strong> = Empty Net</div>
+                        <div class="gs-info-line gs-info-compact"><strong>*PS</strong> = Penalty Shot</div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- HOME TEAM -->
+            <div class="gs-team-block">
+                <table class="gs-layout-table">
+                    <tr>
+                        <td class="gs-col-roster">
+                            <table class="gs-grid">
+                                <colgroup>
+                                    <col style="width: 13%;"/>
+                                    <col style="width: 70%;"/>
+                                    <col style="width: 17%;"/>
+                                </colgroup>
+                                <thead>
+                                    <tr class="gs-section-banner">
+                                        <th colspan="3" th:text="|Home: ${pkg.game.homeTeam.teamName}|">Home: Flames</th>
+                                    </tr>
+                                    <tr class="gs-col-head">
+                                        <th>#</th>
+                                        <th class="gs-left">Full Name</th>
+                                        <th>Attd</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="row : ${pkg.homeGamesheetRows}">
+                                        <td class="gs-num" th:text="${row.jerseyNumber}">12</td>
+                                        <td class="gs-name" th:text="${row.fullName}">Player Name</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td class="gs-col-gap"></td>
+                        <td class="gs-col-scoring">
+                            <table class="gs-grid">
+                                <colgroup>
+                                    <col style="width: 11%;"/>
+                                    <col style="width: 31%;"/>
+                                    <col style="width: 14.5%;"/>
+                                    <col style="width: 14.5%;"/>
+                                    <col style="width: 14.5%;"/>
+                                    <col style="width: 14.5%;"/>
+                                </colgroup>
+                                <thead>
+                                    <tr class="gs-section-banner">
+                                        <th colspan="6" class="gs-center">Home Scoring</th>
+                                    </tr>
+                                    <tr class="gs-col-head">
+                                        <th>Per</th>
+                                        <th>Time</th>
+                                        <th>G</th>
+                                        <th>A</th>
+                                        <th>A</th>
+                                        <th>*</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="row : ${pkg.homeGamesheetRows}">
+                                        <td></td><td></td><td></td><td></td><td></td><td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td class="gs-col-gap"></td>
+                        <td class="gs-col-penalties">
+                            <table class="gs-grid">
+                                <colgroup>
+                                    <col style="width: 10%;"/>
+                                    <col style="width: 27%;"/>
+                                    <col style="width: 11%;"/>
+                                    <col style="width: 40%;"/>
+                                    <col style="width: 12%;"/>
+                                </colgroup>
+                                <thead>
+                                    <tr class="gs-section-banner">
+                                        <th colspan="5" class="gs-center">Home Penalties</th>
+                                    </tr>
+                                    <tr class="gs-col-head">
+                                        <th>Per</th>
+                                        <th>Time</th>
+                                        <th>#</th>
+                                        <th class="gs-left">Infraction</th>
+                                        <th>Min</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="row : ${pkg.homeGamesheetRows}">
+                                        <td></td><td></td><td></td><td></td><td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- AWAY TEAM -->
+            <div class="gs-team-block gs-team-last">
+                <table class="gs-layout-table">
+                    <tr>
+                        <td class="gs-col-roster">
+                            <table class="gs-grid">
+                                <colgroup>
+                                    <col style="width: 13%;"/>
+                                    <col style="width: 70%;"/>
+                                    <col style="width: 17%;"/>
+                                </colgroup>
+                                <thead>
+                                    <tr class="gs-section-banner">
+                                        <th colspan="3" th:text="|Away: ${pkg.game.awayTeam.teamName}|">Away: Leafs</th>
+                                    </tr>
+                                    <tr class="gs-col-head">
+                                        <th>#</th>
+                                        <th class="gs-left">Full Name</th>
+                                        <th>Attd</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="row : ${pkg.awayGamesheetRows}">
+                                        <td class="gs-num" th:text="${row.jerseyNumber}">12</td>
+                                        <td class="gs-name" th:text="${row.fullName}">Player Name</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td class="gs-col-gap"></td>
+                        <td class="gs-col-scoring">
+                            <table class="gs-grid">
+                                <colgroup>
+                                    <col style="width: 11%;"/>
+                                    <col style="width: 31%;"/>
+                                    <col style="width: 14.5%;"/>
+                                    <col style="width: 14.5%;"/>
+                                    <col style="width: 14.5%;"/>
+                                    <col style="width: 14.5%;"/>
+                                </colgroup>
+                                <thead>
+                                    <tr class="gs-section-banner">
+                                        <th colspan="6" class="gs-center">Away Scoring</th>
+                                    </tr>
+                                    <tr class="gs-col-head">
+                                        <th>Per</th>
+                                        <th>Time</th>
+                                        <th>G</th>
+                                        <th>A</th>
+                                        <th>A</th>
+                                        <th>*</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="row : ${pkg.awayGamesheetRows}">
+                                        <td></td><td></td><td></td><td></td><td></td><td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td class="gs-col-gap"></td>
+                        <td class="gs-col-penalties">
+                            <table class="gs-grid">
+                                <colgroup>
+                                    <col style="width: 10%;"/>
+                                    <col style="width: 27%;"/>
+                                    <col style="width: 11%;"/>
+                                    <col style="width: 40%;"/>
+                                    <col style="width: 12%;"/>
+                                </colgroup>
+                                <thead>
+                                    <tr class="gs-section-banner">
+                                        <th colspan="5" class="gs-center">Away Penalties</th>
+                                    </tr>
+                                    <tr class="gs-col-head">
+                                        <th>Per</th>
+                                        <th>Time</th>
+                                        <th>#</th>
+                                        <th class="gs-left">Infraction</th>
+                                        <th>Min</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="row : ${pkg.awayGamesheetRows}">
+                                        <td></td><td></td><td></td><td></td><td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==================== PAGE 2: HOME SIGN-IN SHEET ==================== -->
+        <div class="sheet">
+            <table class="si-header">
+                <tr>
+                    <td class="si-title-cell">
+                        <div class="si-title">Madoc Sign In Sheet</div>
+                        <div class="si-subtitle"
+                             th:text="|${pkg.game.year}/${pkg.game.year + 1} ${pkg.game.seasonType.label}|">2026/2027 Regular Season</div>
+                    </td>
+                    <td class="si-team-cell">
+                        <div class="si-team-role">Home Team</div>
+                        <div class="si-team-name" th:text="${pkg.game.homeTeam.teamName}">Flames</div>
+                    </td>
+                    <td class="si-meta-cell">
+                        <div class="si-meta-date" th:text="${#temporals.format(pkg.game.gameTime, 'EEE, MMM dd, yyyy')}">Sun, Sep 20, 2026</div>
+                        <div class="si-meta-time" th:text="${#temporals.format(pkg.game.gameTime, 'h:mm a')}">7:00 PM</div>
+                        <div class="si-meta-venue" th:text="${pkg.game.venue.arenaName}">Century Gardens</div>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="si-table">
+                <colgroup>
+                    <col style="width: 14%;"/>
+                    <col style="width: 52%;"/>
+                    <col style="width: 34%;"/>
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th class="si-center">Number</th>
+                        <th>Name</th>
+                        <th class="si-center">Attendance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row : ${pkg.homeSignInRows}">
+                        <td class="si-num" th:text="${row.jerseyNumber}">12</td>
+                        <td class="si-name" th:text="${row.fullName}">Player Name</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="si-footer-note"
+                 th:text="|${pkg.game.homeTeam.teamName} vs ${pkg.game.awayTeam.teamName} &#183; Please sign or initial next to your name before stepping on the ice.|"></div>
+        </div>
+
+        <!-- ==================== PAGE 3: AWAY SIGN-IN SHEET ==================== -->
+        <div class="sheet" th:classappend="${gStat.last} ? ' last-sheet' : ''">
+            <table class="si-header">
+                <tr>
+                    <td class="si-title-cell">
+                        <div class="si-title">Madoc Sign In Sheet</div>
+                        <div class="si-subtitle"
+                             th:text="|${pkg.game.year}/${pkg.game.year + 1} ${pkg.game.seasonType.label}|">2026/2027 Regular Season</div>
+                    </td>
+                    <td class="si-team-cell">
+                        <div class="si-team-role">Away Team</div>
+                        <div class="si-team-name" th:text="${pkg.game.awayTeam.teamName}">Leafs</div>
+                    </td>
+                    <td class="si-meta-cell">
+                        <div class="si-meta-date" th:text="${#temporals.format(pkg.game.gameTime, 'EEE, MMM dd, yyyy')}">Sun, Sep 20, 2026</div>
+                        <div class="si-meta-time" th:text="${#temporals.format(pkg.game.gameTime, 'h:mm a')}">7:00 PM</div>
+                        <div class="si-meta-venue" th:text="${pkg.game.venue.arenaName}">Century Gardens</div>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="si-table">
+                <colgroup>
+                    <col style="width: 14%;"/>
+                    <col style="width: 52%;"/>
+                    <col style="width: 34%;"/>
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th class="si-center">Number</th>
+                        <th>Name</th>
+                        <th class="si-center">Attendance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row : ${pkg.awaySignInRows}">
+                        <td class="si-num" th:text="${row.jerseyNumber}">12</td>
+                        <td class="si-name" th:text="${row.fullName}">Player Name</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="si-footer-note"
+                 th:text="|${pkg.game.homeTeam.teamName} vs ${pkg.game.awayTeam.teamName} &#183; Please sign or initial next to your name before stepping on the ice.|"></div>
+        </div>
+
+    </th:block>
+
+</body>
+</html>

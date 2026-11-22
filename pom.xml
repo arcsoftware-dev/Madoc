@@ -127,6 +127,13 @@
             <version>0.13.0</version>
         </dependency>
 
+<!--        HTML to PDF Rendering-->
+        <dependency>
+            <groupId>io.github.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>1.1.114</version>
+        </dependency>
+
 <!--        Test-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

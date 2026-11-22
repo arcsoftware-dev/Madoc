@@ -10,12 +10,12 @@
                   th:text="|${#lists.size(gameDay.games)} ${#lists.size(gameDay.games) == 1 ? 'game' : 'games'}|">1 game</span>
             <a class="ms-pkg-download-btn"
                sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
-               th:href="@{/api/documents/package/{date}(date=${#temporals.format(gameDay.date, 'yyyy-MM-dd')})}"
-               th:aria-label="|Download pre-game package for ${#temporals.format(gameDay.date, 'MMMM dd yyyy')}|">
+               th:href="@{/schedule/pregame-package/{date}(date=${#temporals.format(gameDay.date, 'yyyy-MM-dd')})}"
+               th:aria-label="|Open pre-game package print view for ${#temporals.format(gameDay.date, 'MMMM dd yyyy')}|">
                 <svg class="ms-pkg-download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
+                    <path d="M6 9V2h12v7"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
                 </svg>
                 <span>Pre-Game Package</span>
             </a>

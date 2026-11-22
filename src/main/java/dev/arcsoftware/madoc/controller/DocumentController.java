@@ -65,14 +65,14 @@ public class DocumentController {
     public ResponseEntity<byte[]> getPregamePackage(
             @PathVariable("date") LocalDate date
     ){
-        log.info("Received pregame package get request with date={}", date);
+        log.info("Received pregame package PDF get request with date={}", date);
 
-        Pair<String, byte[]> exportData = documentService.getPregamePackage(date);
-        String downloadFileName = exportData.left()+".ods";
+        Pair<String, byte[]> exportData = documentService.getPregamePackagePdf(date);
+        String downloadFileName = exportData.left()+".pdf";
         String headerValue = "attachment; filename=\""+downloadFileName+"\"";
 
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
                 .body(exportData.right());
     }
