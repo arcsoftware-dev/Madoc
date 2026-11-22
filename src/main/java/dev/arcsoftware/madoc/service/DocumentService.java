@@ -197,9 +197,9 @@ public class DocumentService {
         //Write date and season type (A1)
         StringBuilder dateBuilder = new StringBuilder()
                 .append("Madoc Mens Hockey League ")
-                .append(gameEntity.getGameTime().getYear())
+                .append(gameEntity.getYear())
                 .append("/")
-                .append(gameEntity.getGameTime().getYear()+1)
+                .append(gameEntity.getYear()+1)
                 .append("\n")
                 .append(gameEntity.getSeasonType().getLabel());
         gamesheet.getCellByPosition(0,0).setStringValue(dateBuilder.toString());

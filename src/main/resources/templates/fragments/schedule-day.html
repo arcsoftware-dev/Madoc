@@ -5,8 +5,21 @@
             <small th:text="${#temporals.format(gameDay.date, 'EEEE')}">Friday</small>
             <span th:text="${#temporals.format(gameDay.date, 'MMMM dd yyyy')}">November 20 2025</span>
         </h2>
-        <span class="ms-day-count"
-              th:text="|${#lists.size(gameDay.games)} ${#lists.size(gameDay.games) == 1 ? 'game' : 'games'}|">1 game</span>
+        <div class="ms-day-actions">
+            <span class="ms-day-count"
+                  th:text="|${#lists.size(gameDay.games)} ${#lists.size(gameDay.games) == 1 ? 'game' : 'games'}|">1 game</span>
+            <a class="ms-pkg-download-btn"
+               sec:authorize="hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')"
+               th:href="@{/api/documents/package/{date}(date=${#temporals.format(gameDay.date, 'yyyy-MM-dd')})}"
+               th:aria-label="|Download pre-game package for ${#temporals.format(gameDay.date, 'MMMM dd yyyy')}|">
+                <svg class="ms-pkg-download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Pre-Game Package</span>
+            </a>
+        </div>
     </header>
 
     <div class="ms-sched-game"
