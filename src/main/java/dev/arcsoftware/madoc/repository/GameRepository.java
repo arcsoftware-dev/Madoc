@@ -10,13 +10,18 @@ import dev.arcsoftware.madoc.model.entity.UploadFileData;
 import dev.arcsoftware.madoc.model.payload.GamesheetPayload;
 import dev.arcsoftware.madoc.model.payload.ScheduleItemDto;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.sql.Array;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -27,11 +32,13 @@ import java.util.Optional;
 public class GameRepository {
     private final JdbcClient jdbcClient;
     private final ObjectMapper objectMapper;
+    private final GameMapper gameMapper;
 
     @Autowired
     public GameRepository(JdbcClient jdbcClient, ObjectMapper objectMapper) {
         this.jdbcClient = jdbcClient;
         this.objectMapper = objectMapper;
+        this.gameMapper = new GameMapper();
     }
 
     public List<ScheduleItemDto> getSchedule(SeasonType seasonType, int year) {
@@ -81,44 +88,7 @@ public class GameRepository {
                 .param("game_time", gameTime)
                 .param("year", seasonYear)
                 .param("season_type", seasonType.name())
-                .query((rs, num) -> {
-                    TeamEntity homeTeam = new TeamEntity();
-                    homeTeam.setId(rs.getInt("home_team"));
-                    homeTeam.setTeamName(rs.getString("home_team_name"));
-                    homeTeam.setYear(seasonYear);
-
-                    TeamEntity awayTeam = new TeamEntity();
-                    awayTeam.setId(rs.getInt("away_team"));
-                    awayTeam.setTeamName(rs.getString("away_team_name"));
-                    awayTeam.setYear(seasonYear);
-
-                    GameEntity game = new GameEntity();
-                    game.setId(rs.getInt("id"));
-                    game.setHomeTeam(homeTeam);
-                    game.setAwayTeam(awayTeam);
-                    game.setYear(seasonYear);
-                    game.setSeasonType(seasonType);
-                    game.setVenue(Arena.valueOf(rs.getString("venue")));
-                    game.setGameTime(gameTime);
-                    game.setRefereeNameOne(rs.getString("referee_name_one"));
-                    game.setRefereeNameTwo(rs.getString("referee_name_two"));
-                    game.setRefereeNameThree(rs.getString("referee_name_three"));
-                    game.setVideoId(rs.getString("video_id"));
-
-                    Array rawArray = rs.getArray("referee_notes");
-                    if(rawArray != null){
-                        String[] refNotesArray = (String[]) rawArray.getArray();
-                        game.setRefereeNotes(Arrays.stream(refNotesArray).toList());
-                    }
-
-                    game.setFinalized(rs.getBoolean("is_finalized"));
-                    Timestamp finalizedTimestamp = rs.getTimestamp("finalized_at");
-                    if(finalizedTimestamp != null){
-                        game.setFinalizedAt(finalizedTimestamp.toLocalDateTime());
-                    }
-
-                    return game;
-                })
+                .query(gameMapper)
                 .single();
     }
 
@@ -135,61 +105,23 @@ public class GameRepository {
         return jdbcClient
                 .sql(GameSql.FIND_GAME_BY_ID)
                 .param("id", gameId)
-                .query((rs, num) -> {
-                    int seasonYear = rs.getInt("year");
-                    SeasonType seasonType = SeasonType.valueOf(rs.getString("season_type"));
-                    LocalDateTime gameTime = rs.getTimestamp("game_time").toLocalDateTime();
-
-                    TeamEntity homeTeam = new TeamEntity();
-                    homeTeam.setId(rs.getInt("home_team"));
-                    homeTeam.setTeamName(rs.getString("home_team_name"));
-                    homeTeam.setYear(seasonYear);
-
-                    TeamEntity awayTeam = new TeamEntity();
-                    awayTeam.setId(rs.getInt("away_team"));
-                    awayTeam.setTeamName(rs.getString("away_team_name"));
-                    awayTeam.setYear(seasonYear);
-
-                    GameEntity game = new GameEntity();
-                    game.setId(rs.getInt("id"));
-                    game.setHomeTeam(homeTeam);
-                    game.setAwayTeam(awayTeam);
-                    game.setYear(seasonYear);
-                    game.setSeasonType(seasonType);
-                    game.setVenue(Arena.valueOf(rs.getString("venue")));
-                    game.setGameTime(gameTime);
-                    game.setRefereeNameOne(rs.getString("referee_name_one"));
-                    game.setRefereeNameTwo(rs.getString("referee_name_two"));
-                    game.setRefereeNameThree(rs.getString("referee_name_three"));
-                    game.setVideoId(rs.getString("video_id"));
-
-                    Array rawArray = rs.getArray("referee_notes");
-                    if(rawArray != null){
-                        String[] refNotesArray = (String[]) rawArray.getArray();
-                        game.setRefereeNotes(Arrays.stream(refNotesArray).toList());
-                    }
-
-                    game.setFinalized(rs.getBoolean("is_finalized"));
-                    Timestamp finalizedTimestamp = rs.getTimestamp("finalized_at");
-                    if(finalizedTimestamp != null){
-                        game.setFinalizedAt(finalizedTimestamp.toLocalDateTime());
-                    }
-
-                    return game;
-                })
+                .query(gameMapper)
                 .optional();
+    }
+
+    public List<GameEntity> findByDate(LocalDate date) {
+        return jdbcClient
+                .sql(GameSql.FIND_GAMES_BY_DATE)
+                .param("date", date)
+                .query(gameMapper)
+                .list();
     }
 
     public Optional<GamesheetPayload> fetchGamesheetPayloadByGameId(int gameId) {
         return jdbcClient
                 .sql(GameSql.FETCH_GAMESHEET_PAYLOAD_BY_GAME_ID)
                 .param("game_id", gameId)
-                .query((rs, num) -> {
-                    String jsonString = rs.getString("json_string");
-                    // Deserialize JSON string to GamesheetPayload
-                    // Assuming you have a method to do this, e.g., using Jackson or Gson
-                    return deserializeGamesheetPayload(jsonString);
-                })
+                .query((rs, num) -> deserializeGamesheetPayload(rs.getString("json_string")))
                 .optional();
     }
 
@@ -224,6 +156,53 @@ public class GameRepository {
         } catch (IOException e) {
             log.error("Error serializing GamesheetPayload to JSON", e);
             throw new RuntimeException(e);
+        }
+    }
+
+    public static class GameMapper implements RowMapper<GameEntity> {
+
+        @Override
+        public @Nullable GameEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+            int seasonYear = rs.getInt("year");
+            SeasonType seasonType = SeasonType.valueOf(rs.getString("season_type"));
+            LocalDateTime gameTime = rs.getTimestamp("game_time").toLocalDateTime();
+
+            TeamEntity homeTeam = new TeamEntity();
+            homeTeam.setId(rs.getInt("home_team"));
+            homeTeam.setTeamName(rs.getString("home_team_name"));
+            homeTeam.setYear(seasonYear);
+
+            TeamEntity awayTeam = new TeamEntity();
+            awayTeam.setId(rs.getInt("away_team"));
+            awayTeam.setTeamName(rs.getString("away_team_name"));
+            awayTeam.setYear(seasonYear);
+
+            GameEntity game = new GameEntity();
+            game.setId(rs.getInt("id"));
+            game.setHomeTeam(homeTeam);
+            game.setAwayTeam(awayTeam);
+            game.setYear(seasonYear);
+            game.setSeasonType(seasonType);
+            game.setVenue(Arena.valueOf(rs.getString("venue")));
+            game.setGameTime(gameTime);
+            game.setRefereeNameOne(rs.getString("referee_name_one"));
+            game.setRefereeNameTwo(rs.getString("referee_name_two"));
+            game.setRefereeNameThree(rs.getString("referee_name_three"));
+            game.setVideoId(rs.getString("video_id"));
+
+            Array rawArray = rs.getArray("referee_notes");
+            if(rawArray != null){
+                String[] refNotesArray = (String[]) rawArray.getArray();
+                game.setRefereeNotes(Arrays.stream(refNotesArray).toList());
+            }
+
+            game.setFinalized(rs.getBoolean("is_finalized"));
+            Timestamp finalizedTimestamp = rs.getTimestamp("finalized_at");
+            if(finalizedTimestamp != null){
+                game.setFinalizedAt(finalizedTimestamp.toLocalDateTime());
+            }
+
+            return game;
         }
     }
 
@@ -266,6 +245,15 @@ public class GameRepository {
             JOIN "madoc".teams as ht ON g.home_team = ht.id AND g.year = ht.year
             JOIN "madoc".teams as at ON g.away_team = at.id AND g.year = at.year
         WHERE g.id = :id;
+        """;
+
+        public static final String FIND_GAMES_BY_DATE = """
+                SELECT g.id, g.year, g.season_type, g.game_time, g.home_team, g.away_team, g.venue, g.referee_name_one, g.referee_name_two, g.referee_name_three, g.referee_notes, g.is_finalized, g.finalized_at, g.video_id, ht.team_name as home_team_name, at.team_name as away_team_name
+            FROM "madoc".games g
+            JOIN "madoc".teams as ht ON g.home_team = ht.id AND g.year = ht.year
+            JOIN "madoc".teams as at ON g.away_team = at.id AND g.year = at.year
+        WHERE CAST(g.game_time AS DATE) = :date
+        ORDER BY g.game_time ASC;
         """;
 
         public static final String INSERT_NEW_GAME = """

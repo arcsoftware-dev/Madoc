@@ -11,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @Slf4j
 @Controller
 @RequestMapping("/api/documents")
@@ -49,6 +51,23 @@ public class DocumentController {
         log.info("Received gamesheet get request with id={}", gameId);
 
         Pair<String, byte[]> exportData = documentService.getEmptyGamesheet(gameId);
+        String downloadFileName = exportData.left()+".ods";
+        String headerValue = "attachment; filename=\""+downloadFileName+"\"";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+                .body(exportData.right());
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_[ADMIN]', 'ROLE_[LEAGUE_STAFF]', 'ROLE_[TIMEKEEPER]')")
+    @GetMapping(value = "/package/{date}")
+    public ResponseEntity<byte[]> getPregamePackage(
+            @PathVariable("date") LocalDate date
+    ){
+        log.info("Received pregame package get request with date={}", date);
+
+        Pair<String, byte[]> exportData = documentService.getPregamePackage(date);
         String downloadFileName = exportData.left()+".ods";
         String headerValue = "attachment; filename=\""+downloadFileName+"\"";
 

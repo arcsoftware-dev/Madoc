@@ -7,6 +7,7 @@ import dev.arcsoftware.madoc.model.payload.RosterAssignmentDto;
 import dev.arcsoftware.madoc.repository.GameRepository;
 import dev.arcsoftware.madoc.repository.RosterRepository;
 import dev.arcsoftware.madoc.util.Utils;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.odftoolkit.odfdom.doc.OdfDocument;
 import org.odftoolkit.odfdom.doc.table.OdfTable;
@@ -18,8 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -30,6 +33,8 @@ public class DocumentService {
 
     private final static String SIGN_IN_SHEET_TEMPLATE_RESOURCE_PATH = "data/templates/SignInSheetTemplate.ods";
     private final static String GAMESHEET_TEMPLATE_RESOURCE_PATH = "data/templates/GamesheetTemplate.ods";
+    private final static String PREGAME_PACKAGE_TEMPLATE_RESOURCE_PATH = "data/templates/PreGamePackage.ods";
+
 
     private final GameRepository gameRepository;
     private final RosterRepository rosterRepository;
@@ -44,27 +49,33 @@ public class DocumentService {
         GameEntity gameEntity = gameRepository.findById(gameId)
                 .orElseThrow(() -> new ResultNotFoundException("Game with ID "+gameId+" does not exist"));
 
+        List<List<RosterAssignmentDto>> rosters = getRosters(gameEntity);
+
+        byte[] data = getPopulatedGamesheet(gameEntity, rosters.getFirst(), rosters.getLast());
+        if(data == null){
+            throw new RuntimeException("Unable to export gamesheet data for game "+gameId);
+        }
+
+        String downloadFileName = "Gamesheet-"+gameEntity.getHomeTeam().getTeamName()+"-vs-"+gameEntity.getAwayTeam().getTeamName()+"-"+gameEntity.getGameTime().toString();
+        return new Pair<>(downloadFileName, data);
+    }
+
+    private List<List<RosterAssignmentDto>> getRosters(GameEntity gameEntity){
         String homeTeam = gameEntity.getHomeTeam().getTeamName();
         List<RosterAssignmentDto> homeRoster = rosterRepository.getAssignmentsByYearAndTeam(gameEntity.getYear(), homeTeam);
         if(CollectionUtils.isEmpty(homeRoster)){
-            throw new ResultNotFoundException("No roster found for team "+homeTeam+" for game id "+gameId);
+            throw new ResultNotFoundException("No roster found for team "+homeTeam+" for game id "+gameEntity.getId());
         }
         homeRoster.sort(Comparator.comparing(RosterAssignmentDto::getDraftPosition));
 
         String awayTeam = gameEntity.getAwayTeam().getTeamName();
         List<RosterAssignmentDto> awayRoster = rosterRepository.getAssignmentsByYearAndTeam(gameEntity.getYear(), awayTeam);
         if(CollectionUtils.isEmpty(awayRoster)){
-            throw new ResultNotFoundException("No roster found for team "+awayTeam+" for game id "+gameId);
+            throw new ResultNotFoundException("No roster found for team "+awayTeam+" for game id "+gameEntity.getId());
         }
         awayRoster.sort(Comparator.comparing(RosterAssignmentDto::getDraftPosition));
 
-        byte[] data = getPopulatedGamesheet(gameEntity, homeRoster, awayRoster);
-        if(data == null){
-            throw new RuntimeException("Unable to export gamesheet data for game "+gameId);
-        }
-
-        String downloadFileName = "Gamesheet-"+homeTeam+"-vs-"+awayTeam+"-"+gameEntity.getGameTime().toString();
-        return new Pair<>(downloadFileName, data);
+        return List.of(homeRoster, awayRoster);
     }
 
 
@@ -90,6 +101,45 @@ public class DocumentService {
 
         String downloadFileName = "SignInSheet-"+teamName+"-"+gameEntity.getGameTime().toString();
         return new Pair<>(downloadFileName, data);
+    }
+
+    public Pair<String, byte[]> getPregamePackage(LocalDate date){
+        List<GameEntity> games = gameRepository.findByDate(date);
+        if(CollectionUtils.isEmpty(games)){
+            throw new IllegalArgumentException("No Games available for "+date);
+        }
+
+        Resource resource = new ClassPathResource(PREGAME_PACKAGE_TEMPLATE_RESOURCE_PATH);
+        byte[] documentData;
+        try (InputStream inputStream = resource.getInputStream(); OdfDocument template = OdfDocument.loadDocument(inputStream)) {
+            PreGamePackageData packageData = new PreGamePackageData();
+            List<List<RosterAssignmentDto>> rosters = null;
+            for(int i=0; i<games.size(); i++){
+                GameEntity game = games.get(i);
+                rosters = getRosters(game);
+                if(CollectionUtils.isEmpty(rosters)){
+                    throw new IllegalArgumentException("No Rosters available for game "+game.getId());
+                }
+
+                // Get first table sheet of the current document
+                OdfTable gameSheet = template.getTableList(true).get(i*3);
+                writeEmptyGamesheetData(gameSheet, game, rosters.getFirst(), rosters.getLast());
+
+                OdfTable signInSheetHome = template.getTableList(true).get(i*3+1);
+                writeEmptySigninSheetData(signInSheetHome, game.getHomeTeam().getTeamName(), game.getGameTime(), rosters.getFirst());
+
+                OdfTable signInSheetAway = template.getTableList(true).get(i*3+2);
+                writeEmptySigninSheetData(signInSheetAway, game.getHomeTeam().getTeamName(), game.getGameTime(), rosters.getLast());
+            }
+            documentData = exportDocument(template);
+        } catch (Exception e) {
+            log.error("Error reading pregame package template resource: {}", e.getMessage());
+            throw new RuntimeException("Failed to load pregame package resource", e);
+        }
+
+        String dateString = DateTimeFormatter.BASIC_ISO_DATE.format(date);
+        String downloadFileName = "PregamePackage-"+dateString;
+        return new Pair<>(downloadFileName, documentData);
     }
 
     private byte[] exportDocument(OdfDocument template){
@@ -144,6 +194,16 @@ public class DocumentService {
     }
 
     private void writeEmptyGamesheetData(OdfTable gamesheet, GameEntity gameEntity, List<RosterAssignmentDto> homeRoster, List<RosterAssignmentDto> awayRoster){
+        //Write date and season type (A1)
+        StringBuilder dateBuilder = new StringBuilder()
+                .append("Madoc Mens Hockey League ")
+                .append(gameEntity.getGameTime().getYear())
+                .append("/")
+                .append(gameEntity.getGameTime().getYear()+1)
+                .append("\n")
+                .append(gameEntity.getSeasonType().getLabel());
+        gamesheet.getCellByPosition(0,0).setStringValue(dateBuilder.toString());
+
         //Write venue (A3)
         gamesheet.getCellByPosition(0,2).setStringValue(gameEntity.getVenue().getArenaName());
 
@@ -186,5 +246,19 @@ public class DocumentService {
 
         // Jersey numbers and names (A6:21, B6:21)
         writeRosterToTable(signInSheet, 0, 1, 5, roster);
+    }
+
+    @Getter
+    private static class PreGamePackageData{
+        private final List<List<RosterAssignmentDto>> rosters = new ArrayList<>(6);
+        private final List<GameEntity> games = new ArrayList<>(3);
+
+        public void addRoster(List<RosterAssignmentDto> roster){
+            this.rosters.add(roster);
+        }
+
+        public void addGame(GameEntity game){
+            this.games.add(game);
+        }
     }
 }
