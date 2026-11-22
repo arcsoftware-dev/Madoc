@@ -1,0 +1,396 @@
+/* Modern League Presidents history page. Builds on stats-modern.css (ms-* base). */
+
+.mp-eyebrow {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    color: #ef4444;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+.mp-intro {
+    margin: 1rem 0 0;
+    padding: 0.65rem 1.15rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.55;
+    color: rgba(243, 244, 246, 0.88);
+    background: linear-gradient(90deg, rgba(204, 25, 25, 0.16), rgba(0, 0, 0, 0.18) 65%, transparent);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+}
+
+.mp-intro strong {
+    font-style: normal;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.01em;
+}
+
+/* ---------- Section heading & sort toggle ---------- */
+.mp-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem 1rem;
+    margin: 2rem 0 1.15rem;
+}
+
+.mp-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    font-size: 1.45rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+}
+
+.mp-section-title::before {
+    content: "";
+    width: 4px;
+    height: 1.45rem;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.mp-sort-group {
+    display: inline-flex;
+    padding: 0.25rem;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    gap: 0.2rem;
+}
+
+.mp-sort-btn {
+    padding: 0.4rem 0.95rem;
+    font-family: anton, sans-serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.7);
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+}
+
+.mp-sort-btn:hover {
+    color: var(--text);
+}
+
+.mp-sort-btn.is-active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(204, 25, 25, 0.4);
+}
+
+/* ---------- Current President Spotlight ---------- */
+.mp-current-card {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 100% 0%, rgba(204, 25, 25, 0.24), rgba(204, 25, 25, 0) 62%),
+        var(--secondary);
+    border: 1px solid rgba(204, 25, 25, 0.42);
+    border-radius: 18px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.42);
+    margin-bottom: 0.5rem;
+}
+
+.mp-current-media {
+    position: relative;
+    min-height: 270px;
+    background: #101216;
+    border-right: 2px solid var(--accent);
+    overflow: hidden;
+}
+
+.mp-current-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.75rem 2rem;
+    min-width: 0;
+}
+
+.mp-live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    align-self: flex-start;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(204, 25, 25, 0.22);
+    border: 1px solid rgba(204, 25, 25, 0.65);
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+}
+
+.mp-live-dot {
+    width: 0.48rem;
+    height: 0.48rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(204, 25, 25, 0.9);
+}
+
+.mp-current-ordinal {
+    font-size: 0.9rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.6);
+    margin-bottom: 0.2rem;
+}
+
+.mp-current-name {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 2.85rem);
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    color: var(--text);
+}
+
+.mp-current-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.mp-term-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+}
+
+.mp-duration-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.24rem 0.65rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #fca5a5;
+    background: rgba(204, 25, 25, 0.18);
+    border: 1px solid rgba(204, 25, 25, 0.38);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+/* ---------- Past Presidents Card Grid ---------- */
+.mp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(265px, 100%), 1fr));
+    gap: 1.25rem;
+}
+
+.mp-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.mp-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(204, 25, 25, 0.55);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Shared Portrait Frame & Monogram Fallback ---------- */
+.mp-portrait {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 4.2;
+    background: #101216;
+    border-bottom: 2px solid var(--accent);
+    overflow: hidden;
+}
+
+.mp-photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 22%;
+    transition: transform 0.35s ease;
+}
+
+.mp-card:hover .mp-photo,
+.mp-current-card:hover .mp-photo {
+    transform: scale(1.03);
+}
+
+.mp-portrait-vignette {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 36%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+    pointer-events: none;
+}
+
+.mp-monogram {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 50% 35%, rgba(204, 25, 25, 0.22), rgba(204, 25, 25, 0) 68%),
+        linear-gradient(160deg, #1b1e24 0%, #0d0e11 100%);
+    user-select: none;
+}
+
+.mp-monogram[hidden] {
+    display: none;
+}
+
+.mp-monogram-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    border: 2px solid rgba(204, 25, 25, 0.55);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.mp-monogram-initials {
+    font-family: anton, sans-serif;
+    font-size: 2.1rem;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    line-height: 1;
+}
+
+.mp-monogram-label {
+    margin-top: 0.7rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(243, 244, 246, 0.42);
+}
+
+/* Badges floating on portrait */
+.mp-ordinal-badge {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 2;
+    padding: 0.25rem 0.65rem;
+    font-family: anton, sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.mp-founder-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 2;
+    padding: 0.25rem 0.65rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fde68a;
+    background: rgba(15, 15, 18, 0.86);
+    border: 1px solid rgba(251, 191, 36, 0.55);
+    border-radius: 999px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Card Body ---------- */
+.mp-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1.1rem 1.2rem 1.2rem;
+    flex: 1 0 auto;
+}
+
+.mp-name {
+    margin: 0;
+    font-size: 1.45rem;
+    line-height: 1.12;
+    letter-spacing: 0.02em;
+    color: var(--text);
+}
+
+.mp-term-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mp-term {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: rgba(243, 244, 246, 0.78);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+    .mp-current-card {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .mp-current-media {
+        min-height: 0;
+        aspect-ratio: 4 / 3.6;
+        border-right: none;
+        border-bottom: 2px solid var(--accent);
+    }
+
+    .mp-current-body {
+        padding: 1.25rem 1.25rem 1.4rem;
+    }
+
+    .mp-section-head {
+        margin-top: 1.5rem;
+    }
+
+    .mp-grid {
+        gap: 1rem;
+    }
+}

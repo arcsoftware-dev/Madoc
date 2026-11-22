@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMHL League Presidents</title>
+    <link rel="icon" th:href="@{/assets/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/stats-modern.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/presidents-modern.css}"/>
+</head>
+<body class="ms-body">
+    <div th:replace="~{fragments/header.html :: header}"></div>
+
+    <main class="ms-page">
+
+        <!-- Heading -->
+        <section class="ms-heading">
+            <div>
+                <span class="ms-eyebrow mp-eyebrow"
+                      th:text="${foundingYear != null} ? |League History · Est. ${foundingYear}| : 'League History'">League History</span>
+                <h1 class="ms-title">League Presidents</h1>
+                <p class="mp-intro">Honouring the leaders who have helped build and guide the <strong>Madoc Men's Hockey League</strong> to where it is today.</p>
+            </div>
+        </section>
+
+        <!-- Summary Tiles -->
+        <section class="ms-summary" th:if="${!#lists.isEmpty(presidents)}">
+            <div class="ms-tile" th:if="${currentPresident != null}">
+                <span class="ms-tile-label">Current President</span>
+                <span class="ms-tile-value" th:text="${currentPresident.name}">Brian Neil</span>
+                <span class="ms-tile-sub" th:text="|${currentPresident.ordinal} President · Since ${currentPresident.startYear}|">11th President · Since 2021</span>
+            </div>
+
+            <div class="ms-tile">
+                <span class="ms-tile-label">Total Presidents</span>
+                <span class="ms-tile-value" th:text="${#lists.size(presidents)}">11</span>
+                <span class="ms-tile-sub"
+                      th:text="${foundingYear != null} ? |${foundingYear} – Present| : 'All-Time'">1973 – Present</span>
+            </div>
+
+            <div class="ms-tile" th:if="${longestServing != null}">
+                <span class="ms-tile-label">Longest Tenure</span>
+                <span class="ms-tile-value" th:text="${longestServing.name}">Harry Eland</span>
+                <span class="ms-tile-sub"
+                      th:text="|${longestServing.yearsServed} years (${longestServing.termDisplay})|">17 years (2004 – 2021)</span>
+            </div>
+
+            <div class="ms-tile" th:if="${leagueYears != null}">
+                <span class="ms-tile-label">League Heritage</span>
+                <span class="ms-tile-value" th:text="|${leagueYears} Years|">53 Years</span>
+                <span class="ms-tile-sub" th:text="|Founded ${foundingYear}|">Founded 1973</span>
+            </div>
+        </section>
+
+        <!-- Current President Spotlight -->
+        <section th:if="${currentPresident != null}" aria-label="Current President">
+            <article class="mp-current-card">
+                <div class="mp-current-media">
+                    <span class="mp-ordinal-badge" th:text="${currentPresident.ordinal}">11th</span>
+
+                    <img class="mp-photo"
+                         th:if="${currentPresident.hasPhoto()}"
+                         th:src="${currentPresident.hasExternalPhotoUrl()} ? ${currentPresident.photoId} : @{'/assets/presidents/' + ${currentPresident.photoId}}"
+                         th:alt="${currentPresident.name}"
+                         onerror="this.hidden=true; this.nextElementSibling.hidden=false;"/>
+                    <div class="mp-monogram" th:attr="hidden=${currentPresident.hasPhoto() ? 'hidden' : null}">
+                        <div class="mp-monogram-ring">
+                            <span class="mp-monogram-initials" th:text="${currentPresident.initials}">BN</span>
+                        </div>
+                        <span class="mp-monogram-label">MMHL President</span>
+                    </div>
+                    <div class="mp-portrait-vignette" th:if="${currentPresident.hasPhoto()}" aria-hidden="true"></div>
+                </div>
+
+                <div class="mp-current-body">
+                    <span class="mp-live-pill">
+                        <span class="mp-live-dot" aria-hidden="true"></span>
+                        <span>Current President</span>
+                    </span>
+                    <span class="mp-current-ordinal" th:text="|${currentPresident.ordinal} President of the MMHL|">11th President of the MMHL</span>
+                    <h2 class="mp-current-name" th:text="${currentPresident.name}">Brian Neil</h2>
+                    <div class="mp-current-meta">
+                        <span class="mp-term-badge" th:text="${currentPresident.termDisplay}">2021 – Present</span>
+                        <span class="mp-duration-chip" th:text="${currentPresident.yearsServedDisplay}">5 yrs</span>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Past Presidents History -->
+        <section th:if="${!#lists.isEmpty(pastPresidents)}" aria-label="Past Presidents">
+            <div class="mp-section-head">
+                <h2 class="mp-section-title"
+                    th:text="${currentPresident != null} ? 'Past Presidents' : 'All Presidents'">Past Presidents</h2>
+
+                <div class="mp-sort-group" role="group" aria-label="Sort presidents">
+                    <button type="button" class="mp-sort-btn is-active" data-sort="desc">Newest First</button>
+                    <button type="button" class="mp-sort-btn" data-sort="asc">Chronological</button>
+                </div>
+            </div>
+
+            <div class="mp-grid" id="presidents-grid">
+                <article class="mp-card"
+                         th:each="president : ${pastPresidents}"
+                         th:attr="data-number=${president.number}">
+                    <div class="mp-portrait">
+                        <span class="mp-ordinal-badge" th:text="${president.ordinal}">10th</span>
+                        <span class="mp-founder-badge" th:if="${president.number == 1}">Founder</span>
+
+                        <img class="mp-photo"
+                             th:if="${president.hasPhoto()}"
+                             th:src="${president.hasExternalPhotoUrl()} ? ${president.photoId} : @{'/assets/presidents/' + ${president.photoId}}"
+                             th:alt="${president.name}"
+                             loading="lazy"
+                             onerror="this.hidden=true; this.nextElementSibling.hidden=false;"/>
+                        <div class="mp-monogram" th:attr="hidden=${president.hasPhoto() ? 'hidden' : null}">
+                            <div class="mp-monogram-ring">
+                                <span class="mp-monogram-initials" th:text="${president.initials}">HE</span>
+                            </div>
+                            <span class="mp-monogram-label">MMHL President</span>
+                        </div>
+                        <div class="mp-portrait-vignette" th:if="${president.hasPhoto()}" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="mp-card-body">
+                        <h3 class="mp-name" th:text="${president.name}">Harry Eland</h3>
+                        <div class="mp-term-row">
+                            <span class="mp-term" th:text="${president.termDisplay}">2004 – 2021</span>
+                            <span class="mp-duration-chip" th:text="${president.yearsServedDisplay}">17 yrs</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <p class="ms-card ms-empty" th:if="${#lists.isEmpty(presidents)}">No league presidents have been recorded yet.</p>
+    </main>
+
+    <div th:replace="~{fragments/footer.html :: footer}"></div>
+
+    <script th:if="${!#lists.isEmpty(pastPresidents)}">
+        (function () {
+            var grid = document.getElementById('presidents-grid');
+            var buttons = document.querySelectorAll('.mp-sort-btn');
+            if (!grid || !buttons.length) return;
+
+            buttons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var dir = btn.dataset.sort;
+                    buttons.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+                    var cards = Array.prototype.slice.call(grid.querySelectorAll('.mp-card'));
+                    cards.sort(function (a, b) {
+                        var na = parseInt(a.dataset.number, 10);
+                        var nb = parseInt(b.dataset.number, 10);
+                        return dir === 'asc' ? na - nb : nb - na;
+                    });
+                    cards.forEach(function (card) { grid.appendChild(card); });
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
