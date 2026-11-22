@@ -73,7 +73,7 @@ class DocumentServicePdfTest {
             assertThat(pdf.getNumberOfPages()).isEqualTo(10);
 
             var roomBox = pdf.getPage(0).getMediaBox();
-            assertThat(roomBox.getWidth()).isGreaterThan(roomBox.getHeight());
+            assertThat(roomBox.getHeight()).isGreaterThan(roomBox.getWidth());
             var gamesheetBox = pdf.getPage(1).getMediaBox();
             assertThat(gamesheetBox.getHeight()).isGreaterThan(gamesheetBox.getWidth());
 

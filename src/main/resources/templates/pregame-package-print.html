@@ -7,12 +7,7 @@
     <style>
         @page {
             size: letter portrait;
-            margin: 0.3in;
-        }
-
-        @page room-sheet {
-            size: letter landscape;
-            margin: 0.4in;
+            margin: 0.3in 0.3in 0.25in 0.3in;
         }
 
         * {
@@ -155,9 +150,18 @@
             width: 8.5in;
             min-height: 11in;
             margin: 18px auto;
-            padding: 0.3in;
+            padding: 0.3in 0.3in 0.25in 0.3in;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
             border-radius: 2px;
+        }
+
+        /* Push gamesheets and sign-in sheets down so the rink clipboard clip does not cover the header */
+        .sheet-clipboard {
+            padding-top: 0.7in;
+        }
+
+        body.browser-mode .sheet.sheet-clipboard {
+            padding-top: 1in;
         }
 
         /* ---------- Shared table helpers ---------- */
@@ -269,7 +273,7 @@
 
         /* ---------- Gamesheet team block (Home / Away, pure black and white) ---------- */
         .gs-team-block {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .gs-team-block.gs-team-last {
@@ -310,7 +314,7 @@
             color: #000000;
             padding: 0 3px;
             font-size: 10px;
-            height: 25px;
+            height: 23.5px;
             line-height: 1.15;
             overflow: hidden;
             white-space: nowrap;
@@ -323,7 +327,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.03em;
-            height: 22px;
+            height: 21px;
             text-align: left;
             padding: 0 5px;
             border-bottom: 1.5px solid #000000;
@@ -339,7 +343,7 @@
             font-size: 9px;
             font-weight: 700;
             text-align: center;
-            height: 19px;
+            height: 18px;
             border-bottom: 1.5px solid #000000;
         }
 
@@ -453,7 +457,7 @@
             background: #ffffff;
             color: #000000;
             padding: 0 10px;
-            height: 43px;
+            height: 40px;
             font-size: 13.5px;
             vertical-align: middle;
         }
@@ -469,35 +473,32 @@
         }
 
         .si-footer-note {
-            margin-top: 10px;
+            margin-top: 8px;
             font-size: 10.5px;
             color: #000000;
             text-align: center;
         }
 
-        /* ---------- Room Sheet Display (landscape, pure black and white) ---------- */
-        .sheet-room {
-            page: room-sheet;
+        /* ---------- Room Sheet Display (portrait, vertically centered, pure black and white) ---------- */
+        .rs-page-wrap {
+            width: 100%;
+            height: 10.2in;
+            border-collapse: collapse;
         }
 
-        body.pdf-mode .sheet-room {
-            width: 10.2in;
-        }
-
-        body.browser-mode .sheet-room {
-            width: 11in;
-            min-height: 8.5in;
-            padding: 0.4in;
+        .rs-page-center {
+            vertical-align: middle;
+            padding: 0;
         }
 
         .rs-meta {
-            margin-bottom: 18px;
+            margin-bottom: 22px;
             padding-bottom: 6px;
             border-bottom: 1.5px solid #000000;
         }
 
         .rs-meta td {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             color: #000000;
             padding: 0;
@@ -515,11 +516,11 @@
         }
 
         .rs-header-row {
-            margin-bottom: 34px;
+            margin-bottom: 30px;
         }
 
         .rs-game-row {
-            margin-bottom: 44px;
+            margin-bottom: 42px;
         }
 
         .rs-game-row.rs-last-game {
@@ -541,19 +542,19 @@
         }
 
         .rs-head-box-team {
-            width: 68%;
+            width: 78%;
             margin: 0 auto;
         }
 
         .rs-head-box td,
         .rs-head-room {
-            height: 62px;
+            height: 54px;
             text-align: center;
             vertical-align: middle;
-            font-size: 26px;
+            font-size: 22px;
             font-weight: 700;
             color: #000000;
-            padding: 0 6px !important;
+            padding: 0 4px !important;
         }
 
         .rs-head-room {
@@ -565,21 +566,21 @@
             border: 2.5px solid #000000;
             background: #ffffff;
             color: #000000;
-            height: 138px;
+            height: 124px;
             text-align: center;
             vertical-align: middle;
         }
 
         .rs-team-box {
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 700;
             line-height: 1.15;
-            padding: 0 12px !important;
+            padding: 0 8px !important;
             word-wrap: break-word;
         }
 
         .rs-room-box {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 700;
         }
 
@@ -592,14 +593,14 @@
         }
 
         .rs-time-box td {
-            height: 78px;
+            height: 68px;
             text-align: center;
             vertical-align: middle;
-            font-size: 26px;
+            font-size: 20px;
             font-weight: 700;
             color: #000000;
             white-space: nowrap;
-            padding: 0 4px;
+            padding: 0 3px;
         }
 
         /* Compact sizing when more than 3 games share the room sheet */
@@ -608,26 +609,26 @@
         }
 
         .rs-compact .rs-game-row {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .rs-compact .rs-head-box td,
         .rs-compact .rs-head-room {
-            height: 50px;
-            font-size: 24px;
+            height: 46px;
+            font-size: 20px;
         }
 
         .rs-compact .rs-box {
-            height: 98px;
+            height: 94px;
         }
 
         .rs-compact .rs-team-box {
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .rs-compact .rs-time-box td {
-            height: 60px;
-            font-size: 22px;
+            height: 54px;
+            font-size: 18px;
         }
 
         /* ---------- Print media overrides ---------- */
@@ -641,14 +642,17 @@
                 padding: 0;
             }
 
-            body.browser-mode .sheet,
-            body.browser-mode .sheet-room {
+            body.browser-mode .sheet {
                 width: 100%;
                 min-height: 0;
                 margin: 0;
                 padding: 0;
                 box-shadow: none;
                 border-radius: 0;
+            }
+
+            body.browser-mode .sheet.sheet-clipboard {
+                padding-top: 0.7in;
             }
         }
     </style>
@@ -677,76 +681,82 @@
     <div class="sheet sheet-room"
          th:if="${!#lists.isEmpty(games)}"
          th:classappend="${#lists.size(games) > 3} ? 'rs-compact' : ''">
-        <table class="rs-meta">
+        <table class="rs-page-wrap">
             <tr>
-                <td th:text="|Madoc Mens Hockey League &#183; ${#temporals.format(date, 'EEEE, MMM dd, yyyy')}|">Madoc Mens Hockey League &#183; Sunday, Sep 20, 2026</td>
-                <td class="rs-meta-right" th:text="${games[0].game.venue.arenaName}">Century Gardens</td>
-            </tr>
-        </table>
-
-        <table class="rs-row rs-header-row">
-            <colgroup>
-                <col style="width: 28%;"/>
-                <col style="width: 1.5%;"/>
-                <col style="width: 13.5%;"/>
-                <col style="width: 1.5%;"/>
-                <col style="width: 11%;"/>
-                <col style="width: 1.5%;"/>
-                <col style="width: 28%;"/>
-                <col style="width: 1.5%;"/>
-                <col style="width: 13.5%;"/>
-            </colgroup>
-            <tr>
-                <td>
-                    <table class="rs-head-box rs-head-box-team">
-                        <tr><td>Home</td></tr>
-                    </table>
-                </td>
-                <td></td>
-                <td class="rs-head-room">Room</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                    <table class="rs-head-box rs-head-box-team">
-                        <tr><td>Away</td></tr>
-                    </table>
-                </td>
-                <td></td>
-                <td class="rs-head-room">Room</td>
-            </tr>
-        </table>
-
-        <table class="rs-row rs-game-row"
-               th:each="pkg, rStat : ${games}"
-               th:classappend="${rStat.last} ? 'rs-last-game' : ''">
-            <colgroup>
-                <col style="width: 28%;"/>
-                <col style="width: 1.5%;"/>
-                <col style="width: 13.5%;"/>
-                <col style="width: 1.5%;"/>
-                <col style="width: 11%;"/>
-                <col style="width: 1.5%;"/>
-                <col style="width: 28%;"/>
-                <col style="width: 1.5%;"/>
-                <col style="width: 13.5%;"/>
-            </colgroup>
-            <tr>
-                <td class="rs-box rs-team-box" th:text="${pkg.game.homeTeam.teamName}">Flames</td>
-                <td></td>
-                <td class="rs-box rs-room-box">&#160;</td>
-                <td></td>
-                <td>
-                    <table class="rs-time-box">
+                <td class="rs-page-center">
+                    <table class="rs-meta">
                         <tr>
-                            <td th:text="${pkg.game.gameTime.minute == 0 ? #temporals.format(pkg.game.gameTime, 'h a') : #temporals.format(pkg.game.gameTime, 'h:mm a')}">7 PM</td>
+                            <td th:text="|Madoc Mens Hockey League &#183; ${#temporals.format(date, 'EEEE, MMM dd, yyyy')}|">Madoc Mens Hockey League &#183; Sunday, Sep 20, 2026</td>
+                            <td class="rs-meta-right" th:text="${games[0].game.venue.arenaName}">Century Gardens</td>
+                        </tr>
+                    </table>
+
+                    <table class="rs-row rs-header-row">
+                        <colgroup>
+                            <col style="width: 27.5%;"/>
+                            <col style="width: 1.5%;"/>
+                            <col style="width: 13.5%;"/>
+                            <col style="width: 1.5%;"/>
+                            <col style="width: 12%;"/>
+                            <col style="width: 1.5%;"/>
+                            <col style="width: 27.5%;"/>
+                            <col style="width: 1.5%;"/>
+                            <col style="width: 13.5%;"/>
+                        </colgroup>
+                        <tr>
+                            <td>
+                                <table class="rs-head-box rs-head-box-team">
+                                    <tr><td>Home</td></tr>
+                                </table>
+                            </td>
+                            <td></td>
+                            <td class="rs-head-room">Room</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <table class="rs-head-box rs-head-box-team">
+                                    <tr><td>Away</td></tr>
+                                </table>
+                            </td>
+                            <td></td>
+                            <td class="rs-head-room">Room</td>
+                        </tr>
+                    </table>
+
+                    <table class="rs-row rs-game-row"
+                           th:each="pkg, rStat : ${games}"
+                           th:classappend="${rStat.last} ? 'rs-last-game' : ''">
+                        <colgroup>
+                            <col style="width: 27.5%;"/>
+                            <col style="width: 1.5%;"/>
+                            <col style="width: 13.5%;"/>
+                            <col style="width: 1.5%;"/>
+                            <col style="width: 12%;"/>
+                            <col style="width: 1.5%;"/>
+                            <col style="width: 27.5%;"/>
+                            <col style="width: 1.5%;"/>
+                            <col style="width: 13.5%;"/>
+                        </colgroup>
+                        <tr>
+                            <td class="rs-box rs-team-box" th:text="${pkg.game.homeTeam.teamName}">Flames</td>
+                            <td></td>
+                            <td class="rs-box rs-room-box">&#160;</td>
+                            <td></td>
+                            <td>
+                                <table class="rs-time-box">
+                                    <tr>
+                                        <td th:text="${pkg.game.gameTime.minute == 0 ? #temporals.format(pkg.game.gameTime, 'h a') : #temporals.format(pkg.game.gameTime, 'h:mm a')}">7 PM</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td></td>
+                            <td class="rs-box rs-team-box" th:text="${pkg.game.awayTeam.teamName}">Leafs</td>
+                            <td></td>
+                            <td class="rs-box rs-room-box">&#160;</td>
                         </tr>
                     </table>
                 </td>
-                <td></td>
-                <td class="rs-box rs-team-box" th:text="${pkg.game.awayTeam.teamName}">Leafs</td>
-                <td></td>
-                <td class="rs-box rs-room-box">&#160;</td>
             </tr>
         </table>
     </div>
@@ -755,7 +765,7 @@
     <th:block th:each="pkg, gStat : ${games}">
 
         <!-- ==================== GAMESHEET ==================== -->
-        <div class="sheet">
+        <div class="sheet sheet-clipboard">
             <table class="gs-header">
                 <tr>
                     <td rowspan="2" class="gs-brand-cell">
@@ -980,7 +990,7 @@
         </div>
 
         <!-- ==================== PAGE 2: HOME SIGN-IN SHEET ==================== -->
-        <div class="sheet">
+        <div class="sheet sheet-clipboard">
             <table class="si-header">
                 <tr>
                     <td class="si-title-cell">
@@ -1026,7 +1036,7 @@
         </div>
 
         <!-- ==================== PAGE 3: AWAY SIGN-IN SHEET ==================== -->
-        <div class="sheet" th:classappend="${gStat.last} ? ' last-sheet' : ''">
+        <div class="sheet sheet-clipboard" th:classappend="${gStat.last} ? ' last-sheet' : ''">
             <table class="si-header">
                 <tr>
                     <td class="si-title-cell">
